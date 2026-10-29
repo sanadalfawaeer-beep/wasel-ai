@@ -12,4 +12,5 @@ npx expo start
 - API host: derived from Expo's dev server. Override with `EXPO_PUBLIC_API_URL` in `.env` if needed.
 - Design system: `src/ui/themes.json`, `src/ui/tokens.ts`, `docs/design/ui-spec.md`.
 - Typecheck: `npx tsc --noEmit`.
+- Logic tests: `npm test` (Vitest: geo, cue engine, theme contrast).
 - Contrast gate: `node ../../scripts/check-contrast.mjs`.

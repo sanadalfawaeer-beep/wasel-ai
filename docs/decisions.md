@@ -18,7 +18,7 @@
 
 ## ADR-003 — Mock-first routing
 
-**Decision:** With no Google key, the backend uses a realistic UJ mock route and the Strands agent still runs.
+**Decision:** With no Google key, the backend uses four UJ mock destinations and the Strands agent still runs.
 
 **Why:** Google Cloud requires a billing-enabled project. A mock mode lets the product be built, tested, and demoed immediately, and it keeps tests offline and free.
 

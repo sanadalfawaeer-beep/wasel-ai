@@ -40,7 +40,7 @@ Why this shape:
 | `app/planner.py` | Strands agent, two tools, fallback parser, reply generation |
 | `app/maps.py` | `MapsClient` protocol, Google Places/Routes, mock client |
 | `app/cues.py` | Provider maneuver → cue kind, English/Arabic templates, arrival synthesis |
-| `app/mock_data.py` | University of Jordan demo route |
+| `app/mock_data.py` | Four University of Jordan demo destinations |
 | `app/geo.py` | Haversine, polyline encode/decode |
 | `app/models.py` | Pydantic contract |
 

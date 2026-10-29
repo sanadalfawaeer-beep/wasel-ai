@@ -47,9 +47,15 @@ class GoogleMapsClient:
     PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
     ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
 
-    def __init__(self, api_key: str, timeout_s: float = 12.0) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        timeout_s: float = 12.0,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
         self.api_key = api_key
         self.timeout_s = timeout_s
+        self._transport = transport
 
     def _headers(self, field_mask: str) -> dict[str, str]:
         return {
@@ -72,7 +78,7 @@ class GoogleMapsClient:
         }
         field_mask = "places.displayName,places.formattedAddress,places.location"
         try:
-            with httpx.Client(timeout=self.timeout_s) as client:
+            with httpx.Client(timeout=self.timeout_s, transport=self._transport) as client:
                 response = client.post(
                     self.PLACES_URL, headers=self._headers(field_mask), json=body
                 )
@@ -128,7 +134,7 @@ class GoogleMapsClient:
             ]
         )
         try:
-            with httpx.Client(timeout=self.timeout_s) as client:
+            with httpx.Client(timeout=self.timeout_s, transport=self._transport) as client:
                 response = client.post(
                     self.ROUTES_URL, headers=self._headers(field_mask), json=body
                 )

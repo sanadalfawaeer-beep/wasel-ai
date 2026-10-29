@@ -68,6 +68,31 @@ def test_plan_arabic() -> None:
     assert "سأسير" in payload["reply"]
 
 
+def test_mock_routes_are_distinct() -> None:
+    gate = client.post(
+        "/api/plan",
+        json={"text": "Take me to the Main Gate", "lang": "en"},
+    )
+    student = client.post(
+        "/api/plan",
+        json={"text": "Take me to the Student Center", "lang": "en"},
+    )
+
+    assert gate.status_code == 200
+    assert student.status_code == 200
+    gate_route = gate.json()["route"]
+    student_route = student.json()["route"]
+
+    assert "gate" in gate_route["route_id"]
+    assert "student" in student_route["route_id"]
+    assert gate_route["destination"]["name"].endswith("Main Gate")
+    assert "Student Center" in student_route["destination"]["name"]
+    assert gate_route["points"] != student_route["points"]
+    assert gate_route["distance_m"] != student_route["distance_m"]
+    assert len(gate_route["cues"]) == 5
+    assert len(student_route["cues"]) == 5
+
+
 def test_plan_accepts_constraints() -> None:
     response = client.post(
         "/api/plan",

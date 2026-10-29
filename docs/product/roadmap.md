@@ -15,7 +15,7 @@
 
 ## Phase 0 — Prove the loop (4–5 weeks)
 
-**Scope:** three UJ routes, 10 testers, Android + iOS, English + Arabic, voice + visual skins, on-device cues, offline after planning, demo route.
+**Scope:** three core UJ routes plus a pharmacy demo, 10 testers, Android + iOS, English + Arabic, voice + visual skins, on-device cues, offline after planning, demo route.
 
 **Build order:**
 

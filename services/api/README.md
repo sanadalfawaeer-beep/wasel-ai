@@ -15,7 +15,7 @@ The agent plans; the phone guides. Strands runs once per request and is never in
 
 ## Modes
 
-`PLANNER_MODE=auto` uses Google only when `GOOGLE_MAPS_API_KEY` is set. Otherwise it uses `MockMapsClient`, which returns a realistic University of Jordan route and still lets the Strands agent call `find_place` and `get_route`.
+`PLANNER_MODE=auto` uses Google only when `GOOGLE_MAPS_API_KEY` is set. Otherwise it uses `MockMapsClient`, which returns three core University of Jordan routes plus a pharmacy demo (Library, Main Gate, Student Center, Pharmacy) and still lets the Strands agent call `find_place` and `get_route`.
 
 `USE_LLM=false` skips DeepSeek and exercises the deterministic fallback parser. Tests run in this mode.
 

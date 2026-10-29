@@ -45,7 +45,7 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 Open <http://localhost:8000/docs>.
 
-The backend starts in **mock mode** when `GOOGLE_MAPS_API_KEY` is empty. That means the app works end-to-end with a realistic University of Jordan demo route — no Google Cloud account needed. The Strands agent still runs against DeepSeek and still calls its `find_place` / `get_route` tools; those tools just return the demo data.
+The backend starts in **mock mode** when `GOOGLE_MAPS_API_KEY` is empty. That means the app works end-to-end with three core University of Jordan routes plus a pharmacy demo (Library, Main Gate, Student Center, Pharmacy) — no Google Cloud account needed. The Strands agent still runs against DeepSeek and still calls its `find_place` / `get_route` tools; those tools just return the demo data.
 
 To use real Google routing, put a key in `services/api/.env`:
 
@@ -84,9 +84,10 @@ powershell -ExecutionPolicy Bypass -File scripts/plan-smoke.ps1
 cd services/api
 uv run pytest -q
 
-# Mobile typecheck
+# Mobile typecheck + logic tests
 cd ../mobile
 npx tsc --noEmit
+npm test
 
 # Design-token contrast gate
 cd ../..
