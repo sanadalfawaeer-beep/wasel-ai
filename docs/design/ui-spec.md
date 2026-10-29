@@ -168,6 +168,26 @@ Color is always paired with icon, text, and haptic.
 
 Detect `AccessibilityInfo.isScreenReaderEnabled()`. If a screen reader is active, do not use `expo-speech` for cues; call `AccessibilityInfo.announceForAccessibility` so TalkBack/VoiceOver does not double-speak. Do not set live regions on rapidly changing distance text — announce the instruction, not the countdown.
 
+## Screenshots
+
+Captured from the web build at 390×844. The native build uses the same components and tokens.
+
+| Home — Night Route | Home — Daylight | Home — Arabic |
+|---|---|---|
+| ![Home night](screenshots/home-night.png) | ![Home daylight](screenshots/home-daylight.png) | ![Home Arabic](screenshots/home-arabic.png) |
+
+| Guide — Night Route | Guide — Daylight | Guide — Arabic |
+|---|---|---|
+| ![Guide night](screenshots/guide-night.png) | ![Guide daylight](screenshots/guide-daylight.png) | ![Guide Arabic](screenshots/guide-arabic.png) |
+
+| Planning | Route sheet | Converse |
+|---|---|---|
+| ![Plan](screenshots/plan.png) | ![Map sheet](screenshots/guide-map.png) | ![Converse](screenshots/converse.png) |
+
+| Settings | Onboarding |
+|---|---|
+| ![Settings](screenshots/settings.png) | ![Onboarding](screenshots/onboarding.png) |
+
 ## Anti-patterns
 
 - A dense dashboard while walking.
