@@ -1,0 +1,79 @@
+{
+  "reply": "Heading to the University of Jordan Library. It is about 7 minutes away.",
+  "route": {
+    "route_id": "demo-uj-library",
+    "destination": {
+      "name": "University of Jordan Library",
+      "address": "University of Jordan, Amman, Jordan",
+      "lat": 32.0137,
+      "lng": 35.8739
+    },
+    "polyline": "q_~eAqj}fE?",
+    "points": [
+      { "lat": 32.0134, "lng": 35.8734 },
+      { "lat": 32.0138, "lng": 35.8734 },
+      { "lat": 32.0141, "lng": 35.8737 },
+      { "lat": 32.0141, "lng": 35.8741 },
+      { "lat": 32.0138, "lng": 35.8743 },
+      { "lat": 32.0137, "lng": 35.8739 }
+    ],
+    "distance_m": 420,
+    "duration_s": 360,
+    "cues": [
+      {
+        "id": "cue_1",
+        "kind": "DEPART",
+        "say": "Start walking north toward the main walkway.",
+        "detail": "Start walking north toward the main walkway.",
+        "short": "Start",
+        "at": { "lat": 32.0134, "lng": 35.8734 },
+        "trigger_m": 0,
+        "haptic": "tick",
+        "urgency": "normal"
+      },
+      {
+        "id": "cue_2",
+        "kind": "TURN_RIGHT",
+        "say": "In 30 meters, turn right toward the library plaza.",
+        "detail": "Turn right toward the library plaza.",
+        "short": "Turn right",
+        "at": { "lat": 32.0141, "lng": 35.8737 },
+        "trigger_m": 30,
+        "haptic": "right",
+        "urgency": "normal"
+      },
+      {
+        "id": "cue_3",
+        "kind": "TURN_LEFT",
+        "say": "In 30 meters, turn left at the library entrance.",
+        "detail": "Turn left at the library entrance.",
+        "short": "Turn left",
+        "at": { "lat": 32.0138, "lng": 35.8743 },
+        "trigger_m": 30,
+        "haptic": "left",
+        "urgency": "normal"
+      },
+      {
+        "id": "cue_4",
+        "kind": "ARRIVE",
+        "say": "You have arrived at the University of Jordan Library.",
+        "detail": "You have arrived at the University of Jordan Library.",
+        "short": "Arrive",
+        "at": { "lat": 32.0137, "lng": 35.8739 },
+        "trigger_m": 12,
+        "haptic": "arrive",
+        "urgency": "normal"
+      }
+    ],
+    "provider": "mock",
+    "language": "en"
+  },
+  "debug": {
+    "mode": "mock",
+    "model": "deepseek-v4-pro",
+    "tool_log": [
+      { "tool": "find_place", "args": { "query": "library" } },
+      { "tool": "get_route", "args": { "destination_name": "University of Jordan Library" } }
+    ]
+  }
+}

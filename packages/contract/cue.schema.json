@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wasel.ai/schemas/cue.schema.json",
+  "title": "Wasel route contract",
+  "description": "The single contract shared by the Python planner and every client skin. Cues are structured; clients decide how to render them.",
+  "$defs": {
+    "LatLng": {
+      "type": "object",
+      "required": ["lat", "lng"],
+      "properties": {
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lng": { "type": "number", "minimum": -180, "maximum": 180 }
+      },
+      "additionalProperties": false
+    },
+    "CueKind": {
+      "type": "string",
+      "enum": [
+        "DEPART",
+        "TURN_LEFT",
+        "TURN_RIGHT",
+        "TURN_SLIGHT_LEFT",
+        "TURN_SLIGHT_RIGHT",
+        "TURN_SHARP_LEFT",
+        "TURN_SHARP_RIGHT",
+        "UTURN_LEFT",
+        "UTURN_RIGHT",
+        "CONTINUE",
+        "ROUNDABOUT_LEFT",
+        "ROUNDABOUT_RIGHT",
+        "RAMP_LEFT",
+        "RAMP_RIGHT",
+        "FORK_LEFT",
+        "FORK_RIGHT",
+        "MERGE",
+        "ARRIVE",
+        "WARN",
+        "LANDMARK"
+      ]
+    },
+    "HapticPattern": {
+      "type": "string",
+      "enum": ["left", "right", "arrive", "warn", "tick"]
+    },
+    "Cue": {
+      "type": "object",
+      "required": ["id", "kind", "say", "short", "at", "trigger_m", "haptic", "urgency"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "$ref": "#/$defs/CueKind" },
+        "say": { "type": "string", "description": "Full spoken sentence, already localized." },
+        "detail": { "type": "string", "description": "Instruction without the distance prefix, for the visual stage." },
+        "short": { "type": "string", "description": "Glanceable action, e.g. 'Turn left'." },
+        "at": { "$ref": "#/$defs/LatLng" },
+        "trigger_m": { "type": "integer", "minimum": 0, "maximum": 500 },
+        "haptic": { "$ref": "#/$defs/HapticPattern" },
+        "urgency": { "type": "string", "enum": ["normal", "imminent", "critical"] }
+      },
+      "additionalProperties": false
+    },
+    "Destination": {
+      "type": "object",
+      "required": ["name", "address", "lat", "lng"],
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "RoutePlan": {
+      "type": "object",
+      "required": ["route_id", "destination", "polyline", "points", "distance_m", "duration_s", "cues", "provider", "language"],
+      "properties": {
+        "route_id": { "type": "string" },
+        "destination": { "$ref": "#/$defs/Destination" },
+        "polyline": { "type": "string" },
+        "points": { "type": "array", "items": { "$ref": "#/$defs/LatLng" }, "minItems": 2 },
+        "distance_m": { "type": "integer", "minimum": 0 },
+        "duration_s": { "type": "integer", "minimum": 0 },
+        "cues": { "type": "array", "items": { "$ref": "#/$defs/Cue" }, "minItems": 1 },
+        "provider": { "type": "string" },
+        "language": { "type": "string", "enum": ["en", "ar"] }
+      },
+      "additionalProperties": false
+    },
+    "PlanResponse": {
+      "type": "object",
+      "required": ["reply", "route"],
+      "properties": {
+        "reply": { "type": "string" },
+        "route": { "$ref": "#/$defs/RoutePlan" },
+        "debug": { "type": ["object", "null"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}
