@@ -78,9 +78,9 @@ The LLM is not the moat. It is a config line.
 | Google Cloud (capped) | $0–50 |
 | DeepSeek API | $5–20 |
 | EAS builds | $0 on free tier |
-| Tester stipends | $200–300 |
-| Domain | ~$15 |
-| **Total** | **~$320–500** excluding phones |
+| **Total** | **~$105–170** excluding phones |
+
+No domain or tester stipends in the Phase 0 budget: the founder runs the first self-test, then recruits a small volunteer group from the UJ disability network. External paid accessibility testing belongs in the Phase 1 pilot budget, where it can be tied to a venue agreement.
 
 ## Risks
 

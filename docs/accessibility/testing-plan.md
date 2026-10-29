@@ -31,7 +31,7 @@ Do not put `accessibilityLiveRegion` on the distance countdown. Announce the ins
 - Controlled crossings only. Stop the test at the first unsafe cue.
 - Record: route completed without help, wrong turns, missed cues, stops, time, and any moment the tester hesitated.
 - Debrief with three questions: what did the app say that helped, what confused you, what would you never trust it to do?
-- Pay testers. Ten people is a directional gate, not a study.
+- Compensate testers when the budget allows. For the self-funded Phase 0, recruit a small volunteer group through the UJ disability network, keep sessions short, and state the limitation in the report. Ten people is a directional gate, not a study. External paid testing belongs in the Phase 1 pilot budget.
 
 ## Phase 0 gate
 
