@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     allowed_origins: str = "*"
     debug: bool = True
     request_timeout_s: float = 12.0
+    agent_timeout_s: float = 8.0
 
     @property
     def resolved_mode(self) -> Literal["mock", "google"]:

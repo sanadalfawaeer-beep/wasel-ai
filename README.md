@@ -19,6 +19,20 @@ wasel-ai/
 └─ .gitignore
 ```
 
+## Prerequisites
+
+- Node 24+ and npm 11+
+- `uv` (it installs and manages Python 3.12)
+- Git
+- Optional: an Expo account and EAS CLI for an installable Android dev build
+- A physical iOS install requires the paid Apple Developer Program ($99/year)
+
+If a new terminal cannot find `uv`, either restart it or use the full path:
+
+```powershell
+& "$env:USERPROFILE\.local\bin\uv.exe" sync
+```
+
 ## Quick start
 
 ### 1. Backend
@@ -88,6 +102,13 @@ node scripts/check-contrast.mjs
 | `auto` | default | `google` when a key exists, otherwise `mock` |
 
 `USE_LLM=false` skips Strands/DeepSeek and uses the deterministic fallback parser. This is the safety net for demos and tests.
+
+## Notes
+
+- Voice input needs a development build. Expo Go uses the text field instead; the app says so.
+- Google Maps is optional. Mock mode is the default until a key is added.
+- `expo-doctor` 1.21.5 reports a false positive about `.expo` being unignored in this monorepo. `git check-ignore -v apps/mobile/.expo` confirms it is ignored by `apps/mobile/.gitignore`.
+- The DeepSeek timeout is 8 seconds; after that the deterministic fallback returns a route instead of failing.
 
 ## Security
 

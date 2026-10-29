@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from strands import Agent, tool
@@ -67,6 +68,21 @@ def _fallback_query(text: str) -> str:
         query = re.sub(pattern, "", query, flags=re.IGNORECASE).strip()
     query = query.strip(" .!؟?")
     return query or "University of Jordan Library"
+
+
+def _run_agent(agent: Agent, text: str, timeout_s: float) -> object:
+    """Run the agent with a hard wall-clock budget.
+
+    The worker thread is not joined on timeout: a slow model call must never
+    block the request or delay the deterministic fallback. Its session is a
+    separate object, so whatever it writes after the timeout is ignored.
+    """
+    executor = ThreadPoolExecutor(max_workers=1)
+    try:
+        future = executor.submit(agent, text)
+        return future.result(timeout=timeout_s)
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
 
 
 def _build_agent(session: PlanSession) -> Agent:
@@ -161,10 +177,22 @@ def plan(
     )
 
     if settings.llm_enabled:
+        # The agent works on its own session. If it times out, its late writes
+        # cannot race with the fallback below.
+        agent_session = PlanSession(
+            client=client,
+            settings=settings,
+            origin=origin,
+            lang=lang,
+            constraints=constraints or [],
+        )
         try:
-            agent = _build_agent(session)
-            result = agent(text)
+            agent = _build_agent(agent_session)
+            result = _run_agent(agent, text, settings.agent_timeout_s)
+            session.destination = agent_session.destination
+            session.route = agent_session.route
             session.reply = str(result).strip()
+            session.tool_log.extend(agent_session.tool_log)
             session.provider = "deepseek"
         except Exception:
             logger.exception("Strands planner failed; using deterministic fallback")
