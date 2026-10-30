@@ -13,6 +13,54 @@
 | Languages | English + Arabic |
 | Positioning | Wayfinding + conversation, not another maps app |
 
+## Current state — 31 October 2026
+
+**Working now**
+
+- Expo app on the phone: Home, Plan, Guide, Converse, Settings, Onboarding.
+- Night Route, Daylight, and High Contrast themes; English + Arabic RTL.
+- On-device cue engine, simulation + GPS, TTS, haptics, route persistence.
+- FastAPI + Strands + DeepSeek; `find_place` and `get_route` tools.
+- Four mock UJ destinations, Google Places/Routes adapters, deterministic fallback.
+- 12 backend tests, 13 mobile tests, contrast gate, web export, CI.
+
+**Not yet pilot-ready**
+
+- Real routing data. The mock coordinates are illustrative, not the actual UJ paths.
+- Voice input on a development build. Expo Go still falls back to text.
+- Off-route detection and re-routing.
+- Event logging, a “report a cue” action, and the metrics the Phase 0 gate needs.
+- A deployed HTTPS backend; today the phone talks to the laptop.
+- Accessibility validation with blind and Deaf users, including Arabic TTS and screen readers.
+- iOS device build; this needs the Apple Developer account.
+- App icon, store assets, privacy policy, and tester consent.
+
+## Next 10 days — validation sprint
+
+| Day | Work | Output |
+|---|---|---|
+| 1 | EAS Android development build; install the APK | Voice input and native haptics available on the phone |
+| 2 | Device pass: voice, Arabic TTS, haptics, TalkBack, 200% text, RTL | A written list of native-only defects |
+| 3 | Google Cloud key; enable Routes + Places; real UJ routes | Three real routes from the app |
+| 4 | Walk the three routes; compare with mock; check footpath coverage | Go/no-go on Google routing; note gaps for a campus graph |
+| 5 | Add off-route detection, re-route, and a “report a cue” event log | A route can recover from a missed turn; failures are measurable |
+| 6 | Deploy the API over HTTPS; point the app at it | Testers no longer depend on the laptop |
+| 7 | Accessibility pass: VoiceOver/TalkBack, Arabic voice, sunlight, haptics | A route that is safe to put in front of testers |
+| 8 | Two supervised pilot walks: one blind, one Deaf tester | First real feedback and safety review |
+| 9 | 5 blind + 5 Deaf sessions; collect route outcomes and cue errors | Phase 0 gate data |
+| 10 | Gate review; decide whether to start Phase 1 | A go/no-go decision, not a vibe |
+
+Android first. Add iOS after the Android route is stable and the Apple Developer account is ready.
+
+**What this needs**
+
+- Google Cloud billing + a server key for Routes/Places.
+- An Expo access token (or browser login) for EAS.
+- One Android phone; two is better for the tester sessions.
+- UJ route access, 5 blind/low-vision and 5 Deaf/HoH volunteers, and an O&M specialist for the supervised walks.
+- A small backend host (Render/Fly/AWS) for the pilot; the laptop is fine for the first two walks.
+- Consent, privacy, and incident forms before external testers arrive.
+
 ## Phase 0 — Prove the loop (4–5 weeks)
 
 **Scope:** three core UJ routes plus a pharmacy demo, 10 testers, Android + iOS, English + Arabic, voice + visual skins, on-device cues, offline after planning, demo route.
