@@ -66,6 +66,7 @@ npx expo start
 
 - **Expo Go** works for the full UI, TTS, haptics, location, and the demo route.
 - **Voice input** needs a development build (`npx expo run:android` or an EAS dev build). In Expo Go the mic button falls back to the text field.
+- On Windows with VirtualBox or multiple adapters, `scripts/dev.ps1` forces Expo to advertise the Wi-Fi IP. If a QR ever shows `127.0.0.1`, use `exp://<your-lan-ip>:8081` manually.
 - On a physical phone, keep the phone and PC on the same Wi-Fi. The app derives the API host from Expo's dev host automatically (`http://<your-lan-ip>:8000`). If that fails, create `apps/mobile/.env` with:
 
 ```env
@@ -73,6 +74,8 @@ EXPO_PUBLIC_API_URL=http://192.168.x.x:8000
 ```
 
 Allow `uvicorn` through Windows Firewall on the private network.
+
+Phone diagnostic: open `http://<your-lan-ip>:8081` and `http://<your-lan-ip>:8000/api/health` in the phone browser. If neither loads, the phone is on a different network, a VPN, or an AP with client isolation; fix that before troubleshooting Expo.
 
 ### 3. Verify
 
