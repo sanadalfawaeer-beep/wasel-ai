@@ -35,6 +35,8 @@ type ChatMessage = {
   text: string;
 };
 
+type PreferredLine = 'none' | 'BRT 102' | 'Amman Bus 101' | 'BRT 103';
+
 type SettingsState = {
   lang: Lang;
   mode: Mode;
@@ -42,9 +44,12 @@ type SettingsState = {
   voiceEnabled: boolean;
   hapticsEnabled: boolean;
   speechRate: number;
+  preferredLine: PreferredLine;
+  autoReadPlan: boolean;
 };
 
 const SETTINGS_KEY = 'accessible-brt-settings';
+const ONBOARDING_KEY = 'wasel-onboarded';
 
 const DEFAULT_SETTINGS: SettingsState = {
   lang: 'ar',
@@ -53,6 +58,8 @@ const DEFAULT_SETTINGS: SettingsState = {
   voiceEnabled: true,
   hapticsEnabled: true,
   speechRate: 0.95,
+  preferredLine: 'none',
+  autoReadPlan: false,
 };
 
 function loadSettings(): SettingsState {
@@ -60,6 +67,7 @@ function loadSettings(): SettingsState {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw) as Partial<SettingsState>;
+    const preferredLines: PreferredLine[] = ['none', 'BRT 102', 'Amman Bus 101', 'BRT 103'];
     return {
       lang: parsed.lang === 'en' ? 'en' : 'ar',
       mode: parsed.mode === 'hearing' ? 'hearing' : 'visual',
@@ -68,6 +76,11 @@ function loadSettings(): SettingsState {
       hapticsEnabled: parsed.hapticsEnabled !== false,
       speechRate:
         typeof parsed.speechRate === 'number' ? parsed.speechRate : DEFAULT_SETTINGS.speechRate,
+      preferredLine:
+        parsed.preferredLine && preferredLines.includes(parsed.preferredLine)
+          ? parsed.preferredLine
+          : 'none',
+      autoReadPlan: Boolean(parsed.autoReadPlan),
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -88,7 +101,7 @@ function RouteEffects({ lang }: { lang: Lang }) {
   useEffect(() => {
     window.scrollTo(0, 0);
     const title = pageTitles[location.pathname] ?? pageTitles['/'];
-    document.title = `${L(title, lang)} — ACCESSIBLE BRT`;
+    document.title = `${L(title, lang)} — Wasel A.I.`;
   }, [location.pathname, lang]);
 
   return null;
@@ -98,6 +111,77 @@ function PageHead({ title }: { title: string }) {
   return (
     <div className="page-head">
       <h1>{title}</h1>
+    </div>
+  );
+}
+
+function WelcomePage({
+  lang,
+  setLang,
+  onChoose,
+}: {
+  lang: Lang;
+  setLang: (value: Lang) => void;
+  onChoose: (mode: Mode) => void;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+  const Arrow = lang === 'ar' ? ArrowLeft : ArrowRight;
+
+  return (
+    <div className="welcome-page">
+      <div className="container welcome-top">
+        <span className="welcome-brand">
+          <span className="brand-mark">
+            <Bus size={21} aria-hidden="true" />
+          </span>
+          <strong dir="ltr">WASEL A.I.</strong>
+        </span>
+        <div className="lang-switch" role="group" aria-label={tr(ui.language)}>
+          <button
+            type="button"
+            className={lang === 'ar' ? 'is-active' : ''}
+            aria-pressed={lang === 'ar'}
+            onClick={() => setLang('ar')}
+          >
+            {tr(ui.arabic)}
+          </button>
+          <button
+            type="button"
+            className={lang === 'en' ? 'is-active' : ''}
+            aria-pressed={lang === 'en'}
+            onClick={() => setLang('en')}
+          >
+            EN
+          </button>
+        </div>
+      </div>
+
+      <main className="container welcome-main">
+        <h1>{tr(ui.welcomeTitle)}</h1>
+        <p>{tr(ui.welcomeSubtitle)}</p>
+        <div className="welcome-options">
+          <button type="button" className="welcome-option visual" onClick={() => onChoose('visual')}>
+            <span className="welcome-option-icon">
+              <Volume2 size={28} aria-hidden="true" />
+            </span>
+            <span className="welcome-option-copy">
+              <strong>{tr(ui.modeVisualTitle)}</strong>
+              <small>{tr(ui.welcomeVisualDesc)}</small>
+            </span>
+            <Arrow size={20} aria-hidden="true" />
+          </button>
+          <button type="button" className="welcome-option hearing" onClick={() => onChoose('hearing')}>
+            <span className="welcome-option-icon">
+              <Vibrate size={28} aria-hidden="true" />
+            </span>
+            <span className="welcome-option-copy">
+              <strong>{tr(ui.modeHearingTitle)}</strong>
+              <small>{tr(ui.welcomeHearingDesc)}</small>
+            </span>
+            <Arrow size={20} aria-hidden="true" />
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
@@ -609,6 +693,8 @@ function SettingsPage({
   voiceEnabled,
   hapticsEnabled,
   speechRate,
+  preferredLine,
+  autoReadPlan,
   resetNotice,
   setLang,
   tryMode,
@@ -616,9 +702,12 @@ function SettingsPage({
   setVoiceEnabled,
   setHapticsEnabled,
   setSpeechRate,
+  setPreferredLine,
+  setAutoReadPlan,
   speak,
   flashScreen,
   resetSettings,
+  showWelcome,
 }: {
   lang: Lang;
   mode: Mode;
@@ -626,6 +715,8 @@ function SettingsPage({
   voiceEnabled: boolean;
   hapticsEnabled: boolean;
   speechRate: number;
+  preferredLine: PreferredLine;
+  autoReadPlan: boolean;
   resetNotice: boolean;
   setLang: (value: Lang) => void;
   tryMode: (next: Mode) => void;
@@ -633,9 +724,12 @@ function SettingsPage({
   setVoiceEnabled: (value: boolean) => void;
   setHapticsEnabled: (value: boolean) => void;
   setSpeechRate: (value: number) => void;
+  setPreferredLine: (value: PreferredLine) => void;
+  setAutoReadPlan: (value: boolean) => void;
   speak: (text: string) => void;
   flashScreen: () => void;
   resetSettings: () => void;
+  showWelcome: () => void;
 }) {
   const tr = (value: Localized) => L(value, lang);
 
@@ -688,6 +782,21 @@ function SettingsPage({
                 {tr(ui.modeHearingShort)}
               </button>
             </div>
+          </article>
+
+          <article className="settings-card">
+            <h2>{tr(ui.settingsPreferredLine)}</h2>
+            <select
+              id="preferred-line"
+              className="settings-select"
+              value={preferredLine}
+              onChange={(event) => setPreferredLine(event.target.value as PreferredLine)}
+            >
+              <option value="none">{tr(ui.settingsLineNone)}</option>
+              <option value="BRT 102">BRT 102</option>
+              <option value="Amman Bus 101">Amman Bus 101</option>
+              <option value="BRT 103">BRT 103</option>
+            </select>
           </article>
 
           <article className="settings-card">
@@ -745,6 +854,21 @@ function SettingsPage({
           </article>
 
           <article className="settings-card">
+            <h2>{tr(ui.settingsAutoRead)}</h2>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoReadPlan}
+              aria-label={`${tr(ui.settingsAutoRead)}: ${autoReadPlan ? tr(ui.settingsOn) : tr(ui.settingsOff)}`}
+              className={`toggle ${autoReadPlan ? 'is-on' : ''}`}
+              onClick={() => setAutoReadPlan(!autoReadPlan)}
+            >
+              <Volume2 size={15} opacity={autoReadPlan ? 1 : 0.4} aria-hidden="true" />
+              {autoReadPlan ? tr(ui.settingsOn) : tr(ui.settingsOff)}
+            </button>
+          </article>
+
+          <article className="settings-card">
             <h2>{tr(ui.settingsHaptics)}</h2>
             <div className="settings-row">
               <button
@@ -766,9 +890,14 @@ function SettingsPage({
 
           <article className="settings-card">
             <h2>{tr(ui.settingsData)}</h2>
-            <button type="button" className="btn secondary small" onClick={resetSettings}>
-              {tr(ui.settingsReset)}
-            </button>
+            <div className="settings-actions">
+              <button type="button" className="btn secondary small" onClick={resetSettings}>
+                {tr(ui.settingsReset)}
+              </button>
+              <button type="button" className="btn secondary small" onClick={showWelcome}>
+                {tr(ui.settingsShowWelcome)}
+              </button>
+            </div>
             {resetNotice ? (
               <p className="note" role="status">{tr(ui.settingsResetDone)}</p>
             ) : null}
@@ -782,6 +911,13 @@ function SettingsPage({
 
 function App() {
   const [settings, setSettings] = useState<SettingsState>(loadSettings);
+  const [onboarded, setOnboarded] = useState(() => {
+    try {
+      return localStorage.getItem(ONBOARDING_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [activeStep, setActiveStep] = useState(0);
   const [destination, setDestination] = useState('');
   const [trips, setTrips] = useState<TripOption[]>([]);
@@ -796,7 +932,16 @@ function App() {
   const [resetNotice, setResetNotice] = useState(false);
   const [flash, setFlash] = useState(false);
 
-  const { lang, mode, reduceMotion, voiceEnabled, hapticsEnabled, speechRate } = settings;
+  const {
+    lang,
+    mode,
+    reduceMotion,
+    voiceEnabled,
+    hapticsEnabled,
+    speechRate,
+    preferredLine,
+    autoReadPlan,
+  } = settings;
   const tr = (value: Localized) => L(value, lang);
 
   useEffect(() => {
@@ -807,6 +952,12 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.reduceMotion = String(reduceMotion);
   }, [reduceMotion]);
+
+  useEffect(() => {
+    if (!onboarded) {
+      document.title = `${L(ui.welcomeTitle, lang)} — Wasel A.I.`;
+    }
+  }, [onboarded, lang]);
 
   useEffect(() => {
     try {
@@ -825,6 +976,8 @@ function App() {
   const setVoiceEnabled = (value: boolean) => update({ voiceEnabled: value });
   const setHapticsEnabled = (value: boolean) => update({ hapticsEnabled: value });
   const setSpeechRate = (value: number) => update({ speechRate: value });
+  const setPreferredLine = (value: PreferredLine) => update({ preferredLine: value });
+  const setAutoReadPlan = (value: boolean) => update({ autoReadPlan: value });
 
   const speak = (text: string) => {
     if (!voiceEnabled || !('speechSynthesis' in window)) return;
@@ -850,14 +1003,52 @@ function App() {
     else flashScreen();
   };
 
+  const chooseMode = (next: Mode) => {
+    update({ mode: next });
+    setOnboarded(true);
+    try {
+      localStorage.setItem(ONBOARDING_KEY, 'true');
+    } catch {
+      // Continue in memory when storage is unavailable.
+    }
+    if (next === 'visual') speak(tr(ui.welcomeVisualSample));
+    else flashScreen();
+  };
+
+  const showWelcome = () => {
+    setOnboarded(false);
+    window.scrollTo(0, 0);
+    try {
+      localStorage.removeItem(ONBOARDING_KEY);
+    } catch {
+      // Ignore storage failures.
+    }
+  };
+
   const planTrip = (value?: string) => {
     const dest = (value ?? destination).trim() || tr(ui.planDefault);
     setDestination(dest);
     setPlanning(true);
     setTrips([]);
     window.setTimeout(() => {
-      setTrips(getTrips(dest, lang));
+      const results = getTrips(dest, lang);
+      if (preferredLine !== 'none') {
+        results.sort((a, b) =>
+          a.line === preferredLine ? -1 : b.line === preferredLine ? 1 : 0,
+        );
+      }
+      setTrips(results);
       setPlanning(false);
+      if (autoReadPlan && voiceEnabled && results[0]) {
+        const first = results[0];
+        const seatsText =
+          first.seats != null
+            ? `${first.seats} ${tr(ui.planSeats)}`
+            : tr(ui.planStanding);
+        speak(
+          `${first.line}. ${L(first.board, lang)}. ${tr(ui.planNext)} ${first.next} ${tr(ui.minutesShort)}. ${seatsText}.`,
+        );
+      }
     }, 450);
   };
 
@@ -973,6 +1164,15 @@ function App() {
     window.setTimeout(() => setResetNotice(false), 3000);
   };
 
+  if (!onboarded) {
+    return (
+      <>
+        <div className={`flash-overlay ${flash ? 'is-flashing' : ''}`} aria-hidden="true" />
+        <WelcomePage lang={lang} setLang={setLang} onChoose={chooseMode} />
+      </>
+    );
+  }
+
   return (
     <>
       <RouteEffects lang={lang} />
@@ -991,12 +1191,12 @@ function App() {
 
       <header className="site-header">
         <div className="container header-inner">
-          <NavLink className="brand" to="/" end aria-label="ACCESSIBLE BRT">
+          <NavLink className="brand" to="/" end aria-label="Wasel A.I.">
             <span className="brand-mark">
               <Bus size={21} aria-hidden="true" />
             </span>
             <span className="brand-copy">
-              <strong>ACCESSIBLE BRT</strong>
+              <strong dir="ltr">WASEL A.I.</strong>
               <small>{tr(ui.brandTag)}</small>
             </span>
           </NavLink>
@@ -1012,6 +1212,26 @@ function App() {
               </NavLink>
             ))}
           </nav>
+          <div className="header-controls">
+            <div className="lang-switch" role="group" aria-label={tr(ui.language)}>
+              <button
+                type="button"
+                className={lang === 'ar' ? 'is-active' : ''}
+                aria-pressed={lang === 'ar'}
+                onClick={() => setLang('ar')}
+              >
+                {tr(ui.arabic)}
+              </button>
+              <button
+                type="button"
+                className={lang === 'en' ? 'is-active' : ''}
+                aria-pressed={lang === 'en'}
+                onClick={() => setLang('en')}
+              >
+                EN
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -1085,6 +1305,8 @@ function App() {
                 voiceEnabled={voiceEnabled}
                 hapticsEnabled={hapticsEnabled}
                 speechRate={speechRate}
+                preferredLine={preferredLine}
+                autoReadPlan={autoReadPlan}
                 resetNotice={resetNotice}
                 setLang={setLang}
                 tryMode={tryMode}
@@ -1092,9 +1314,12 @@ function App() {
                 setVoiceEnabled={setVoiceEnabled}
                 setHapticsEnabled={setHapticsEnabled}
                 setSpeechRate={setSpeechRate}
+                setPreferredLine={setPreferredLine}
+                setAutoReadPlan={setAutoReadPlan}
                 speak={speak}
                 flashScreen={flashScreen}
                 resetSettings={resetSettings}
+                showWelcome={showWelcome}
               />
             }
           />
@@ -1106,10 +1331,12 @@ function App() {
         <div className="container footer-min">
           <NavLink className="brand footer-brand" to="/" end>
             <span className="brand-mark"><Bus size={20} aria-hidden="true" /></span>
-            <span className="brand-copy"><strong>ACCESSIBLE BRT</strong><small>{tr(ui.brandTag)}</small></span>
+            <span className="brand-copy"><strong dir="ltr">WASEL A.I.</strong><small>{tr(ui.brandTag)}</small></span>
           </NavLink>
           <p>{tr(ui.footerDisclaimer)}</p>
-          <p className="footer-rights">{tr(ui.footerRights)}</p>
+          <p className="footer-rights">
+            © 2026 <bdi dir="ltr">Wasel A.I.</bdi> — {tr(ui.footerAllRights)}
+          </p>
         </div>
       </footer>
     </>

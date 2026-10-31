@@ -1,6 +1,6 @@
-# ACCESSIBLE BRT website
+# Wasel A.I. website
 
-Bus-only Arabic-first website for the ACCESSIBLE BRT university project. It is split into routed pages: **Plan**, **Trip**, **Seats**, **Chat**, and **Settings**. The working tools are trip planning, arrival time, empty-seat display, a seven-step rider journey, a visual/hearing mode switch, AI driver chat, and persisted accessibility settings. There are no about/features/impact/survey sections.
+Bus-only Arabic-first website for the Wasel A.I. / ACCESSIBLE BRT university project. It opens with a one-time visual/hearing choice, then splits into routed pages: **Plan**, **Trip**, **Seats**, **Chat**, and **Settings**. The working tools are trip planning, arrival time, empty-seat display, a seven-step rider journey, a visual/hearing mode switch, AI driver chat, and persisted accessibility settings. There are no about/features/impact/survey sections.
 
 No backend or Google API key is required. Bus times and seat occupancy are local simulations and are labelled as such throughout the UI.
 
@@ -34,7 +34,7 @@ npm run build
 | `/trip` | Seven-step rider journey and visual/hearing switch |
 | `/seats` | Interactive seat map and spoken seat availability |
 | `/chat` | Rider–driver chat |
-| `/settings` | Language, accessibility mode, motion, voice, speech rate, haptics, reset |
+| `/settings` | Language, accessibility mode, preferred bus line, motion, voice, speech rate, auto-read, haptics, reset, show welcome again |
 
 Settings are stored in `localStorage` under `accessible-brt-settings`.
 
