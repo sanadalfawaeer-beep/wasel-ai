@@ -150,6 +150,7 @@ export const ui = {
   ),
   voiceChoiceRetry: l('لم أفهم الاختيار. قل الأول أو الثاني أو الثالث، أو اضغط على الباص.', 'I did not understand the choice. Say first, second, or third, or tap a bus.'),
   voiceSelected: l('اخترت', 'Selected'),
+  voiceReadOptions: l('إعادة قراءة الخيارات', 'Read options again'),
   planAria: l('نتائج رحلة الباص', 'Bus trip results'),
   planNoResult: l('لا توجد نتائج. جرّب وجهة أخرى.', 'No results. Try another destination.'),
   planDefault: l('سيتي مول', 'City Mall'),

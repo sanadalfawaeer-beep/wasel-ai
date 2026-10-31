@@ -390,6 +390,7 @@ function PlanPage({
   voiceNotice,
   voiceIssue,
   onVoice,
+  onReadOptions,
 }: {
   lang: Lang;
   mode: Mode;
@@ -408,6 +409,7 @@ function PlanPage({
   voiceNotice: string;
   voiceIssue: string;
   onVoice: () => void;
+  onReadOptions: () => void;
 }) {
   const tr = (value: Localized) => L(value, lang);
 
@@ -471,6 +473,14 @@ function PlanPage({
             ) : null}
             {voiceNotice ? (
               <p className="note voice-notice" role="status">{voiceNotice}</p>
+            ) : null}
+            {trips.length > 0 ? (
+              <div className="voice-actions">
+                <button type="button" className="btn secondary small" onClick={onReadOptions}>
+                  <Volume2 size={15} aria-hidden="true" />
+                  {tr(ui.voiceReadOptions)}
+                </button>
+              </div>
             ) : null}
           </div>
         ) : null}
@@ -1189,7 +1199,10 @@ function App() {
   };
 
   const tryMode = (next: Mode) => {
-    update({ mode: next });
+    update({
+      mode: next,
+      ...(next === 'visual' ? { voiceEnabled: true } : {}),
+    });
     if (next === 'visual') speak(tr(ui.modeSample));
     else flashScreen();
   };
@@ -1540,6 +1553,7 @@ function App() {
                 voiceNotice={voiceNotice}
                 voiceIssue={voiceIssue}
                 onVoice={startVoice}
+                onReadOptions={() => speak(tripSummary(trips))}
               />
             }
           />
