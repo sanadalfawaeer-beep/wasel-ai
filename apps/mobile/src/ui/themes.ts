@@ -1,6 +1,6 @@
 import raw from './themes.json';
 
-export type ThemeName = 'night' | 'daylight' | 'contrast';
+export type ThemeName = 'night' | 'daylight';
 
 export interface Theme {
   name: string;
@@ -13,6 +13,7 @@ export interface Theme {
   textMuted: string;
   accent: string;
   accentInk: string;
+  accentText: string;
   accentSoft: string;
   warn: string;
   warnInk: string;

@@ -12,10 +12,10 @@ interface BottomDockProps {
 }
 
 export function BottomDock({ children, style }: BottomDockProps) {
-  const { theme, themeName, isRTL } = useTheme();
+  const { theme, isRTL } = useTheme();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
-  const useBlur = Platform.OS === 'ios' && themeName !== 'contrast' && !reducedMotion;
+  const useBlur = Platform.OS === 'ios' && !reducedMotion;
 
   return (
     <View

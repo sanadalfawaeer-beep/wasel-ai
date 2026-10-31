@@ -18,7 +18,7 @@
 **Working now**
 
 - Expo app on the phone: Home, Plan, Guide, Converse, Settings, Onboarding.
-- Night Route, Daylight, and High Contrast themes; English + Arabic RTL.
+- Night Route and Daylight themes with a cherry-red accent; English + Arabic RTL.
 - On-device cue engine, simulation + GPS, TTS, haptics, route persistence.
 - FastAPI + Strands + DeepSeek; `find_place` and `get_route` tools.
 - Four mock UJ destinations, Google Places/Routes adapters, deterministic fallback.

@@ -21,7 +21,7 @@ export function SegmentedControl<T extends string | number>({
   onChange,
   label,
 }: SegmentedControlProps<T>) {
-  const { theme, themeName, isRTL, fs } = useTheme();
+  const { theme, isRTL, fs } = useTheme();
 
   return (
     <View
@@ -33,7 +33,7 @@ export function SegmentedControl<T extends string | number>({
           flexDirection: isRTL ? 'row-reverse' : 'row',
           backgroundColor: theme.surfaceRaised,
           borderColor: theme.border,
-          borderWidth: themeName === 'contrast' ? 2 : 1,
+          borderWidth: 1,
         },
       ]}
     >

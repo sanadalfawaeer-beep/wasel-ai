@@ -22,7 +22,7 @@ export function IconButton({
   style,
   disabled = false,
 }: IconButtonProps) {
-  const { theme, themeName } = useTheme();
+  const { theme } = useTheme();
   const backgroundColor =
     variant === 'accent' ? theme.accent : variant === 'surface' ? theme.surfaceRaised : 'transparent';
   const color = variant === 'accent' ? theme.accentInk : theme.text;
@@ -43,7 +43,7 @@ export function IconButton({
           borderRadius: radius.pill,
           backgroundColor,
           borderColor: variant === 'ghost' ? 'transparent' : theme.border,
-          borderWidth: variant === 'ghost' ? 0 : themeName === 'contrast' ? 2 : 1,
+          borderWidth: variant === 'ghost' ? 0 : 1,
           opacity: disabled ? 0.4 : 1,
         },
         style,

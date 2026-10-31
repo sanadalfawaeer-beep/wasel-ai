@@ -42,7 +42,7 @@
 
 ## ADR-006 — Night + Daylight, not one theme
 
-**Decision:** Blind/low-vision defaults to Night Route; Deaf/HoH defaults to Daylight; both are switchable; High Contrast is always available.
+**Decision:** Blind/low-vision defaults to Night Route; Deaf/HoH defaults to Daylight; both are switchable and share the cherry-red accent.
 
 **Why:** Amman sunlight destroys dark UIs; night glare hurts low-light users. The profile picks a sensible default without locking anyone in.
 

@@ -125,7 +125,7 @@ export default function ConverseScreen() {
             </Text>
             <View style={[styles.livePill, { backgroundColor: theme.accentSoft }]}>
               <View style={[styles.liveDot, { backgroundColor: theme.accent }]} />
-              <Text style={[styles.liveText, { color: theme.accent, fontSize: fs(11) }]}>
+              <Text style={[styles.liveText, { color: theme.accentText, fontSize: fs(11) }]}>
                 LIVE
               </Text>
             </View>

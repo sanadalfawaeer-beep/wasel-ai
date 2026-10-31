@@ -11,7 +11,7 @@ The visual system takes its discipline from [KiroCrew](https://github.com/kirodo
 | "Sovereign vs transient" density rule | Guidance is the most transient surface: one instruction, three actions |
 | Visible agent execution | Planning timeline; dev drawer for tool calls |
 | Glass composer dock | Bottom action dock, opaque fallback |
-| 14 themes + theme packs | Three accessibility themes, not a marketplace |
+| 14 themes + theme packs | Two accessibility themes, not a marketplace |
 | 14px base, Space Grotesk | 17px minimum, IBM Plex Sans Arabic |
 | Dense three-pane desktop shell | One screen, one decision; map lives in a sheet |
 | Focus ring, aria-live, reduced motion, 44px targets | RN equivalents: labels, announcements, reduce-motion, 48/64px targets |
@@ -23,7 +23,7 @@ We do not copy Kiro's logo, brand art, or screenshots. The Apache-2.0 licence wo
 1. **One accent, one meaning.** Teal means "the next move" or "the primary action." Nothing else.
 2. **One screen, one decision.** Guidance has Repeat, Map, End. Everything else is a sheet.
 3. **The sign, not the map.** The main guidance surface is a transit sign: huge arrow, distance, street, next step. The real map is secondary.
-4. **Theme is a profile.** Blind/low-vision defaults to Night Route; Deaf/HoH defaults to Daylight. High Contrast is always available.
+4. **Theme is a profile.** Blind/low-vision defaults to Night Route; Deaf/HoH defaults to Daylight. Both use the same cherry-red accent.
 5. **Flat fills, visible edges.** No decorative gradients on chrome. Every card carries a border or a shadow.
 6. **Motion has a job.** A new cue rises 8px in 280ms. Alert pulses once. Reduce-motion makes it instant.
 7. **Color never carries meaning alone.** Every cue also has text, an icon, and a haptic.
@@ -32,21 +32,22 @@ We do not copy Kiro's logo, brand art, or screenshots. The Apache-2.0 licence wo
 
 `apps/mobile/src/ui/themes.json` is the source of truth.
 
-| Role | Night Route | Daylight | High Contrast |
-|---|---|---|---|
-| `bg` | `#0D1117` | `#F6F7F9` | `#000000` |
-| `surface` | `#151B23` | `#FFFFFF` | `#000000` |
-| `surfaceRaised` | `#1C2430` | `#FFFFFF` | `#0A0A0A` |
-| `border` | `#334155` | `#D4DCE6` | `#FFFFFF` |
-| `text` | `#F1F5F9` | `#0B1220` | `#FFFFFF` |
-| `textMuted` | `#A8B6C6` | `#4A5568` | `#E6E6E6` |
-| `accent` | `#2DD4BF` | `#0F766E` | `#FFD400` |
-| `accentInk` | `#052E2B` | `#FFFFFF` | `#000000` |
-| `warn` | `#FBBF24` | `#B45309` | `#FFD400` |
-| `danger` | `#FB7185` | `#B91C1C` | `#FF6B6B` |
-| `info` | `#60A5FA` | `#1D4ED8` | `#7DD3FC` |
+| Role | Night Route | Daylight |
+|---|---|---|
+| `bg` | `#0D1117` | `#F6F7F9` |
+| `surface` | `#151B23` | `#FFFFFF` |
+| `surfaceRaised` | `#1C2430` | `#FFFFFF` |
+| `border` | `#334155` | `#D4DCE6` |
+| `text` | `#F1F5F9` | `#0B1220` |
+| `textMuted` | `#A8B6C6` | `#4A5568` |
+| `accent` | `#D2042D` | `#B0002A` |
+| `accentInk` | `#FFFFFF` | `#FFFFFF` |
+| `accentText` | `#FF6B81` | `#B0002A` |
+| `warn` | `#FBBF24` | `#B45309` |
+| `danger` | `#FB7185` | `#B91C1C` |
+| `info` | `#60A5FA` | `#1D4ED8` |
 
-High Contrast uses 2px borders, no blur, no shadows, and no ambient wash.
+Night uses a deep cherry fill with white ink and a lighter cherry (`accentText`) for small text on dark surfaces. Daylight uses deep cherry with white ink. Backgrounds and surfaces are unchanged.
 
 `node scripts/check-contrast.mjs` is the gate. It checks body text at 4.5:1, solid button labels at 4.5:1, accent/warn/danger UI edges at 3:1, and card edge visibility. Fix the token, not the test.
 
@@ -62,8 +63,8 @@ High Contrast uses 2px borders, no blur, no shadows, and no ambient wash.
 
 - 4pt base. Screen gutter 20. Card padding 20. Primary control 64 high; minimum target 48.
 - Radii: 12 small, 16 card/button, 24 sheet, 999 pill.
-- Night and Daylight use 1px borders; High Contrast uses 2px.
-- Shadows only on cards and the bottom dock; High Contrast has none.
+- Night and Daylight use 1px borders.
+- Shadows only on cards and the bottom dock.
 
 ## Screens
 
@@ -190,9 +191,13 @@ Captured from the web build at 390×844. The native build uses the same componen
 |---|---|---|
 | ![Plan](screenshots/plan.png) | ![Map sheet](screenshots/guide-map.png) | ![Converse](screenshots/converse.png) |
 
-| Settings | Onboarding |
+| Settings — Night | Settings — Day |
 |---|---|
-| ![Settings](screenshots/settings.png) | ![Onboarding](screenshots/onboarding.png) |
+| ![Settings night](screenshots/settings.png) | ![Settings day](screenshots/settings-day.png) |
+
+| Onboarding |
+|---|
+| ![Onboarding](screenshots/onboarding.png) |
 
 | Bus — English | Bus — Arabic |
 |---|---|

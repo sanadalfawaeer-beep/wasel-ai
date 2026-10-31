@@ -457,7 +457,7 @@ export default function GuideScreen() {
             {t(lang, 'arrivedBody')}
           </Text>
           <Text
-            style={[styles.arrivedDest, { color: theme.accent, fontSize: fs(18) }]}
+            style={[styles.arrivedDest, { color: theme.accentText, fontSize: fs(18) }]}
             maxFontSizeMultiplier={1.6}
           >
             {route.destination.name}

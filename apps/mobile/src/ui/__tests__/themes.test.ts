@@ -18,7 +18,7 @@ function contrast(a: string, b: string): number {
 
 describe('themes', () => {
   it('ships exactly the three accessible themes', () => {
-    expect(Object.keys(themes).sort()).toEqual(['contrast', 'daylight', 'night']);
+    expect(Object.keys(themes).sort()).toEqual(['daylight', 'night']);
   });
 
   it.each(Object.entries(themes))('%s keeps body and control contrast', (_name, theme) => {
@@ -27,5 +27,7 @@ describe('themes', () => {
     expect(contrast(theme.textMuted, theme.surface)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.accentInk, theme.accent)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.accent, theme.bg)).toBeGreaterThanOrEqual(3);
+    expect(contrast(theme.accentText, theme.surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.accentText, theme.surfaceRaised)).toBeGreaterThanOrEqual(4.5);
   });
 });

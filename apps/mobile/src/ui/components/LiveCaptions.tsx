@@ -68,7 +68,7 @@ export function LiveCaptions({ captions, lang }: LiveCaptionsProps) {
               style={[
                 styles.speaker,
                 {
-                  color: mine ? theme.accent : theme.textMuted,
+                  color: mine ? theme.accentText : theme.textMuted,
                   fontSize: fs(12),
                   textAlign: isRTL ? 'right' : 'left',
                 },

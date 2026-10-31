@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { Check } from 'lucide-react-native';
 import { useState, type ReactNode } from 'react';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { API_URL, getHealth } from '@/lib/api';
 import { t } from '@/lib/translate';
 import { useApp } from '@/state/AppProvider';
@@ -15,6 +15,7 @@ import { IconButton } from '@/ui/components/IconButton';
 import { Screen } from '@/ui/components/Screen';
 import { SegmentedControl } from '@/ui/components/SegmentedControl';
 import { SettingsRow } from '@/ui/components/SettingsRow';
+import { Toggle } from '@/ui/components/Toggle';
 import { TabBar } from '@/ui/components/TabBar';
 import { space } from '@/ui/tokens';
 import { fontFamily } from '@/ui/typography';
@@ -111,7 +112,6 @@ export default function SettingsScreen() {
               { value: 'auto', label: t(lang, 'auto') },
               { value: 'night', label: t(lang, 'night') },
               { value: 'daylight', label: t(lang, 'daylight') },
-              { value: 'contrast', label: t(lang, 'contrast') },
             ]}
             value={prefs.themeMode}
             onChange={(value) => updatePrefs({ themeMode: value })}
@@ -145,13 +145,10 @@ export default function SettingsScreen() {
 
         <Section title={t(lang, 'haptics')}>
           <SettingsRow label={t(lang, 'hapticsOn')} last>
-            <Switch
+            <Toggle
               value={prefs.haptics}
               onValueChange={(value) => updatePrefs({ haptics: value })}
-              trackColor={{ false: theme.border, true: theme.accent }}
-              thumbColor={theme.surface}
-              ios_backgroundColor={theme.border}
-              accessibilityLabel={t(lang, 'hapticsOn')}
+              label={t(lang, 'hapticsOn')}
             />
           </SettingsRow>
           <HapticLegend lang={lang} enabled={prefs.haptics} />
@@ -159,33 +156,24 @@ export default function SettingsScreen() {
 
         <Section title={t(lang, 'navigation')}>
           <SettingsRow label={t(lang, 'stepFree')}>
-            <Switch
+            <Toggle
               value={prefs.stepFree}
               onValueChange={(value) => updatePrefs({ stepFree: value })}
-              trackColor={{ false: theme.border, true: theme.accent }}
-              thumbColor={theme.surface}
-              ios_backgroundColor={theme.border}
-              accessibilityLabel={t(lang, 'stepFree')}
+              label={t(lang, 'stepFree')}
             />
           </SettingsRow>
           <SettingsRow label={t(lang, 'avoidStairs')}>
-            <Switch
+            <Toggle
               value={prefs.avoidStairs}
               onValueChange={(value) => updatePrefs({ avoidStairs: value })}
-              trackColor={{ false: theme.border, true: theme.accent }}
-              thumbColor={theme.surface}
-              ios_backgroundColor={theme.border}
-              accessibilityLabel={t(lang, 'avoidStairs')}
+              label={t(lang, 'avoidStairs')}
             />
           </SettingsRow>
           <SettingsRow label={t(lang, 'preferLit')} description={t(lang, 'navNote')} last>
-            <Switch
+            <Toggle
               value={prefs.preferLit}
               onValueChange={(value) => updatePrefs({ preferLit: value })}
-              trackColor={{ false: theme.border, true: theme.accent }}
-              thumbColor={theme.surface}
-              ios_backgroundColor={theme.border}
-              accessibilityLabel={t(lang, 'preferLit')}
+              label={t(lang, 'preferLit')}
             />
           </SettingsRow>
         </Section>
@@ -235,7 +223,7 @@ export default function SettingsScreen() {
               style={[
                 styles.health,
                 {
-                  color: health.includes(t(lang, 'backendFail')) ? theme.danger : theme.accent,
+                  color: health.includes(t(lang, 'backendFail')) ? theme.danger : theme.accentText,
                   fontSize: fs(12),
                   textAlign: isRTL ? 'right' : 'left',
                 },

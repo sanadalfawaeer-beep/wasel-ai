@@ -34,8 +34,8 @@ export function Screen({
   ambient = true,
   keyboard = false,
 }: ScreenProps) {
-  const { theme, themeName } = useTheme();
-  const showAmbient = ambient && themeName !== 'contrast';
+  const { theme } = useTheme();
+  const showAmbient = ambient;
 
   const content = scroll ? (
     <ScrollView

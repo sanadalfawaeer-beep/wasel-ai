@@ -228,7 +228,7 @@ export default function HomeScreen() {
               <Text
                 style={[
                   styles.micLabel,
-                  { color: listening ? theme.accent : theme.text, fontSize: fs(17) },
+                  { color: listening ? theme.accentText : theme.text, fontSize: fs(17) },
                 ]}
                 maxFontSizeMultiplier={1.6}
               >

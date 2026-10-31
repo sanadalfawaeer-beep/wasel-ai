@@ -49,7 +49,7 @@ export function Button({
   accessibilityLabel,
   accessibilityHint,
 }: ButtonProps) {
-  const { theme, themeName, fs } = useTheme();
+  const { theme, fs } = useTheme();
 
   const palette =
     variant === 'primary'
@@ -78,7 +78,7 @@ export function Button({
           minHeight: HEIGHTS[size],
           backgroundColor: palette.bg,
           borderColor: palette.border,
-          borderWidth: themeName === 'contrast' ? 2 : 1,
+          borderWidth: 1,
           opacity: inactive ? 0.45 : 1,
           paddingHorizontal: size === 'sm' ? space.md : space.xl,
         },

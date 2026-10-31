@@ -28,18 +28,18 @@ export function Card({
   style,
   padding = space.lg,
 }: CardProps) {
-  const { theme, themeName } = useTheme();
+  const { theme } = useTheme();
   const base: ViewStyle = {
     backgroundColor: elevated ? theme.surfaceRaised : theme.surface,
     borderColor: theme.border,
-    borderWidth: themeName === 'contrast' ? 2 : 1,
+    borderWidth: 1,
     borderRadius: radius.lg,
     padding,
     shadowColor: theme.shadow,
-    shadowOpacity: themeName === 'contrast' ? 0 : 0.16,
+    shadowOpacity: 0.16,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
-    elevation: themeName === 'contrast' ? 0 : 2,
+    elevation: 2,
   };
 
   if (onPress) {

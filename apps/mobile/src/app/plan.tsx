@@ -171,7 +171,7 @@ export default function PlanScreen() {
             style={[
               styles.destination,
               {
-                color: theme.accent,
+                color: theme.accentText,
                 fontSize: fs(13),
                 textAlign: isRTL ? 'right' : 'left',
               },
@@ -216,7 +216,7 @@ export default function PlanScreen() {
             style={[
               styles.demoLink,
               {
-                color: theme.accent,
+                color: theme.accentText,
                 fontSize: fs(15),
                 textAlign: isRTL ? 'right' : 'left',
               },

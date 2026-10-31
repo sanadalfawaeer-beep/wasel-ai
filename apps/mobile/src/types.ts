@@ -1,6 +1,6 @@
 export type Lang = 'en' | 'ar';
 export type Profile = 'blind' | 'deaf' | 'deafblind';
-export type ThemeMode = 'auto' | 'night' | 'daylight' | 'contrast';
+export type ThemeMode = 'auto' | 'night' | 'daylight';
 export type MotionPreference = 'system' | 'reduced' | 'full';
 export type TextScale = 1 | 1.25 | 1.5 | 2;
 export type VoiceRate = 0.8 | 1 | 1.2;

@@ -242,7 +242,6 @@ export default function OnboardingScreen() {
               { value: 'auto', label: t(lang, 'auto') },
               { value: 'night', label: t(lang, 'night') },
               { value: 'daylight', label: t(lang, 'daylight') },
-              { value: 'contrast', label: t(lang, 'contrast') },
             ]}
             value={prefs.themeMode}
             onChange={(value) => updatePrefs({ themeMode: value })}

@@ -53,7 +53,7 @@ export function TabBar({ active, lang }: { active: Tab; lang: Lang }) {
           >
             <Icon
               size={22}
-              color={selected ? theme.accent : theme.textMuted}
+              color={selected ? theme.accentText : theme.textMuted}
               strokeWidth={selected ? 2.6 : 2}
             />
             <Text
@@ -61,7 +61,7 @@ export function TabBar({ active, lang }: { active: Tab; lang: Lang }) {
               style={[
                 styles.label,
                 {
-                  color: selected ? theme.accent : theme.textMuted,
+                  color: selected ? theme.accentText : theme.textMuted,
                   fontSize: fs(12),
                 },
               ]}

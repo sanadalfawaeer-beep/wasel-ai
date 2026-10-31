@@ -39,7 +39,7 @@ function OccupancyChip({ leg }: { leg: TransitLeg }) {
   const level: OccupancyLevel = leg.occupancy ?? 'unknown';
   const color =
     level === 'seats'
-      ? theme.accent
+      ? theme.accentText
       : level === 'standing'
         ? theme.warn
         : level === 'full'
@@ -165,7 +165,7 @@ function BusRow({ leg, now, lang }: { leg: TransitLeg; now: number; lang: Lang }
           <Bus size={13} color={lineColor} />
           <Text
             numberOfLines={1}
-            style={[styles.lineText, { color: lineColor, fontSize: fs(12) }]}
+            style={[styles.lineText, { color: theme.text, fontSize: fs(12) }]}
             maxFontSizeMultiplier={1.3}
           >
             {line}
@@ -203,7 +203,7 @@ function BusRow({ leg, now, lang }: { leg: TransitLeg; now: number; lang: Lang }
         </View>
         <View style={styles.countdownWrap}>
           <Text
-            style={[styles.countdown, { color: theme.accent, fontSize: fs(16) }]}
+            style={[styles.countdown, { color: theme.accentText, fontSize: fs(16) }]}
             maxFontSizeMultiplier={1.4}
           >
             {countdown(leg.departure_at, now, lang)}
@@ -261,7 +261,7 @@ function ItineraryCard({
     : itinerary.realtime
       ? t(lang, 'live')
       : t(lang, 'estimated');
-  const statusColor = itinerary.demo || !itinerary.realtime ? theme.warn : theme.accent;
+  const statusColor = itinerary.demo || !itinerary.realtime ? theme.warn : theme.accentText;
   const statusBackground = itinerary.demo || !itinerary.realtime ? theme.warnSoft : theme.accentSoft;
 
   return (
