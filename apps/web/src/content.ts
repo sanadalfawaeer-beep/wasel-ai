@@ -39,7 +39,6 @@ export const L = (value: Localized, lang: Lang): string => value[lang];
 export const navItems = [
   { path: '/', label: l('خطط رحلتك', 'Plan a trip') },
   { path: '/trip', label: l('الرحلة', 'Trip') },
-  { path: '/seats', label: l('المقاعد', 'Seats') },
   { path: '/chat', label: l('التواصل', 'Chat') },
   { path: '/settings', label: l('الإعدادات', 'Settings') },
 ];

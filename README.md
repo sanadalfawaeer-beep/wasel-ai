@@ -107,7 +107,7 @@ powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 
 ## Wasel A.I. website (bus-only)
 
-A standalone Arabic-first website built from the ACCESSIBLE BRT prototype spec and branded as Wasel A.I. Every fresh load opens with an audio/visual help choice (auto-selecting audio help after 5 seconds), then splits into routed pages: Plan, Trip, Seats, Chat, and Settings. It keeps the working tools: press-to-talk destination planning that reads available buses and accepts a spoken bus choice, bus line and boarding stop, arrival time, empty-seat display, selectable bus seat details, an OpenStreetMap destination map, the seven-step rider journey, an audio/visual help switch, AI driver chat, the seat-sensor simulation, and persisted accessibility settings. The about/features/impact/survey sections are intentionally omitted.
+A standalone Arabic-first website built from the ACCESSIBLE BRT prototype spec and branded as Wasel A.I. Every fresh load opens with an audio/visual help choice (auto-selecting audio help after 5 seconds), then splits into routed pages: Plan, Trip, Chat, and Settings. It keeps the working tools: press-to-talk destination planning that reads available buses and accepts a spoken bus choice, bus line and boarding stop, arrival time, empty-seat display, seat details that appear when a bus is selected, an OpenStreetMap destination map, the seven-step rider journey, an audio/visual help switch, AI driver chat, and persisted accessibility settings. The about/features/impact/survey sections are intentionally omitted.
 
 No backend or API key is needed; destination search and the map use keyless OpenStreetMap services:
 

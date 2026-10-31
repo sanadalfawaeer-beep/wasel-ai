@@ -98,7 +98,6 @@ function loadSettings(): SettingsState {
 const pageTitles: Record<string, Localized> = {
   '/': ui.planTitle,
   '/trip': ui.journeyTitle,
-  '/seats': ui.seatsTitle,
   '/chat': ui.commTitle,
   '/settings': ui.settingsTitle,
 };
@@ -751,68 +750,6 @@ function TripPage({
   );
 }
 
-function SeatsPage({
-  lang,
-  mode,
-  onSeat,
-  selectedSeat,
-  seatReadout,
-  readSeats,
-}: {
-  lang: Lang;
-  mode: Mode;
-  onSeat: (seat: Seat) => void;
-  selectedSeat: string | null;
-  seatReadout: string;
-  readSeats: () => void;
-}) {
-  const tr = (value: Localized) => L(value, lang);
-  const allSeats = seatSections.flatMap((section) => section.seats);
-  const availableCount = allSeats.filter((seat) => seat.status === 'available').length;
-  const accessibleCount = allSeats.filter((seat) => seat.status === 'accessible').length;
-
-  return (
-    <section id="seats" className="section section-tint page">
-      <div className="container">
-        <PageHead title={tr(ui.seatsTitle)} />
-        <div className="seat-layout">
-          <SeatMap lang={lang} mode={mode} onSelect={onSeat} />
-          <aside className="seat-info">
-            <div className="seat-count">
-              <strong>{availableCount}</strong>
-              <span>{tr(ui.seatsAvailableCount)}</span>
-            </div>
-            <div className="seat-count">
-              <strong>{accessibleCount}</strong>
-              <span>{tr(ui.seatsAccessibleCount)}</span>
-            </div>
-            <div className="legend">
-              <span><i className="dot available" />{tr(ui.seatsAvailable)}</span>
-              <span><i className="dot occupied" />{tr(ui.seatsOccupied)}</span>
-              <span><i className="dot accessible" />{tr(ui.seatsAccessible)}</span>
-            </div>
-            <button type="button" className="btn secondary small" onClick={readSeats}>
-              <Volume2 size={15} aria-hidden="true" />
-              {tr(ui.seatsReadAll)}
-            </button>
-            {selectedSeat ? (
-              <p className="seat-selected" role="status">
-                {tr(ui.seatsSelected)}: <strong>{selectedSeat}</strong>
-              </p>
-            ) : null}
-            {seatReadout ? (
-              <p className="seat-selected" role="status">
-                {seatReadout}
-              </p>
-            ) : null}
-            <p className="note">{tr(ui.seatsNote)}</p>
-          </aside>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function ChatPage({
   lang,
   mode,
@@ -1155,8 +1092,6 @@ function App() {
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [destinationPoint, setDestinationPoint] = useState<OsmPlace | null>(null);
   const geocodeId = useRef(0);
-  const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
-  const [seatReadout, setSeatReadout] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -1428,24 +1363,6 @@ function App() {
           ? tr(ui.seatsAccessible)
           : tr(ui.seatsOccupied);
     const text = `${seat.id} — ${status}`;
-    setSelectedSeat(text);
-    setSeatReadout('');
-    if (mode === 'visual') speak(text);
-    else flashScreen();
-  };
-
-  const readSeats = () => {
-    const ids = seatSections
-      .flatMap((section) => section.seats)
-      .filter((seat) => seat.status === 'available')
-      .map((seat) => seat.id);
-    const text = ids.length
-      ? lang === 'ar'
-        ? `المقاعد المتاحة: ${ids.join('، ')}`
-        : `Available seats: ${ids.join(', ')}`
-      : tr(ui.seatsNone);
-    setSelectedSeat(null);
-    setSeatReadout(text);
     if (mode === 'visual') speak(text);
     else flashScreen();
   };
@@ -1637,19 +1554,6 @@ function App() {
                 tryMode={tryMode}
                 speak={speak}
                 flashScreen={flashScreen}
-              />
-            }
-          />
-          <Route
-            path="/seats"
-            element={
-              <SeatsPage
-                lang={lang}
-                mode={mode}
-                onSeat={onSeat}
-                selectedSeat={selectedSeat}
-                seatReadout={seatReadout}
-                readSeats={readSeats}
               />
             }
           />
