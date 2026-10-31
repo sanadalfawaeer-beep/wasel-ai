@@ -37,15 +37,10 @@ export const l = (ar: string, en: string): Localized => ({ ar, en });
 export const L = (value: Localized, lang: Lang): string => value[lang];
 
 export const navItems = [
-  { id: 'home', label: l('الرئيسية', 'Home') },
   { id: 'planner', label: l('خطط رحلتك', 'Plan a trip') },
-  { id: 'about', label: l('عن المشروع', 'About') },
-  { id: 'features', label: l('المميزات', 'Features') },
-  { id: 'journey', label: l('خطوات الرحلة', 'Journey') },
-  { id: 'modes', label: l('أنماط الإتاحة', 'Modes') },
-  { id: 'seats', label: l('نظام المقاعد', 'Seats') },
-  { id: 'communication', label: l('التواصل الذكي', 'Communication') },
-  { id: 'impact', label: l('الأثر', 'Impact') },
+  { id: 'journey', label: l('الرحلة', 'Trip') },
+  { id: 'seats', label: l('المقاعد', 'Seats') },
+  { id: 'communication', label: l('التواصل', 'Chat') },
   { id: 'survey', label: l('الاستبيان', 'Survey') },
 ];
 
@@ -78,6 +73,9 @@ export const ui = {
   ctaTry: l('جرّب الرحلة', 'Try the journey'),
   ctaListen: l('استمع للتقديم', 'Listen to the intro'),
   heroCardDemo: l('محاكاة', 'Simulation'),
+  modeBarLabel: l('وضع الإتاحة', 'Accessibility mode'),
+  modeVisualShort: l('بصري', 'Visual'),
+  modeHearingShort: l('سمعي', 'Hearing'),
   statIndependence: l('استقلالية في التنقل', 'Independent mobility'),
   statAi: l('ذكاء اصطناعي داعم', 'Supportive AI'),
   statIot: l('حساسات مقاعد ذكية', 'Smart seat sensors'),
@@ -143,7 +141,7 @@ export const ui = {
   featureListen: l('استمع للشرح', 'Listen to this feature'),
 
   journeyEyebrow: l('مراحل رحلة الراكب', 'The rider journey'),
-  journeyTitle: l('كيف يعمل النظام خلال الرحلة؟', 'How the system works, step by step'),
+  journeyTitle: l('الرحلة', 'Trip'),
   journeyDesc: l('خطوات تفاعلية متصلة من اختيار الوجهة حتى الوصول.', 'Seven connected steps, from choosing a destination to arrival.'),
   journeyStep: l('الخطوة', 'Step'),
   journeyPrev: l('السابق', 'Previous'),
@@ -178,7 +176,7 @@ export const ui = {
   ],
 
   seatsEyebrow: l('محاكاة الحساسات الذكية', 'Smart sensor simulation'),
-  seatsTitle: l('نظام اكتشاف المقاعد المتاحة', 'Smart seat detection'),
+  seatsTitle: l('المقاعد', 'Seats'),
   seatsDesc: l('مخطط بصري لهيكل الباص يعرض حالة الحساسات في الوقت الفعلي. اضغط على أي مقعد لسماع حالته.', 'A visual bus interior showing sensor status. Select a seat to hear its status.'),
   seatsDriver: l('كابينة السائق', 'Driver cabin'),
   seatsDoor: l('الأبواب الأمامية ومنطقة الكراسي المتحركة', 'Front doors & wheelchair area'),
@@ -203,7 +201,7 @@ export const ui = {
   ],
 
   commEyebrow: l('التواصل المتبادل بالذكاء الاصطناعي', 'AI-powered two-way communication'),
-  commTitle: l('نظام التواصل الذكي بين الراكب والسائق', 'Smart rider–driver communication'),
+  commTitle: l('التواصل مع السائق', 'Driver chat'),
   commDesc: l('تحويل الصوت إلى نص والنص إلى صوت لتسهيل التفاهم أثناء الرحلة.', 'Speech-to-text and text-to-speech keep rider and driver understood.'),
   commActive: l('قناة نشطة: حافلة BRT 102', 'Active channel: BRT 102'),
   commAi: l('معالجة الذكاء الاصطناعي: تعمل', 'AI processing: active'),
@@ -229,7 +227,7 @@ export const ui = {
   impactDesc: l('رؤية تطبيقية تحوّل التحديات اليومية إلى فرص للتنقل الحر والآمن.', 'Turning daily barriers into opportunities for free, safe mobility.'),
 
   surveyEyebrow: l('شاركنا رأيك', 'Share your feedback'),
-  surveyTitle: l('استبيان تجربة المستخدم', 'User experience survey'),
+  surveyTitle: l('الاستبيان', 'Survey'),
   surveyDesc: l('آراؤكم هي الحجر الأساس في إثراء هذا المشروع الجامعي.', 'Your feedback shapes this university project.'),
   surveyName: l('الاسم (اختياري)', 'Name (optional)'),
   surveyCategory: l('الفئة الفاعلة', 'Rider category'),

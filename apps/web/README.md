@@ -1,6 +1,6 @@
 # ACCESSIBLE BRT website
 
-Bus-only Arabic-first website for the ACCESSIBLE BRT university project. It turns the Gemini share into a working, accessible demo: trip planning, arrival time, empty-seat display, a seven-step rider journey, visual/hearing modes, AI driver chat, impact, and a survey.
+Bus-only Arabic-first website for the ACCESSIBLE BRT university project. It keeps the working tools only: trip planning, arrival time, empty-seat display, a seven-step rider journey, a visual/hearing mode switch, AI driver chat, and a survey. There are no about/features/impact explainer sections.
 
 No backend or Google API key is required. Bus times and seat occupancy are local simulations and are labelled as such throughout the UI.
 
@@ -43,7 +43,7 @@ npm run build
 
 | File | Purpose |
 |---|---|
-| `src/content.ts` | Arabic/English copy, features, journey, seats, impact, trips, messages |
-| `src/App.tsx` | Page sections, planner, journey, modes, seats, chat, survey state |
+| `src/content.ts` | Arabic/English copy, journey, seats, trips, messages |
+| `src/App.tsx` | Planner, journey, mode switch, seats, chat, survey state |
 | `src/styles.css` | Cherry-red light theme, responsive RTL/LTR layout |
 | `index.html` | RTL shell, metadata, Google Fonts (IBM Plex Sans Arabic + Space Grotesk) |

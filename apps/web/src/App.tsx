@@ -16,12 +16,9 @@ import {
   Volume2,
 } from 'lucide-react';
 import {
-  features,
   getTrips,
-  impactItems,
   journeySteps,
   L,
-  modes,
   navItems,
   quickDestinations,
   quickMessages,
@@ -38,63 +35,11 @@ type ChatMessage = {
   text: string;
 };
 
-function SectionHead({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
+function SectionHead({ title }: { title: string }) {
   return (
-    <div className="section-head">
-      <span className="eyebrow">{eyebrow}</span>
+    <div className="section-head section-head-compact">
       <h2>{title}</h2>
-      <p>{description}</p>
     </div>
-  );
-}
-
-function BusArt() {
-  return (
-    <svg
-      className="bus-art"
-      viewBox="0 0 560 340"
-      role="img"
-      aria-label="Illustration of a red accessible BRT bus"
-    >
-      <path
-        d="M18 296 C120 230 190 300 280 236 C374 170 420 120 542 74"
-        fill="none"
-        stroke="#7A4A54"
-        strokeWidth="3"
-        strokeDasharray="2 13"
-        strokeLinecap="round"
-      />
-      <circle cx="18" cy="296" r="7" fill="#FF6B81" />
-      <circle cx="280" cy="236" r="6" fill="#E9B4BF" />
-      <circle cx="542" cy="74" r="8" fill="#FF6B81" />
-      <rect x="63" y="96" width="434" height="172" rx="34" fill="#B0002A" />
-      <rect x="86" y="72" width="388" height="166" rx="28" fill="#D2042D" />
-      <rect x="108" y="94" width="88" height="56" rx="12" fill="#FFF3F4" />
-      <rect x="208" y="94" width="88" height="56" rx="12" fill="#FFF3F4" />
-      <rect x="308" y="94" width="88" height="56" rx="12" fill="#FFF3F4" />
-      <rect x="408" y="94" width="46" height="56" rx="10" fill="#FFF3F4" />
-      <rect x="108" y="164" width="288" height="46" rx="12" fill="#8E0022" />
-      <rect x="408" y="164" width="46" height="76" rx="10" fill="#FFF3F4" />
-      <text x="124" y="195" fill="#FFD9DF" fontSize="21" fontFamily="Space Grotesk, sans-serif" fontWeight="700">
-        BRT 102
-      </text>
-      <circle cx="146" cy="276" r="25" fill="#1B1013" />
-      <circle cx="146" cy="276" r="11" fill="#5A3A42" />
-      <circle cx="428" cy="276" r="25" fill="#1B1013" />
-      <circle cx="428" cy="276" r="11" fill="#5A3A42" />
-      <rect x="310" y="230" width="168" height="38" rx="19" fill="#1B1013" opacity="0.92" />
-      <text x="330" y="255" fill="#FFF3F4" fontSize="14" fontFamily="IBM Plex Sans Arabic, sans-serif">
-        accessible • BRT
-      </text>
-    </svg>
   );
 }
 
@@ -304,12 +249,6 @@ function App() {
     else flashScreen();
   };
 
-  const speakFeature = (title: string, body: string) => {
-    const text = `${title}. ${body}`;
-    if (mode === 'visual') speak(text);
-    else flashScreen();
-  };
-
   const driverReply = (text: string) => {
     const value = text.toLowerCase();
     if (value.includes('مقعد') || value.includes('seat')) return tr(ui.commReplySeat);
@@ -415,7 +354,7 @@ function App() {
 
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="#home" aria-label="ACCESSIBLE BRT">
+          <a className="brand" href="#planner" aria-label="ACCESSIBLE BRT">
             <span className="brand-mark">
               <Bus size={21} aria-hidden="true" />
             </span>
@@ -464,53 +403,13 @@ function App() {
       </header>
 
       <main id="main">
-        <section id="home" className="hero">
-          <div className="container hero-grid">
-            <div className="hero-copy">
-              <span className="eyebrow on-dark">{tr(ui.heroEyebrow)}</span>
-              <h1>{tr(ui.heroTitle)}</h1>
-              <p className="hero-subtitle">{tr(ui.heroSubtitle)}</p>
-              <p className="hero-quote">{tr(ui.heroQuote)}</p>
-              <div className="hero-actions">
-                <a className="btn primary" href="#planner">
-                  {tr(ui.ctaTry)}
-                  {lang === 'ar' ? <ArrowLeft size={18} aria-hidden="true" /> : <ArrowRight size={18} aria-hidden="true" />}
-                </a>
-                <a className="btn ghost" href="#about">
-                  {tr(ui.ctaExplore)}
-                </a>
-                <button
-                  type="button"
-                  className="hero-listen"
-                  onClick={() => speak(`${tr(ui.heroSubtitle)}. ${tr(ui.heroQuote)}`)}
-                >
-                  <Volume2 size={17} aria-hidden="true" />
-                  {tr(ui.ctaListen)}
-                </button>
+        <section id="planner" className="section section-first">
+          <div className="container">
+            <div className="app-head">
+              <div className="app-head-copy">
+                <h1>{tr(ui.planTitle)}</h1>
               </div>
-              <div className="stat-row">
-                {[
-                  { value: '100%', label: ui.statIndependence },
-                  { value: 'AI', label: ui.statAi },
-                  { value: 'IoT', label: ui.statIot },
-                  { value: '2', label: ui.statModes },
-                ].map((stat) => (
-                  <div className="stat" key={stat.value}>
-                    <strong>{stat.value}</strong>
-                    <span>{L(stat.label, lang)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="hero-visual">
-              <p className="hero-caption">
-                <strong>{tr(ui.heroVisualCaption)}</strong>
-                <span>{tr(ui.heroVisualSub)}</span>
-              </p>
-              <div className="bus-stage">
-                <BusArt />
-              </div>
-              <div className="floating-card">
+              <div className="live-status">
                 <span className="live-dot" />
                 <div>
                   <strong>{tr(ui.heroCardTitle)}</strong>
@@ -519,16 +418,6 @@ function App() {
                 <span className="micro-badge">{tr(ui.heroCardDemo)}</span>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section id="planner" className="section">
-          <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.planEyebrow)}
-              title={tr(ui.planTitle)}
-              description={tr(ui.planDesc)}
-            />
             <form className="planner-card" onSubmit={onPlan}>
               <label htmlFor="destination">{tr(ui.planLabel)}</label>
               <div className="planner-row">
@@ -579,75 +468,32 @@ function App() {
           </div>
         </section>
 
-        <section id="about" className="section section-tint">
-          <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.aboutEyebrow)}
-              title={tr(ui.aboutTitle)}
-              description={tr(ui.aboutBody)}
-            />
-            <div className="value-grid">
-              {ui.values.map((value) => {
-                const Icon = value.icon;
-                return (
-                  <article className="value-card" key={value.title.en}>
-                    <span className="icon-tile">
-                      <Icon size={22} aria-hidden="true" />
-                    </span>
-                    <h3>{L(value.title, lang)}</h3>
-                    <p>{L(value.body, lang)}</p>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="section">
-          <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.featuresEyebrow)}
-              title={tr(ui.featuresTitle)}
-              description={tr(ui.featuresDesc)}
-            />
-            <p className="feature-legend">{tr(ui.featuresLegend)}</p>
-            <div className="feature-grid">
-              {features.map((feature) => {
-                const Icon = feature.icon;
-                return (
-                  <article className="feature-card" key={feature.id}>
-                    <div className="feature-top">
-                      <span className="icon-tile">
-                        <Icon size={22} aria-hidden="true" />
-                      </span>
-                      <span className={`micro-badge ${feature.badge === 'future' ? 'future' : ''}`}>
-                        {feature.badge === 'future' ? tr(ui.future) : tr(ui.prototype)}
-                      </span>
-                    </div>
-                    <h3>{L(feature.title, lang)}</h3>
-                    <p>{L(feature.body, lang)}</p>
-                    <button
-                      type="button"
-                      className="listen-link"
-                      onClick={() => speakFeature(L(feature.title, lang), L(feature.body, lang))}
-                    >
-                      <Volume2 size={14} aria-hidden="true" />
-                      {tr(ui.featureListen)}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
         <section id="journey" className="section section-dark">
           <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.journeyEyebrow)}
-              title={tr(ui.journeyTitle)}
-              description={tr(ui.journeyDesc)}
-            />
+            <SectionHead title={tr(ui.journeyTitle)} />
+            <div className="mode-bar">
+              <span className="mode-bar-label">{tr(ui.modeBarLabel)}</span>
+              <div className="mode-switch" role="group" aria-label={tr(ui.modeBarLabel)}>
+                <button
+                  type="button"
+                  className={mode === 'visual' ? 'is-active' : ''}
+                  aria-pressed={mode === 'visual'}
+                  onClick={() => tryMode('visual')}
+                >
+                  <Volume2 size={15} aria-hidden="true" />
+                  {tr(ui.modeVisualShort)}
+                </button>
+                <button
+                  type="button"
+                  className={mode === 'hearing' ? 'is-active' : ''}
+                  aria-pressed={mode === 'hearing'}
+                  onClick={() => tryMode('hearing')}
+                >
+                  <Vibrate size={15} aria-hidden="true" />
+                  {tr(ui.modeHearingShort)}
+                </button>
+              </div>
+            </div>
             <div className="journey-grid">
               <div className="step-list" role="tablist" aria-label={tr(ui.journeyTitle)}>
                 {journeySteps.map((step, index) => {
@@ -687,7 +533,6 @@ function App() {
                     {tr(ui.journeyStep)} {activeStep + 1}
                   </span>
                   <h3>{L(selectedStep.title, lang)}</h3>
-                  <p>{L(selectedStep.body, lang)}</p>
                   <span className={`mode-pill ${mode === 'hearing' ? 'hearing' : ''}`}>
                     {mode === 'visual' ? <Volume2 size={14} aria-hidden="true" /> : <Vibrate size={14} aria-hidden="true" />}
                     {mode === 'visual' ? tr(ui.journeyAudio) : tr(ui.journeyCaptions)}
@@ -736,59 +581,9 @@ function App() {
           </div>
         </section>
 
-        <section id="modes" className="section">
-          <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.modesEyebrow)}
-              title={tr(ui.modesTitle)}
-              description={tr(ui.modesDesc)}
-            />
-            <div className="mode-grid">
-              {modes.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <article
-                    className={`mode-card ${mode === item.id ? 'is-active' : ''}`}
-                    key={item.id}
-                  >
-                    <div className="mode-top">
-                      <span className="icon-tile large">
-                        <Icon size={26} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <h3>{L(item.title, lang)}</h3>
-                        <p>{L(item.forWhom, lang)}</p>
-                      </div>
-                    </div>
-                    <ul>
-                      {item.features.map((feature) => (
-                        <li key={feature.en}>
-                          <Check size={16} aria-hidden="true" />
-                          <span>{L(feature, lang)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      type="button"
-                      className={`btn ${mode === item.id ? 'primary' : 'secondary'}`}
-                      onClick={() => tryMode(item.id)}
-                    >
-                      {L(item.button, lang)}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
         <section id="seats" className="section section-tint">
           <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.seatsEyebrow)}
-              title={tr(ui.seatsTitle)}
-              description={tr(ui.seatsDesc)}
-            />
+            <SectionHead title={tr(ui.seatsTitle)} />
             <div className="seat-layout">
               <SeatMap lang={lang} mode={mode} onSelect={onSeat} />
               <aside className="seat-info">
@@ -819,17 +614,6 @@ function App() {
                     {seatReadout}
                   </p>
                 ) : null}
-                <div className="pipeline">
-                  <span className="pipeline-title">{tr(ui.seatsPipelineTitle)}</span>
-                  <ol>
-                    {ui.seatsPipeline.map((step, index) => (
-                      <li key={step.en}>
-                        <span>{index + 1}</span>
-                        {L(step, lang)}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
                 <p className="note">{tr(ui.seatsNote)}</p>
               </aside>
             </div>
@@ -838,11 +622,7 @@ function App() {
 
         <section id="communication" className="section">
           <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.commEyebrow)}
-              title={tr(ui.commTitle)}
-              description={tr(ui.commDesc)}
-            />
+            <SectionHead title={tr(ui.commTitle)} />
             <div className="comm-grid">
               <div className="chat-card">
                 <div className="chat-head">
@@ -917,38 +697,10 @@ function App() {
           </div>
         </section>
 
-        <section id="impact" className="section section-tint">
-          <div className="container">
-            <SectionHead
-              eyebrow={tr(ui.impactEyebrow)}
-              title={tr(ui.impactTitle)}
-              description={tr(ui.impactDesc)}
-            />
-            <div className="impact-grid">
-              {impactItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <article className="impact-card" key={item.title.en}>
-                    <span className="icon-tile">
-                      <Icon size={21} aria-hidden="true" />
-                    </span>
-                    <h3>{L(item.title, lang)}</h3>
-                    <p>{L(item.body, lang)}</p>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section id="survey" className="section">
+        <section id="survey" className="section section-tint">
           <div className="container survey-wrap">
             <div>
-              <SectionHead
-                eyebrow={tr(ui.surveyEyebrow)}
-                title={tr(ui.surveyTitle)}
-                description={tr(ui.surveyDesc)}
-              />
+              <SectionHead title={tr(ui.surveyTitle)} />
               <p className="note">{tr(ui.surveyLocal)}</p>
             </div>
             {submitted ? (
@@ -1020,30 +772,13 @@ function App() {
       </main>
 
       <footer className="footer">
-        <div className="container footer-grid">
-          <div>
-            <a className="brand footer-brand" href="#home">
-              <span className="brand-mark"><Bus size={20} aria-hidden="true" /></span>
-              <span className="brand-copy"><strong>ACCESSIBLE BRT</strong><small>{tr(ui.brandTag)}</small></span>
-            </a>
-            <p>{tr(ui.footerDisclaimer)}</p>
-          </div>
-          <nav className="footer-links" aria-label={tr(ui.footerLinks)}>
-            <strong className="footer-heading">{tr(ui.footerLinks)}</strong>
-            {navItems.map((item) => (
-              <a key={item.id} href={`#${item.id}`}>
-                {L(item.label, lang)}
-              </a>
-            ))}
-          </nav>
-          <div className="footer-meta">
-            <strong className="footer-heading">{tr(ui.footerTeam)}</strong>
-            <p>{tr(ui.footerTeamBody)}</p>
-            <p>{tr(ui.footerProject)}</p>
-            <p>{tr(ui.footerCollege)} · {tr(ui.footerMajor)}</p>
-            <p>{tr(ui.footerRights)}</p>
-            <p>{tr(ui.footerMade)}</p>
-          </div>
+        <div className="container footer-min">
+          <a className="brand footer-brand" href="#planner">
+            <span className="brand-mark"><Bus size={20} aria-hidden="true" /></span>
+            <span className="brand-copy"><strong>ACCESSIBLE BRT</strong><small>{tr(ui.brandTag)}</small></span>
+          </a>
+          <p>{tr(ui.footerDisclaimer)}</p>
+          <p className="footer-rights">{tr(ui.footerRights)}</p>
         </div>
       </footer>
     </>
