@@ -58,7 +58,6 @@ type SettingsState = {
 };
 
 const SETTINGS_KEY = 'accessible-brt-settings';
-const ONBOARDING_KEY = 'wasel-onboarded-v2';
 
 const DEFAULT_SETTINGS: SettingsState = {
   lang: 'ar',
@@ -122,6 +121,29 @@ function PageHead({ title }: { title: string }) {
       <h1>{title}</h1>
     </div>
   );
+}
+
+type SpeechResultEvent = {
+  results?: Array<Array<{ transcript?: string }>>;
+};
+
+type SpeechRecognitionInstance = {
+  lang: string;
+  interimResults: boolean;
+  onresult: ((event: SpeechResultEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+function getSpeechRecognition(): SpeechRecognitionConstructor | null {
+  const speechWindow = window as unknown as {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
 }
 
 function WelcomePage({
@@ -365,6 +387,9 @@ function PlanPage({
   onSelectTrip,
   onSeat,
   destinationPoint,
+  voiceListening,
+  voiceNotice,
+  onVoice,
 }: {
   lang: Lang;
   mode: Mode;
@@ -379,6 +404,9 @@ function PlanPage({
   onSelectTrip: (trip: TripOption) => void;
   onSeat: (seat: Seat) => void;
   destinationPoint: OsmPlace | null;
+  voiceListening: boolean;
+  voiceNotice: string;
+  onVoice: () => void;
 }) {
   const tr = (value: Localized) => L(value, lang);
 
@@ -398,6 +426,47 @@ function PlanPage({
             <span className="micro-badge">{tr(ui.heroCardDemo)}</span>
           </div>
         </div>
+
+        {mode === 'visual' ? (
+          <div className="voice-planner-wrap">
+            <button
+              type="button"
+              className={`voice-planner ${voiceListening ? 'is-listening' : ''}`}
+              onClick={onVoice}
+              disabled={voiceListening}
+              aria-label={
+                voiceListening
+                  ? trips.length > 0
+                    ? tr(ui.voiceListeningChoice)
+                    : tr(ui.voiceListening)
+                  : trips.length > 0
+                    ? tr(ui.voiceChooseBus)
+                    : tr(ui.voiceTapDestination)
+              }
+            >
+              <span className="voice-orb">
+                {voiceListening ? <span className="voice-wave" aria-hidden="true" /> : <Mic size={26} aria-hidden="true" />}
+              </span>
+              <span className="voice-copy">
+                <strong>
+                  {voiceListening
+                    ? trips.length > 0
+                      ? tr(ui.voiceListeningChoice)
+                      : tr(ui.voiceListening)
+                    : trips.length > 0
+                      ? tr(ui.voiceChooseBus)
+                      : tr(ui.voiceTapDestination)}
+                </strong>
+                <small>
+                  {trips.length > 0 ? tr(ui.voiceChooseHint) : tr(ui.voiceDestinationHint)}
+                </small>
+              </span>
+            </button>
+            {voiceNotice ? (
+              <p className="note voice-notice" role="status">{voiceNotice}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <form className="planner-card" onSubmit={onPlan}>
           <label htmlFor="destination">{tr(ui.planLabel)}</label>
@@ -1070,13 +1139,7 @@ function SettingsPage({
 
 function App() {
   const [settings, setSettings] = useState<SettingsState>(loadSettings);
-  const [onboarded, setOnboarded] = useState(() => {
-    try {
-      return localStorage.getItem(ONBOARDING_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [onboarded, setOnboarded] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [destination, setDestination] = useState('');
   const [trips, setTrips] = useState<TripOption[]>([]);
@@ -1090,6 +1153,8 @@ function App() {
   const [chatInput, setChatInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const [listening, setListening] = useState(false);
+  const [voiceListening, setVoiceListening] = useState(false);
+  const [voiceNotice, setVoiceNotice] = useState('');
   const [notice, setNotice] = useState('');
   const [resetNotice, setResetNotice] = useState(false);
   const [flash, setFlash] = useState(false);
@@ -1143,11 +1208,17 @@ function App() {
 
   const speak = (text: string) => {
     if (!voiceEnabled || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    if (synth.paused) synth.resume();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
     utterance.rate = speechRate;
-    window.speechSynthesis.speak(utterance);
+    const preferred = synth
+      .getVoices()
+      .find((voice) => voice.lang.toLowerCase().startsWith(lang === 'ar' ? 'ar' : 'en'));
+    if (preferred) utterance.voice = preferred;
+    synth.speak(utterance);
   };
 
   const flashScreen = () => {
@@ -1166,13 +1237,11 @@ function App() {
   };
 
   const chooseMode = (next: Mode) => {
-    update({ mode: next });
+    update({
+      mode: next,
+      ...(next === 'visual' ? { voiceEnabled: true } : {}),
+    });
     setOnboarded(true);
-    try {
-      localStorage.setItem(ONBOARDING_KEY, 'true');
-    } catch {
-      // Continue in memory when storage is unavailable.
-    }
     if (next === 'visual') speak(tr(ui.welcomeVisualSample));
     else flashScreen();
   };
@@ -1180,11 +1249,22 @@ function App() {
   const showWelcome = () => {
     setOnboarded(false);
     window.scrollTo(0, 0);
-    try {
-      localStorage.removeItem(ONBOARDING_KEY);
-    } catch {
-      // Ignore storage failures.
-    }
+  };
+
+  const tripSummary = (results: TripOption[]) => {
+    const optionLabel = lang === 'ar' ? 'الخيار' : 'Option';
+    const intro =
+      lang === 'ar'
+        ? `وجدت ${results.length} خيارات.`
+        : `I found ${results.length} options.`;
+    const parts = results.map((trip, index) => {
+      const seatsText =
+        trip.seats != null
+          ? `${trip.seats} ${tr(ui.planSeats)}`
+          : tr(ui.planStanding);
+      return `${optionLabel} ${index + 1}. ${trip.line}. ${tr(ui.planNext)} ${trip.next} ${tr(ui.minutesShort)}. ${seatsText}.`;
+    });
+    return `${intro} ${parts.join(' ')} ${tr(ui.voiceChooseBus)}`;
   };
 
   const planTrip = (value?: string) => {
@@ -1210,15 +1290,8 @@ function App() {
       }
       setTrips(results);
       setPlanning(false);
-      if (autoReadPlan && voiceEnabled && results[0]) {
-        const first = results[0];
-        const seatsText =
-          first.seats != null
-            ? `${first.seats} ${tr(ui.planSeats)}`
-            : tr(ui.planStanding);
-        speak(
-          `${first.line}. ${L(first.board, lang)}. ${tr(ui.planNext)} ${first.next} ${tr(ui.minutesShort)}. ${seatsText}.`,
-        );
+      if ((mode === 'visual' || autoReadPlan) && voiceEnabled) {
+        speak(tripSummary(results));
       }
     }, 450);
   };
@@ -1230,12 +1303,98 @@ function App() {
 
   const selectTrip = (trip: TripOption) => {
     setSelectedTripId(trip.id);
+    if (mode === 'visual') {
+      const seatsText =
+        trip.seats != null
+          ? `${trip.seats} ${tr(ui.planSeats)}`
+          : tr(ui.planStanding);
+      speak(`${tr(ui.voiceSelected)} ${trip.line}. ${seatsText}.`);
+    }
     window.setTimeout(() => {
       document.getElementById('trip-detail')?.scrollIntoView({
         behavior: reduceMotion ? 'auto' : 'smooth',
         block: 'start',
       });
     }, 80);
+  };
+
+  const chooseTripByVoice = (transcript: string) => {
+    const value = transcript.toLowerCase();
+    let index = -1;
+
+    if (/(first|one|1|الأول|الاول|واحد)/.test(value)) index = 0;
+    else if (/(second|two|2|الثاني|الثانى|اثنين|اثنان)/.test(value)) index = 1;
+    else if (/(third|three|3|الثالث|ثلاثة|ثلاثه)/.test(value)) index = 2;
+
+    if (index < 0) {
+      const numbers = value.match(/\d{3}/g);
+      if (numbers) {
+        index = trips.findIndex((trip) =>
+          numbers.some((number) => trip.line.includes(number)),
+        );
+      }
+    }
+
+    if (index < 0) {
+      index = trips.findIndex((trip) => value.includes(trip.line.toLowerCase()));
+    }
+
+    const chosen = trips[index];
+    if (chosen) {
+      selectTrip(chosen);
+      setVoiceNotice(`${tr(ui.voiceSelected)} ${chosen.line}`);
+    } else {
+      const message = tr(ui.voiceChoiceRetry);
+      setVoiceNotice(message);
+      speak(message);
+    }
+  };
+
+  const startVoice = () => {
+    if (voiceListening) return;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setVoiceNotice('');
+
+    const Recognition = getSpeechRecognition();
+    if (!Recognition) {
+      const message = tr(ui.commMicUnsupported);
+      setVoiceNotice(message);
+      return;
+    }
+
+    const choosing = trips.length > 0;
+
+    try {
+      const recognition = new Recognition();
+      recognition.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
+      recognition.interimResults = false;
+      recognition.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+        if (!transcript) {
+          const message = tr(ui.voiceNoInput);
+          setVoiceNotice(message);
+          speak(message);
+          return;
+        }
+        setVoiceNotice(`${tr(ui.voiceHeard)} ${transcript}`);
+        if (choosing) {
+          chooseTripByVoice(transcript);
+        } else {
+          setDestination(transcript);
+          planTrip(transcript);
+        }
+      };
+      recognition.onend = () => setVoiceListening(false);
+      recognition.onerror = () => {
+        setVoiceListening(false);
+        setVoiceNotice(tr(ui.voiceMicError));
+      };
+      recognition.start();
+      setVoiceListening(true);
+    } catch {
+      setVoiceListening(false);
+      setVoiceNotice(tr(ui.voiceMicError));
+    }
   };
 
   const onSeat = (seat: Seat) => {
@@ -1293,25 +1452,7 @@ function App() {
   };
 
   const startListening = () => {
-    const speechWindow = window as unknown as {
-      SpeechRecognition?: new () => {
-        lang: string;
-        interimResults: boolean;
-        onresult: ((event: { results?: Array<Array<{ transcript?: string }>> }) => void) | null;
-        onend: (() => void) | null;
-        onerror: (() => void) | null;
-        start: () => void;
-      };
-      webkitSpeechRecognition?: new () => {
-        lang: string;
-        interimResults: boolean;
-        onresult: ((event: { results?: Array<Array<{ transcript?: string }>> }) => void) | null;
-        onend: (() => void) | null;
-        onerror: (() => void) | null;
-        start: () => void;
-      };
-    };
-    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    const Recognition = getSpeechRecognition();
     if (!Recognition) {
       setNotice(tr(ui.commMicUnsupported));
       return;
@@ -1438,6 +1579,9 @@ function App() {
                 onSelectTrip={selectTrip}
                 onSeat={onSeat}
                 destinationPoint={destinationPoint}
+                voiceListening={voiceListening}
+                voiceNotice={voiceNotice}
+                onVoice={startVoice}
               />
             }
           />

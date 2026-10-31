@@ -1,6 +1,6 @@
 # Wasel A.I. website
 
-Bus-only Arabic-first website for the Wasel A.I. / ACCESSIBLE BRT university project. It opens with a one-time visual/hearing choice, then splits into routed pages: **Plan**, **Trip**, **Seats**, **Chat**, and **Settings**. The working tools are trip planning, arrival time, empty-seat display, a seven-step rider journey, a visual/hearing mode switch, AI driver chat, and persisted accessibility settings. There are no about/features/impact/survey sections.
+Bus-only Arabic-first website for the Wasel A.I. / ACCESSIBLE BRT university project. Every fresh load opens with an audio/visual help choice; doing nothing for 5 seconds selects audio help. It then splits into routed pages: **Plan**, **Trip**, **Seats**, **Chat**, and **Settings**. The working tools are press-to-talk trip planning, spoken bus options and spoken bus choice, arrival time, empty-seat display, selectable bus seat details, a seven-step rider journey, an audio/visual help switch, AI driver chat, and persisted accessibility settings. There are no about/features/impact/survey sections.
 
 No backend or API key is required. Destination search uses OpenStreetMap Nominatim and the map uses OpenStreetMap tiles; bus times and seat occupancy remain local simulations and are labelled as such throughout the UI.
 
@@ -30,7 +30,7 @@ npm run build
 
 | Route | Purpose |
 |---|---|
-| `/` | Plan a trip, see the bus line, arrival time, seats, pick a bus for its seat map, and view the OSM destination map |
+| `/` | Press-to-talk or type a destination, hear the bus options, pick a bus for its seat map, and view the OSM destination map |
 | `/trip` | Seven-step rider journey and audio/visual help switch |
 | `/seats` | Interactive seat map and spoken seat availability |
 | `/chat` | Rider–driver chat |
@@ -40,7 +40,7 @@ Settings are stored in `localStorage` under `accessible-brt-settings`.
 
 ## What is real vs simulated
 
-- Working interactions: destination → bus line, boarding stop, arrival clock, available seats, selectable bus with seat map, TTS, speech recognition where the browser supports it, flash/haptic visual-help mode, chat, and settings saved to `localStorage`.
+- Working interactions: press-to-talk destination, spoken bus options, spoken bus choice, boarding stop, arrival clock, available seats, selectable bus with seat map, TTS, flash/haptic visual-help mode, chat, and settings saved to `localStorage`.
 - OpenStreetMap: destination coordinates come from Nominatim (with local Amman fallbacks) and the destination map is an OpenStreetMap embed with attribution. No Google API.
 - Simulated: bus times, seat counts, seat states, and driver replies. Real occupancy needs an operator APC feed or crowdsourced reports; real arrival data needs GTFS-RT or an operator API.
 
