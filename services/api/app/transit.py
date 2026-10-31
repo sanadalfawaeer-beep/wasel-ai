@@ -54,17 +54,17 @@ _TRANSIT_DESTINATIONS: dict[str, dict] = {
         "lat": 31.9500,
         "lng": 35.8800,
     },
-    "library": {
-        "en": "University of Jordan Library",
-        "ar": "مكتبة الجامعة الأردنية",
-        "lat": 32.0135,
-        "lng": 35.8738,
+    "sweileh": {
+        "en": "Sweileh",
+        "ar": "صويلح",
+        "lat": 32.0197,
+        "lng": 35.8347,
     },
-    "student": {
-        "en": "University of Jordan Student Center",
-        "ar": "مركز الطلبة في الجامعة الأردنية",
-        "lat": 32.0147,
-        "lng": 35.8752,
+    "sports city": {
+        "en": "Sports City",
+        "ar": "المدينة الرياضية",
+        "lat": 31.9936,
+        "lng": 35.8579,
     },
 }
 
@@ -171,11 +171,7 @@ class MockTransitClient:
                     "100",
                     "#0F766E",
                     name,
-                    (
-                        "University of Jordan Main Gate"
-                        if lang == "en"
-                        else "البوابة الرئيسية للجامعة"
-                    ),
+                    "7th Circle Station" if lang == "en" else "موقف الدوار السابع",
                     name,
                     5,
                     "seats",
@@ -205,7 +201,7 @@ class MockTransitClient:
                     "BRT 1",
                     "#B45309",
                     "Sports City" if lang == "en" else "المدينة الرياضية",
-                    "University Library Stop" if lang == "en" else "موقف مكتبة الجامعة",
+                    "Sweileh Terminal" if lang == "en" else "مجمع صويلح",
                     "Sports City" if lang == "en" else "المدينة الرياضية",
                     7,
                     "standing",

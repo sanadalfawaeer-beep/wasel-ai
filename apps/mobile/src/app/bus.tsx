@@ -18,11 +18,11 @@ import { radius, space } from '@/ui/tokens';
 import { fontFamily } from '@/ui/typography';
 import { useTheme } from '@/ui/useTheme';
 
-const QUICK_DESTINATIONS: Array<'cityMall' | 'downtown' | 'abdoun' | 'ujLibrary'> = [
+const QUICK_DESTINATIONS: Array<'cityMall' | 'downtown' | 'abdoun' | 'sweileh'> = [
   'cityMall',
   'downtown',
   'abdoun',
-  'ujLibrary',
+  'sweileh',
 ];
 
 function countdown(iso: string | null | undefined, now: number, lang: Lang): string {

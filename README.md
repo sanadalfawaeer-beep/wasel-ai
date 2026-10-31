@@ -10,6 +10,7 @@ Accessible wayfinding and conversation for blind, low-vision, and Deaf/hard-of-h
 
 ```
 wasel-ai/
+├─ apps/web/             ACCESSIBLE BRT bus-only website (Vite + React + TS)
 ├─ apps/mobile/          Expo SDK 58 + React Native + TypeScript
 ├─ services/api/         FastAPI + Strands Agents + DeepSeek
 ├─ packages/contract/    Cue/route JSON Schema and example payload
@@ -92,6 +93,10 @@ cd ../mobile
 npx tsc --noEmit
 npm test
 
+# ACCESSIBLE BRT website build
+cd ../web
+npm run build
+
 # Design-token contrast gate
 cd ../..
 node scripts/check-contrast.mjs
@@ -100,7 +105,19 @@ node scripts/check-contrast.mjs
 powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 ```
 
-## Standalone bus demo
+## ACCESSIBLE BRT website (bus-only)
+
+A standalone Arabic-first website built from the ACCESSIBLE BRT prototype spec. It covers destination planning, the bus line and boarding stop, arrival time, empty-seat display, the seven-step rider journey, visual/hearing modes, the AI driver chat, the seat-sensor simulation, impact, and the survey.
+
+No backend or Google key is needed:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\demo-accessible-web.ps1
+```
+
+Open <http://localhost:5174>. Times, seat counts, seat states, and driver replies are simulated and labelled in the UI. Real occupancy needs an operator APC feed or crowdsourced reports; real arrivals need GTFS-RT or an operator API.
+
+## Standalone mobile bus demo
 
 No backend or Google key needed:
 
@@ -149,3 +166,5 @@ Open the printed URL, tap **Bus** → **City Mall**. The demo is simulated and l
 ## Status
 
 Phase 0 vertical slice. The UI is complete enough to demo the full loop: plan → cues → guidance → arrival → conversation → bus planner → settings. The Bus tab currently uses demo occupancy; real seat data needs an operator feed. Real indoor maps, venue accounts, and the accessibility graph are Phase 1/2.
+
+The separate `apps/web` site is the bus-only ACCESSIBLE BRT prototype: Arabic-first, fully client-side, and usable without a backend or Google key.

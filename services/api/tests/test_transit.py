@@ -43,7 +43,7 @@ def transit_handler(request: httpx.Request) -> httpx.Response:
                                     "transitDetails": {
                                         "stopDetails": {
                                             "departureStop": {
-                                                "name": "University of Jordan Main Gate"
+                                                "name": "7th Circle Station"
                                             },
                                             "arrivalStop": {"name": "City Mall"},
                                             "departureTime": "2026-10-31T10:00:00Z",
@@ -128,7 +128,7 @@ def test_google_transit_parses_bus_itinerary() -> None:
     bus = itinerary.legs[1]
     assert bus.mode == "BUS"
     assert bus.line_short == "100"
-    assert bus.board_stop == "University of Jordan Main Gate"
+    assert bus.board_stop == "7th Circle Station"
     assert bus.alight_stop == "City Mall"
     assert bus.num_stops == 5
     assert bus.occupancy == "unknown"

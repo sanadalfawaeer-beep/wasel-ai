@@ -18,12 +18,12 @@ function destinationFor(text: string, lang: Lang): Destination {
       lng: 35.88,
     };
   }
-  if (value.includes('library') || value.includes('مكتبة')) {
+  if (value.includes('sweileh') || value.includes('صويلح')) {
     return {
-      name: lang === 'ar' ? 'مكتبة الجامعة الأردنية' : 'University of Jordan Library',
+      name: lang === 'ar' ? 'صويلح' : 'Sweileh',
       address: lang === 'ar' ? 'عمّان، الأردن' : 'Amman, Jordan',
-      lat: 32.0135,
-      lng: 35.8738,
+      lat: 32.0197,
+      lng: 35.8347,
     };
   }
   return {
@@ -84,8 +84,8 @@ function bus(
 
 export function demoTransit(lang: Lang, text = 'City Mall'): TransitPlanResponse {
   const destination = destinationFor(text, lang);
-  const mainGate = lang === 'ar' ? 'البوابة الرئيسية للجامعة' : 'University of Jordan Main Gate';
-  const libraryStop = lang === 'ar' ? 'موقف مكتبة الجامعة' : 'University Library Stop';
+  const seventhCircle = lang === 'ar' ? 'موقف الدوار السابع' : '7th Circle Station';
+  const sweilehStop = lang === 'ar' ? 'مجمع صويلح' : 'Sweileh Terminal';
   const sportsCity = lang === 'ar' ? 'المدينة الرياضية' : 'Sports City';
   const now = new Date().toISOString();
 
@@ -96,7 +96,7 @@ export function demoTransit(lang: Lang, text = 'City Mall'): TransitPlanResponse
       '100',
       '#0F766E',
       destination.name,
-      mainGate,
+      seventhCircle,
       destination.name,
       4,
       12,
@@ -114,7 +114,7 @@ export function demoTransit(lang: Lang, text = 'City Mall'): TransitPlanResponse
       'BRT 1',
       '#B45309',
       sportsCity,
-      libraryStop,
+      sweilehStop,
       sportsCity,
       6,
       18,

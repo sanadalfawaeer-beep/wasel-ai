@@ -23,7 +23,8 @@
 - FastAPI + Strands + DeepSeek; `find_place` and `get_route` tools.
 - Four mock UJ destinations, Google Places/Routes adapters, deterministic fallback.
 - Bus tab with Amman itineraries, departure countdowns, and clearly labelled simulated occupancy.
-- 16 backend tests, 13 mobile tests, contrast gate, web export, CI.
+- Standalone ACCESSIBLE BRT bus-only website in `apps/web`: Arabic-first RTL, English toggle, trip planner, seat map, journey, modes, AI chat, survey, no backend key required.
+- 16 backend tests, 12 mobile tests, website build, contrast gate, web export, CI.
 
 **Not yet pilot-ready**
 
