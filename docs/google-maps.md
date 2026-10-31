@@ -6,6 +6,7 @@ The code is wired. This page is the setup and validation runbook.
 
 - **Places API (New)** — `places:searchText`, location-biased to the user, to resolve "the library" into a real place.
 - **Routes API** — `directions/v2:computeRoutes` with `travelMode: WALK`, to get distance, duration, polyline, and step instructions.
+- **Routes API transit** — `travelMode: TRANSIT` powers the Bus tab. See [Bus planner](bus.md).
 - **Wasel cue builder** — converts steps into the stable `Cue` contract. The LLM never writes turn instructions.
 
 ## Create the key

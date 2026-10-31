@@ -106,6 +106,12 @@ Rows stagger in at 80ms. Failure turns the active row red and offers Retry + Use
 - Arrival becomes a full-screen "You have arrived" card.
 - The map sheet contains a schematic route sketch, distance/ETA/provider, and the cue list.
 
+### Bus
+
+A destination search with quick Amman chips, a persistent demo-data banner, and itinerary cards. Each card shows total time, transfer count, walk legs, a line badge, board/alight stops, a next-bus countdown, and a simulated occupancy chip. The trip status reads `Simulated` in demo mode, `Estimated` for Google estimates, and `Live` only when a real-time feed exists. Google mode adds a `Transit data from Google` line.
+
+Occupancy is never presented as real unless the source is an operator or a rider report. The demo uses `8 seats left / Standing / Full` with a `Simulated` label.
+
 ### Converse
 
 Visual-first. A large live-caption card, quick phrases, a text field, a mic button for the other person, and a demo-reply link. Sending a phrase speaks it aloud through the phone. Captions are 20px with 1.45 line-height.
@@ -187,6 +193,10 @@ Captured from the web build at 390×844. The native build uses the same componen
 | Settings | Onboarding |
 |---|---|
 | ![Settings](screenshots/settings.png) | ![Onboarding](screenshots/onboarding.png) |
+
+| Bus — English | Bus — Arabic |
+|---|---|
+| ![Bus English](screenshots/bus.png) | ![Bus Arabic](screenshots/bus-arabic.png) |
 
 ## Anti-patterns
 

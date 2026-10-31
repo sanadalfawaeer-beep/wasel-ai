@@ -58,6 +58,21 @@ Response:
 
 `debug` is dev-only in spirit; do not render it in the consumer UI. The debug drawer and Settings use it for support.
 
+## `POST /api/transit/plan`
+
+Bus itinerary planner for Amman. Same shape in mock and Google mode; mock itineraries carry `demo: true` and simulated occupancy.
+
+```json
+{
+  "text": "City Mall",
+  "lat": 32.0134,
+  "lng": 35.8734,
+  "lang": "en"
+}
+```
+
+See [Bus planner](bus.md) for the full response and the occupancy limitation.
+
 ## `GET /api/demo?lang=en`
 
 Returns the built-in University of Jordan route without invoking the LLM. Useful for UI work and for a backup demo.

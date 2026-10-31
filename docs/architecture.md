@@ -37,8 +37,10 @@ Why this shape:
 |---|---|
 | `app/main.py` | FastAPI app, CORS, router mounting |
 | `app/routers/plan.py` | `/api/plan`, `/api/demo`, `/api/health`, timeout and error mapping |
+| `app/routers/transit.py` | `/api/transit/plan` |
 | `app/planner.py` | Strands agent, two tools, fallback parser, reply generation |
 | `app/maps.py` | `MapsClient` protocol, Google Places/Routes, mock client |
+| `app/transit.py` | Google Transit + mock bus itineraries, simulated occupancy |
 | `app/cues.py` | Provider maneuver → cue kind, English/Arabic templates, arrival synthesis |
 | `app/mock_data.py` | Four University of Jordan demo destinations |
 | `app/geo.py` | Haversine, polyline encode/decode |
@@ -55,7 +57,7 @@ The model never writes turn instructions. `cues.py` owns the text, haptics, and 
 
 | Layer | Responsibility |
 |---|---|
-| `src/app` | Expo Router screens: home, plan, guide, converse, settings, onboarding |
+| `src/app` | Expo Router screens: home, plan, guide, bus, converse, settings, onboarding |
 | `src/state/AppProvider.tsx` | Preferences + last route, persisted to AsyncStorage |
 | `src/lib/api.ts` | Plan request; derives the LAN host from Expo's dev server |
 | `src/lib/cueEngine.ts` | Fire-once cue selection, distance, urgency tone |

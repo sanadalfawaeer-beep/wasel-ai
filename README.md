@@ -129,6 +129,7 @@ powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 - [Architecture](docs/architecture.md)
 - [API](docs/api.md)
 - [Google Maps setup and validation](docs/google-maps.md)
+- [Amman bus planner](docs/bus.md)
 - [UI design system](docs/design/ui-spec.md)
 - [Accessibility testing](docs/accessibility/testing-plan.md)
 - [Roadmap](docs/product/roadmap.md)
@@ -137,4 +138,4 @@ powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 
 ## Status
 
-Phase 0 vertical slice. The UI is complete enough to demo the full loop: plan → cues → guidance → arrival → conversation → settings. Real indoor maps, venue accounts, and the accessibility graph are Phase 1/2.
+Phase 0 vertical slice. The UI is complete enough to demo the full loop: plan → cues → guidance → arrival → conversation → bus planner → settings. The Bus tab currently uses demo occupancy; real seat data needs an operator feed. Real indoor maps, venue accounts, and the accessibility graph are Phase 1/2.

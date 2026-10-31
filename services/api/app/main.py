@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .routers.plan import router as plan_router
+from .routers.transit import router as transit_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +32,7 @@ app.add_middleware(
 )
 
 app.include_router(plan_router, prefix="/api")
+app.include_router(transit_router, prefix="/api")
 
 
 @app.get("/")
@@ -41,6 +43,7 @@ async def root() -> dict:
         "docs": "/docs",
         "health": "/api/health",
         "plan": "/api/plan",
+        "transit": "/api/transit/plan",
         "demo": "/api/demo",
         "mode": settings.resolved_mode,
     }

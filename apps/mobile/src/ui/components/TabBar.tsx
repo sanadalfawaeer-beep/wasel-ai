@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Home, MessageSquare, Settings } from 'lucide-react-native';
+import { Bus, Home, MessageSquare, Settings } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t } from '@/lib/translate';
@@ -8,10 +8,16 @@ import { space } from '@/ui/tokens';
 import { fontFamily } from '@/ui/typography';
 import { useTheme } from '@/ui/useTheme';
 
-type Tab = 'home' | 'converse' | 'settings';
+type Tab = 'home' | 'bus' | 'converse' | 'settings';
 
-const ITEMS: Array<{ key: Tab; route: string; label: 'home' | 'converse' | 'settings'; icon: typeof Home }> = [
+const ITEMS: Array<{
+  key: Tab;
+  route: string;
+  label: 'home' | 'bus' | 'converse' | 'settings';
+  icon: typeof Home;
+}> = [
   { key: 'home', route: '/', label: 'home', icon: Home },
+  { key: 'bus', route: '/bus', label: 'bus', icon: Bus },
   { key: 'converse', route: '/converse', label: 'converse', icon: MessageSquare },
   { key: 'settings', route: '/settings', label: 'settings', icon: Settings },
 ];

@@ -8,7 +8,8 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 - `GET /api/health` — planner mode, model, key presence.
-- `POST /api/plan` — the only endpoint the app needs.
+- `POST /api/plan` — walking route planning for the guide.
+- `POST /api/transit/plan` — Amman bus itineraries (mock or Google Transit).
 - `GET /api/demo?lang=en` — the UJ demo route without the LLM.
 
 The agent plans; the phone guides. Strands runs once per request and is never in the real-time cue loop.

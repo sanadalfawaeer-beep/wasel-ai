@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import {
   ArrowRight,
   BookOpen,
+  Bus,
   DoorOpen,
   Globe,
   Mic,
@@ -424,6 +425,33 @@ export default function HomeScreen() {
               </View>
             </View>
 
+            <Card
+              onPress={() => router.push('/bus')}
+              accessibilityLabel={t(lang, 'busPlanner')}
+              style={styles.busCard}
+            >
+              <View style={[styles.row, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.iconBubble, { backgroundColor: theme.accentSoft }]}>
+                  <Bus size={22} color={theme.accent} />
+                </View>
+                <View style={styles.flex}>
+                  <Text
+                    style={[styles.setupTitle, { color: theme.text, fontSize: fs(16) }, align]}
+                    maxFontSizeMultiplier={1.6}
+                  >
+                    {t(lang, 'bus')}
+                  </Text>
+                  <Text
+                    style={[styles.setupBody, { color: theme.textMuted, fontSize: fs(13) }, align]}
+                    maxFontSizeMultiplier={1.6}
+                  >
+                    {t(lang, 'busCardBody')}
+                  </Text>
+                </View>
+                <ArrowRight size={20} color={theme.textMuted} />
+              </View>
+            </Card>
+
             <Button
               label={t(lang, 'converse')}
               variant="secondary"
@@ -521,6 +549,7 @@ const styles = StyleSheet.create({
     marginTop: space.xs,
   },
   placeCard: { width: '47.5%' },
-  converseButton: { marginTop: space.xl },
+  busCard: { marginTop: space.xl },
+  converseButton: { marginTop: space.md },
   bottomSpacer: { height: space.xxl },
 });

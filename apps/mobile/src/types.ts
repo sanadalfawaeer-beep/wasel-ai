@@ -66,6 +66,51 @@ export interface RoutePlan {
   language: Lang;
 }
 
+export type TransitMode = 'WALK' | 'BUS' | 'RAIL';
+export type OccupancyLevel = 'seats' | 'standing' | 'full' | 'unknown';
+export type OccupancySource = 'simulated' | 'reported' | 'operator' | 'unknown';
+
+export interface TransitLeg {
+  mode: TransitMode;
+  line?: string | null;
+  line_short?: string | null;
+  line_color?: string | null;
+  headsign?: string | null;
+  board_stop?: string | null;
+  alight_stop?: string | null;
+  departure_at?: string | null;
+  arrival_at?: string | null;
+  duration_s: number;
+  distance_m: number;
+  num_stops: number;
+  occupancy: OccupancyLevel;
+  seats_left?: number | null;
+  occupancy_source: OccupancySource;
+  occupancy_updated_at?: string | null;
+}
+
+export interface TransitItinerary {
+  id: string;
+  duration_s: number;
+  walk_s: number;
+  transfers: number;
+  legs: TransitLeg[];
+  next_departures_min: number[];
+  demo: boolean;
+  provider: string;
+  realtime: boolean;
+  summary: string;
+}
+
+export interface TransitPlanResponse {
+  destination: Destination;
+  itineraries: TransitItinerary[];
+  provider: string;
+  demo: boolean;
+  note: string;
+  generated_at: string;
+}
+
 export interface PlanResponse {
   reply: string;
   route: RoutePlan;

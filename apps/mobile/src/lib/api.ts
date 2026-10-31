@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import type { Lang, PlanResponse, RoutePlan } from '@/types';
+import type { Lang, PlanResponse, RoutePlan, TransitPlanResponse } from '@/types';
 
 const hostUri =
   Constants.expoConfig?.hostUri ??
@@ -88,4 +88,20 @@ export function getHealth(): Promise<{
 
 export function demoRouteFromApi(response: PlanResponse): RoutePlan {
   return response.route;
+}
+
+export function planTransit(input: {
+  text: string;
+  lat: number;
+  lng: number;
+  lang: Lang;
+}): Promise<TransitPlanResponse> {
+  return request<TransitPlanResponse>(
+    '/api/transit/plan',
+    {
+      method: 'POST',
+      body: JSON.stringify(input),
+    },
+    30_000,
+  );
 }

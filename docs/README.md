@@ -5,6 +5,7 @@
 | [Architecture](architecture.md) | How the agent, contract, cue engine, and clients fit together |
 | [API](api.md) | Request/response shapes and local testing |
 | [Google Maps](google-maps.md) | Key setup, validation, quotas, attribution, and UJ route checks |
+| [Bus planner](bus.md) | Amman bus itineraries, simulated occupancy, and the path to real arrival/seat data |
 | [UI design system](design/ui-spec.md) | The Transit Instrument language, tokens, screens, and motion |
 | [Accessibility testing](accessibility/testing-plan.md) | Contrast, screen reader, RTL, haptics, and tester protocol |
 | [Roadmap](product/roadmap.md) | Phase 0–3, gates, budget, and risks |

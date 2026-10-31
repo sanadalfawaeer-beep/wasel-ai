@@ -69,3 +69,15 @@
 **Decision:** Arabic ships in Phase 0 with RTL-aware layout, Arabic TTS/STT testing, and physical turn arrows that do not mirror.
 
 **Why:** The pilot is Amman. Arabic-first is the local advantage; a translated afterthought would fail the demo and the users.
+
+## ADR-011 — Bus occupancy is simulated in demo mode only
+
+**Decision:** The Bus tab shows simulated seat counts only when `demo: true`, with a persistent "Demo data" banner and a per-leg "Simulated" label. Google mode returns `occupancy: unknown`.
+
+**Why:** There is no public Amman seat-occupancy feed. Presenting simulated counts as live would be misleading and unsafe. Crowdsourced reports or operator APC data can replace the provider later without changing the UI.
+
+## ADR-012 — Google Transit first, GTFS-Realtime later
+
+**Decision:** Use Google Routes API `transit` for real Amman bus itineraries; add GTFS-Realtime or operator AVL only when a feed is available.
+
+**Why:** Amman GTFS is live in Google Maps, so it is the fastest path to real line/stop/timing data. Google times are estimates, not a guaranteed live feed; the UI labels them `Estimated`. Never label them `Live` without a timestamped real-time source.
