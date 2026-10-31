@@ -44,6 +44,17 @@ Settings are stored in `localStorage` under `accessible-brt-settings`.
 - OpenStreetMap: destination coordinates come from Nominatim (with local Amman fallbacks) and the destination map is an OpenStreetMap embed with attribution. No Google API.
 - Simulated: bus times, seat counts, seat states, and driver replies. Real occupancy needs an operator APC feed or crowdsourced reports; real arrival data needs GTFS-RT or an operator API.
 
+## Voice troubleshooting
+
+Voice input uses the browser SpeechRecognition API and requires a **secure context**:
+
+- Use `http://localhost:5174` on the same PC, or serve the site over HTTPS.
+- Plain `http://192.168.x.x` addresses are not secure contexts, so browsers block the microphone.
+- Use Chrome or Edge. Some Chromium-based browsers do not ship the speech-recognition service.
+- Allow microphone access when prompted.
+- Spoken replies use the system TTS voices. Arabic speech needs an Arabic voice installed in the OS/browser.
+- If voice is unavailable, the page shows a warning with the specific reason and the destination form still works.
+
 ## Accessibility notes
 
 - Arabic RTL by default, with an English LTR toggle.

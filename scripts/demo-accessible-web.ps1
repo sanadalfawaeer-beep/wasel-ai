@@ -14,7 +14,7 @@ if (-not (Test-Path (Join-Path $web 'node_modules'))) {
 }
 
 if (-not $SkipBuild) {
-  Write-Host 'Building the ACCESSIBLE BRT website ...' -ForegroundColor Cyan
+  Write-Host 'Building the Wasel A.I. website ...' -ForegroundColor Cyan
   Push-Location $web
   npm run build
   if ($LASTEXITCODE -ne 0) {
@@ -33,8 +33,13 @@ $lanIp = Get-NetIPConfiguration |
 
 $hostIp = if ($lanIp) { $lanIp } else { 'localhost' }
 Write-Host ''
-Write-Host "ACCESSIBLE BRT website: http://$($hostIp):$Port" -ForegroundColor Green
-Write-Host 'Arabic-first with an English toggle. No backend and no Google key required.' -ForegroundColor Green
+Write-Host "Wasel A.I. on this PC: http://localhost:$Port" -ForegroundColor Green
+if ($hostIp -ne 'localhost') {
+  Write-Host "Wasel A.I. on the local network: http://$($hostIp):$Port" -ForegroundColor Green
+}
+Write-Host 'Use the localhost URL for voice input. Browsers block the microphone on plain HTTP LAN addresses.' -ForegroundColor Yellow
+Write-Host 'Voice input works in Chrome or Edge after allowing microphone access. Arabic TTS needs an Arabic system voice.' -ForegroundColor Yellow
+Write-Host 'Destination search and maps use OpenStreetMap; no backend or API key is required.' -ForegroundColor Green
 Write-Host 'Bus times and seat availability are simulated and labelled in the UI.' -ForegroundColor Yellow
 Write-Host ''
 

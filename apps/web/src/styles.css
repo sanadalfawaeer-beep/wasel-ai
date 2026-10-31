@@ -911,6 +911,34 @@ html[lang='ar'] .hero h1 {
   padding-inline-start: 2px;
 }
 
+.voice-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-block-start: 8px;
+  padding: 9px 12px;
+  border: 1px solid #e7c98f;
+  border-radius: 12px;
+  background: #fdf4e8;
+  color: #6b4308;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.voice-warning > span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--warn);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+}
+
 .planner-card {
   background: var(--surface);
   border: 1px solid var(--line);

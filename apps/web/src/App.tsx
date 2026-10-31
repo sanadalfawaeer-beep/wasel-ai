@@ -389,6 +389,7 @@ function PlanPage({
   destinationPoint,
   voiceListening,
   voiceNotice,
+  voiceIssue,
   onVoice,
 }: {
   lang: Lang;
@@ -406,6 +407,7 @@ function PlanPage({
   destinationPoint: OsmPlace | null;
   voiceListening: boolean;
   voiceNotice: string;
+  voiceIssue: string;
   onVoice: () => void;
 }) {
   const tr = (value: Localized) => L(value, lang);
@@ -462,6 +464,12 @@ function PlanPage({
                 </small>
               </span>
             </button>
+            {voiceIssue ? (
+              <p className="voice-warning" role="status">
+                <span aria-hidden="true">!</span>
+                {voiceIssue}
+              </p>
+            ) : null}
             {voiceNotice ? (
               <p className="note voice-notice" role="status">{voiceNotice}</p>
             ) : null}
@@ -1155,6 +1163,7 @@ function App() {
   const [listening, setListening] = useState(false);
   const [voiceListening, setVoiceListening] = useState(false);
   const [voiceNotice, setVoiceNotice] = useState('');
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [notice, setNotice] = useState('');
   const [resetNotice, setResetNotice] = useState(false);
   const [flash, setFlash] = useState(false);
@@ -1187,6 +1196,17 @@ function App() {
   }, [onboarded, lang]);
 
   useEffect(() => {
+    if (!('speechSynthesis' in window)) return;
+    const synth = window.speechSynthesis;
+    const update = () => setVoices(synth.getVoices());
+    update();
+    synth.onvoiceschanged = update;
+    return () => {
+      synth.onvoiceschanged = null;
+    };
+  }, []);
+
+  useEffect(() => {
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch {
@@ -1214,10 +1234,13 @@ function App() {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
     utterance.rate = speechRate;
-    const preferred = synth
-      .getVoices()
-      .find((voice) => voice.lang.toLowerCase().startsWith(lang === 'ar' ? 'ar' : 'en'));
-    if (preferred) utterance.voice = preferred;
+    const availableVoices = synth.getVoices();
+    const preferred = availableVoices.find((voice) =>
+      voice.lang.toLowerCase().startsWith(lang === 'ar' ? 'ar' : 'en'),
+    );
+    const fallback =
+      availableVoices.find((voice) => voice.default) ?? availableVoices[0];
+    if (preferred ?? fallback) utterance.voice = preferred ?? fallback;
     synth.speak(utterance);
   };
 
@@ -1486,6 +1509,23 @@ function App() {
     window.setTimeout(() => setResetNotice(false), 3000);
   };
 
+  const micSupported = Boolean(getSpeechRecognition());
+  const speechSupported = 'speechSynthesis' in window;
+  const hasArabicVoice = voices.some((voice) =>
+    voice.lang.toLowerCase().startsWith('ar'),
+  );
+  const voiceIssue = !voiceEnabled
+    ? tr(ui.voiceDisabled)
+    : !window.isSecureContext
+      ? tr(ui.voiceNeedsSecure)
+      : !micSupported
+        ? tr(ui.voiceUnsupportedBrowser)
+        : !speechSupported
+          ? tr(ui.voiceTtsUnsupported)
+          : voices.length > 0 && !hasArabicVoice
+            ? tr(ui.voiceNoArabic)
+            : '';
+
   const selectedTrip = trips.find((trip) => trip.id === selectedTripId) ?? null;
   const selectedTripSeats = selectedTrip ? seatsForTrip(selectedTrip) : [];
 
@@ -1581,6 +1621,7 @@ function App() {
                 destinationPoint={destinationPoint}
                 voiceListening={voiceListening}
                 voiceNotice={voiceNotice}
+                voiceIssue={voiceIssue}
                 onVoice={startVoice}
               />
             }

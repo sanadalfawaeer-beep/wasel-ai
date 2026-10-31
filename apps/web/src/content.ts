@@ -128,7 +128,27 @@ export const ui = {
   voiceChooseHint: l('مثال: الأول، الثاني، أو الثالث', 'For example: first, second, or third'),
   voiceHeard: l('سمعت:', 'Heard:'),
   voiceNoInput: l('لم أسمع شيئاً. اضغط وتحدث مرة أخرى.', 'I did not hear anything. Press and speak again.'),
-  voiceMicError: l('تعذر تشغيل الميكروفون. اسمح بالوصول إلى الميكروفون أو استخدم النص.', 'Could not start the microphone. Allow microphone access or use text.'),
+  voiceMicError: l('تعذر تشغيل الميكروفون. اسمح بالوصول إلى الميكروفون، أو جرّب Chrome أو Edge، أو استخدم النص.', 'Could not start the microphone. Allow microphone access, try Chrome or Edge, or use text.'),
+  voiceNeedsSecure: l(
+    'الإدخال الصوتي يحتاج فتح الموقع عبر localhost أو HTTPS. على هذا الجهاز استخدم http://localhost:5174.',
+    'Voice input needs localhost or HTTPS. On this device use http://localhost:5174.',
+  ),
+  voiceUnsupportedBrowser: l(
+    'هذا المتصفح لا يدعم الإدخال الصوتي. جرّب Chrome أو Edge.',
+    'This browser does not support voice input. Try Chrome or Edge.',
+  ),
+  voiceTtsUnsupported: l(
+    'هذا المتصفح لا يدعم تحويل النص إلى صوت.',
+    'This browser does not support text-to-speech.',
+  ),
+  voiceNoArabic: l(
+    'لا يوجد صوت عربي مثبت. ثبّت حزمة الصوت العربي من إعدادات النظام.',
+    'No Arabic voice is installed. Install an Arabic system voice.',
+  ),
+  voiceDisabled: l(
+    'الإرشاد الصوتي متوقف من الإعدادات. فعّله لتسمع الردود.',
+    'Voice guidance is off in Settings. Enable it to hear replies.',
+  ),
   voiceChoiceRetry: l('لم أفهم الاختيار. قل الأول أو الثاني أو الثالث، أو اضغط على الباص.', 'I did not understand the choice. Say first, second, or third, or tap a bus.'),
   voiceSelected: l('اخترت', 'Selected'),
   planAria: l('نتائج رحلة الباص', 'Bus trip results'),
