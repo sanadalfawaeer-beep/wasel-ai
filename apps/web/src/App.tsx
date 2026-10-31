@@ -58,7 +58,7 @@ type SettingsState = {
 };
 
 const SETTINGS_KEY = 'accessible-brt-settings';
-const ONBOARDING_KEY = 'wasel-onboarded';
+const ONBOARDING_KEY = 'wasel-onboarded-v2';
 
 const DEFAULT_SETTINGS: SettingsState = {
   lang: 'ar',
