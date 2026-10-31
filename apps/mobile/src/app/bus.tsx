@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Bus, Clock, Footprints, RefreshCw, Users } from 'lucide-react-native';
-import { planTransit } from '@/lib/api';
+import { ApiError, planTransit } from '@/lib/api';
+import { demoTransit } from '@/fixtures/demoTransit';
 import { getCurrentLocationSafe } from '@/lib/location';
 import { formatDuration, t } from '@/lib/translate';
 import { useApp } from '@/state/AppProvider';
@@ -369,7 +370,15 @@ export default function BusScreen() {
       setPlan(response);
       setQuery(value);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : t(lang, 'busError'));
+      const message = caught instanceof Error ? caught.message : t(lang, 'busError');
+      if (caught instanceof ApiError && (caught.status === 0 || caught.status === 504)) {
+        // A standalone demo should still show the bus flow when the API is not
+        // running. This is local simulated data, never presented as live.
+        setPlan(demoTransit(lang, value));
+        setError(null);
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }

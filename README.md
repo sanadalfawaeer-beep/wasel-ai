@@ -100,6 +100,16 @@ node scripts/check-contrast.mjs
 powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 ```
 
+## Standalone bus demo
+
+No backend or Google key needed:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\demo-web.ps1
+```
+
+Open the printed URL, tap **Bus** → **City Mall**. The demo is simulated and labelled as such; it is not real Amman Bus data.
+
 ## API modes
 
 | Mode | Trigger | Behavior |

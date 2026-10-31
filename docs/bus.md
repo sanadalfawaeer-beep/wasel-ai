@@ -91,7 +91,18 @@ Response:
 
 ## Run it
 
-The backend must be running. In mock mode:
+### Standalone web demo — no backend, no Google key
+
+```powershell
+cd C:\Users\user\Desktop\wasel-ai
+powershell -ExecutionPolicy Bypass -File scripts\demo-web.ps1
+```
+
+Open the URL it prints, tap **Bus**, then **City Mall**. The app falls back to local simulated itineraries if the API is unreachable, so this works on a phone with only the web page.
+
+This is a **demo**: the lines and seat counts are simulated. It is not real Amman Bus data.
+
+### With the backend
 
 ```powershell
 cd C:\Users\user\Desktop\wasel-ai
@@ -100,7 +111,7 @@ powershell -ExecutionPolicy Bypass -File scripts\dev.ps1
 
 Open the app, tap **Bus**, and try **City Mall**, **Downtown**, **Abdoun**, or **UJ Library**.
 
-For Google mode, add `GOOGLE_MAPS_API_KEY` to `services/api/.env` and restart. See [Google Maps setup](google-maps.md).
+For Google mode, add `GOOGLE_MAPS_API_KEY` to `services/api/.env` and restart. See [Google Maps setup](google-maps.md). Without the key, the backend uses its mock provider and the Bus tab shows the demo banner.
 
 ## Next steps for real arrivals and seats
 
