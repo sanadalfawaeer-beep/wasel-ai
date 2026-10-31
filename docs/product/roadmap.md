@@ -22,7 +22,7 @@
 - On-device cue engine, simulation + GPS, TTS, haptics, route persistence.
 - FastAPI + Strands + DeepSeek; `find_place` and `get_route` tools.
 - Four mock UJ destinations, Google Places/Routes adapters, deterministic fallback.
-- 12 backend tests, 13 mobile tests, contrast gate, web export, CI.
+- 13 backend tests, 13 mobile tests, contrast gate, web export, CI.
 
 **Not yet pilot-ready**
 

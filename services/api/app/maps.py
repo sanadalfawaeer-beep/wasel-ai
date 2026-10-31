@@ -29,6 +29,30 @@ class MapsError(RuntimeError):
     """A routing failure with a message safe to show to the user."""
 
 
+def _google_error(service: str, exc: httpx.HTTPStatusError) -> MapsError:
+    status = exc.response.status_code
+    logger.warning(
+        "%s API error %s: %s",
+        service,
+        status,
+        exc.response.text[:500],
+    )
+    if status == 403:
+        return MapsError(
+            "Google Maps rejected the key. Check billing, then enable the Routes API "
+            "and Places API (New)."
+        )
+    if status == 429:
+        return MapsError(
+            "Google Maps quota is exhausted. Try again later or raise the quota cap."
+        )
+    if status == 400:
+        return MapsError(
+            "Google Maps rejected the request. Check the API configuration and field mask."
+        )
+    return MapsError(f"Google {service} is unavailable right now.")
+
+
 class MapsClient(Protocol):
     def find_place(self, query: str, origin: LatLng, lang: Lang) -> Destination: ...
 
@@ -85,12 +109,7 @@ class GoogleMapsClient:
                 response.raise_for_status()
                 payload = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.warning(
-                "Places API error: %s %s",
-                exc.response.status_code,
-                exc.response.text[:300],
-            )
-            raise MapsError("I couldn't search for that place right now.") from exc
+            raise _google_error("Places", exc) from exc
         except httpx.HTTPError as exc:
             logger.warning("Places network error: %s", exc)
             raise MapsError("I can't reach the map service right now.") from exc
@@ -141,12 +160,7 @@ class GoogleMapsClient:
                 response.raise_for_status()
                 payload = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.warning(
-                "Routes API error: %s %s",
-                exc.response.status_code,
-                exc.response.text[:300],
-            )
-            raise MapsError("I couldn't build a walking route right now.") from exc
+            raise _google_error("Routes", exc) from exc
         except httpx.HTTPError as exc:
             logger.warning("Routes network error: %s", exc)
             raise MapsError("I can't reach the map service right now.") from exc

@@ -286,6 +286,21 @@ export default function GuideScreen() {
               {upcoming ? upcoming.short : route.destination.name}
             </Text>
           </View>
+          {route.provider === 'google' ? (
+            <Text
+              style={[
+                styles.attribution,
+                {
+                  color: theme.textMuted,
+                  fontSize: fs(10),
+                  textAlign: isRTL ? 'right' : 'left',
+                },
+              ]}
+              maxFontSizeMultiplier={1.4}
+            >
+              Powered by Google
+            </Text>
+          ) : null}
         </View>
       </Screen>
 
@@ -349,6 +364,21 @@ export default function GuideScreen() {
             </Text>
           </View>
         </View>
+        {route.provider === 'google' ? (
+          <Text
+            style={[
+              styles.attribution,
+              {
+                color: theme.textMuted,
+                fontSize: fs(11),
+                textAlign: isRTL ? 'right' : 'left',
+              },
+            ]}
+            maxFontSizeMultiplier={1.4}
+          >
+            Powered by Google
+          </Text>
+        ) : null}
 
         <Text
           style={[
@@ -494,6 +524,11 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontFamily: fontFamily.semibold,
     marginBottom: space.xs,
+  },
+  attribution: {
+    fontFamily: fontFamily.regular,
+    marginTop: 4,
+    opacity: 0.8,
   },
   stepRow: {
     alignItems: 'flex-start',

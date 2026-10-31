@@ -95,13 +95,16 @@ npm test
 # Design-token contrast gate
 cd ../..
 node scripts/check-contrast.mjs
+
+# Google key validation (after adding the key)
+powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 ```
 
 ## API modes
 
 | Mode | Trigger | Behavior |
 |---|---|---|
-| `mock` | no Google key, or `PLANNER_MODE=mock` | Demo UJ route; agent tools return mock places/routes |
+| `mock` | no Google key, or `PLANNER_MODE=mock` | Demo UJ destinations; agent tools return mock places/routes |
 | `google` | Google key present, or `PLANNER_MODE=google` | Places API (New) + Routes API |
 | `auto` | default | `google` when a key exists, otherwise `mock` |
 
@@ -125,6 +128,7 @@ node scripts/check-contrast.mjs
 
 - [Architecture](docs/architecture.md)
 - [API](docs/api.md)
+- [Google Maps setup and validation](docs/google-maps.md)
 - [UI design system](docs/design/ui-spec.md)
 - [Accessibility testing](docs/accessibility/testing-plan.md)
 - [Roadmap](docs/product/roadmap.md)

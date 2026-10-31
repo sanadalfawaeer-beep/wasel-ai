@@ -1,7 +1,8 @@
 import httpx
+import pytest
 
 from app.geo import encode_polyline
-from app.maps import GoogleMapsClient
+from app.maps import GoogleMapsClient, MapsError
 from app.models import Destination, LatLng
 
 POINTS = [
@@ -109,6 +110,23 @@ def test_places_search_parses_destination() -> None:
     assert destination.address == DESTINATION.address
     assert destination.lat == DESTINATION.lat
     assert destination.lng == DESTINATION.lng
+
+
+def test_403_explains_billing_and_apis() -> None:
+    def denied(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(403, text='{"error":{"status":"PERMISSION_DENIED"}}')
+
+    denied_client = GoogleMapsClient(
+        api_key="test-key",
+        transport=httpx.MockTransport(denied),
+    )
+
+    with pytest.raises(MapsError) as error:
+        denied_client.find_place("library", POINTS[0], "en")
+
+    message = str(error.value)
+    assert "billing" in message
+    assert "Routes API" in message
 
 
 def test_routes_parse_steps_and_build_cues() -> None:
