@@ -1,17 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import {
   Accessibility,
   ArrowLeft,
   ArrowRight,
   Bus,
-  Check,
   ChevronLeft,
   ChevronRight,
   Mic,
   Pause,
   Play,
   Send,
-  Star,
   Vibrate,
   Volume2,
 } from 'lucide-react';
@@ -25,6 +24,7 @@ import {
   seatSections,
   ui,
   type Lang,
+  type Localized,
   type Mode,
   type Seat,
   type TripOption,
@@ -35,10 +35,69 @@ type ChatMessage = {
   text: string;
 };
 
-function SectionHead({ title }: { title: string }) {
+type SettingsState = {
+  lang: Lang;
+  mode: Mode;
+  reduceMotion: boolean;
+  voiceEnabled: boolean;
+  hapticsEnabled: boolean;
+  speechRate: number;
+};
+
+const SETTINGS_KEY = 'accessible-brt-settings';
+
+const DEFAULT_SETTINGS: SettingsState = {
+  lang: 'ar',
+  mode: 'visual',
+  reduceMotion: false,
+  voiceEnabled: true,
+  hapticsEnabled: true,
+  speechRate: 0.95,
+};
+
+function loadSettings(): SettingsState {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return DEFAULT_SETTINGS;
+    const parsed = JSON.parse(raw) as Partial<SettingsState>;
+    return {
+      lang: parsed.lang === 'en' ? 'en' : 'ar',
+      mode: parsed.mode === 'hearing' ? 'hearing' : 'visual',
+      reduceMotion: Boolean(parsed.reduceMotion),
+      voiceEnabled: parsed.voiceEnabled !== false,
+      hapticsEnabled: parsed.hapticsEnabled !== false,
+      speechRate:
+        typeof parsed.speechRate === 'number' ? parsed.speechRate : DEFAULT_SETTINGS.speechRate,
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+const pageTitles: Record<string, Localized> = {
+  '/': ui.planTitle,
+  '/trip': ui.journeyTitle,
+  '/seats': ui.seatsTitle,
+  '/chat': ui.commTitle,
+  '/settings': ui.settingsTitle,
+};
+
+function RouteEffects({ lang }: { lang: Lang }) {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const title = pageTitles[location.pathname] ?? pageTitles['/'];
+    document.title = `${L(title, lang)} — ACCESSIBLE BRT`;
+  }, [location.pathname, lang]);
+
+  return null;
+}
+
+function PageHead({ title }: { title: string }) {
   return (
-    <div className="section-head section-head-compact">
-      <h2>{title}</h2>
+    <div className="page-head">
+      <h1>{title}</h1>
     </div>
   );
 }
@@ -144,11 +203,585 @@ function SeatMap({
   );
 }
 
+function PlanPage({
+  lang,
+  destination,
+  setDestination,
+  onPlan,
+  planning,
+  trips,
+  planTrip,
+}: {
+  lang: Lang;
+  destination: string;
+  setDestination: (value: string) => void;
+  onPlan: (event: FormEvent<HTMLFormElement>) => void;
+  planning: boolean;
+  trips: TripOption[];
+  planTrip: (value?: string) => void;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+
+  return (
+    <section id="planner" className="section section-first">
+      <div className="container">
+        <div className="app-head">
+          <div className="app-head-copy">
+            <h1>{tr(ui.planTitle)}</h1>
+          </div>
+          <div className="live-status">
+            <span className="live-dot" />
+            <div>
+              <strong>{tr(ui.heroCardTitle)}</strong>
+              <small>{tr(ui.heroCardMeta)}</small>
+            </div>
+            <span className="micro-badge">{tr(ui.heroCardDemo)}</span>
+          </div>
+        </div>
+
+        <form className="planner-card" onSubmit={onPlan}>
+          <label htmlFor="destination">{tr(ui.planLabel)}</label>
+          <div className="planner-row">
+            <input
+              id="destination"
+              value={destination}
+              onChange={(event) => setDestination(event.target.value)}
+              placeholder={tr(ui.planPlaceholder)}
+              autoComplete="off"
+            />
+            <button className="btn primary" type="submit">
+              <Bus size={18} aria-hidden="true" />
+              {tr(ui.planButton)}
+            </button>
+          </div>
+          <div className="quick-row">
+            <span>{tr(ui.planQuick)}</span>
+            {quickDestinations.map((place) => (
+              <button
+                type="button"
+                className="chip"
+                key={place.en}
+                onClick={() => planTrip(L(place, lang))}
+              >
+                {L(place, lang)}
+              </button>
+            ))}
+          </div>
+        </form>
+
+        <div className="planner-output" aria-live="polite">
+          {planning ? (
+            <p className="status-line">
+              <span className="spinner" aria-hidden="true" />
+              {tr(ui.planPlanning)}
+            </p>
+          ) : null}
+          {trips.length > 0 ? (
+            <>
+              <h2 className="output-title">{tr(ui.planResults)}</h2>
+              <div className="trip-grid" aria-label={tr(ui.planAria)}>
+                {trips.map((trip) => (
+                  <TripCard key={trip.id} trip={trip} lang={lang} />
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TripPage({
+  lang,
+  mode,
+  activeStep,
+  setActiveStep,
+  tryMode,
+  speak,
+  flashScreen,
+}: {
+  lang: Lang;
+  mode: Mode;
+  activeStep: number;
+  setActiveStep: (value: number | ((current: number) => number)) => void;
+  tryMode: (next: Mode) => void;
+  speak: (text: string) => void;
+  flashScreen: () => void;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+  const selectedStep = journeySteps[activeStep];
+  const StepIcon = selectedStep.icon;
+
+  return (
+    <section id="journey" className="section section-dark page">
+      <div className="container">
+        <PageHead title={tr(ui.journeyTitle)} />
+        <div className="mode-bar">
+          <span className="mode-bar-label">{tr(ui.modeBarLabel)}</span>
+          <div className="mode-switch" role="group" aria-label={tr(ui.modeBarLabel)}>
+            <button
+              type="button"
+              className={mode === 'visual' ? 'is-active' : ''}
+              aria-pressed={mode === 'visual'}
+              onClick={() => tryMode('visual')}
+            >
+              <Volume2 size={15} aria-hidden="true" />
+              {tr(ui.modeVisualShort)}
+            </button>
+            <button
+              type="button"
+              className={mode === 'hearing' ? 'is-active' : ''}
+              aria-pressed={mode === 'hearing'}
+              onClick={() => tryMode('hearing')}
+            >
+              <Vibrate size={15} aria-hidden="true" />
+              {tr(ui.modeHearingShort)}
+            </button>
+          </div>
+        </div>
+
+        <div className="journey-grid">
+          <div className="step-list" role="tablist" aria-label={tr(ui.journeyTitle)}>
+            {journeySteps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <button
+                  type="button"
+                  key={step.id}
+                  role="tab"
+                  aria-selected={index === activeStep}
+                  className={`step-button ${index === activeStep ? 'is-active' : ''}`}
+                  onClick={() => setActiveStep(index)}
+                >
+                  <span className="step-number">{index + 1}</span>
+                  <Icon size={18} aria-hidden="true" />
+                  <span>{L(step.title, lang)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="phone" role="tabpanel" aria-live="polite">
+            <div className="phone-top">
+              <span className="phone-brand">
+                <Bus size={15} aria-hidden="true" />
+                {tr(ui.journeyPhoneTitle)}
+              </span>
+              <span className="live-pill">
+                <span className="live-dot" />
+                {tr(ui.heroCardDemo)}
+              </span>
+            </div>
+            <div className="phone-body">
+              <span className="phone-icon">
+                <StepIcon size={28} aria-hidden="true" />
+              </span>
+              <span className="phone-kicker">
+                {tr(ui.journeyStep)} {activeStep + 1}
+              </span>
+              <h3>{L(selectedStep.title, lang)}</h3>
+              <span className={`mode-pill ${mode === 'hearing' ? 'hearing' : ''}`}>
+                {mode === 'visual' ? <Volume2 size={14} aria-hidden="true" /> : <Vibrate size={14} aria-hidden="true" />}
+                {mode === 'visual' ? tr(ui.journeyAudio) : tr(ui.journeyCaptions)}
+              </span>
+              <blockquote>{L(selectedStep.sample, lang)}</blockquote>
+              <div className="phone-actions">
+                <button
+                  type="button"
+                  className="btn small light"
+                  onClick={() =>
+                    mode === 'visual'
+                      ? speak(L(selectedStep.sample, lang))
+                      : flashScreen()
+                  }
+                >
+                  {mode === 'visual' ? <Volume2 size={16} /> : <Vibrate size={16} />}
+                  {mode === 'visual' ? tr(ui.journeyListen) : tr(ui.journeyVibrate)}
+                </button>
+              </div>
+            </div>
+            <div className="phone-nav">
+              <button
+                type="button"
+                className="phone-nav-button"
+                onClick={() => setActiveStep((current) => Math.max(0, current - 1))}
+                disabled={activeStep === 0}
+              >
+                {lang === 'ar' ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
+                {tr(ui.journeyPrev)}
+              </button>
+              <span>{activeStep + 1} / {journeySteps.length}</span>
+              <button
+                type="button"
+                className="phone-nav-button"
+                onClick={() =>
+                  setActiveStep((current) => Math.min(journeySteps.length - 1, current + 1))
+                }
+                disabled={activeStep === journeySteps.length - 1}
+              >
+                {tr(ui.journeyNext)}
+                {lang === 'ar' ? <ChevronLeft size={17} /> : <ChevronRight size={17} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SeatsPage({
+  lang,
+  mode,
+  onSeat,
+  selectedSeat,
+  seatReadout,
+  readSeats,
+}: {
+  lang: Lang;
+  mode: Mode;
+  onSeat: (seat: Seat) => void;
+  selectedSeat: string | null;
+  seatReadout: string;
+  readSeats: () => void;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+  const allSeats = seatSections.flatMap((section) => section.seats);
+  const availableCount = allSeats.filter((seat) => seat.status === 'available').length;
+  const accessibleCount = allSeats.filter((seat) => seat.status === 'accessible').length;
+
+  return (
+    <section id="seats" className="section section-tint page">
+      <div className="container">
+        <PageHead title={tr(ui.seatsTitle)} />
+        <div className="seat-layout">
+          <SeatMap lang={lang} mode={mode} onSelect={onSeat} />
+          <aside className="seat-info">
+            <div className="seat-count">
+              <strong>{availableCount}</strong>
+              <span>{tr(ui.seatsAvailableCount)}</span>
+            </div>
+            <div className="seat-count">
+              <strong>{accessibleCount}</strong>
+              <span>{tr(ui.seatsAccessibleCount)}</span>
+            </div>
+            <div className="legend">
+              <span><i className="dot available" />{tr(ui.seatsAvailable)}</span>
+              <span><i className="dot occupied" />{tr(ui.seatsOccupied)}</span>
+              <span><i className="dot accessible" />{tr(ui.seatsAccessible)}</span>
+            </div>
+            <button type="button" className="btn secondary small" onClick={readSeats}>
+              <Volume2 size={15} aria-hidden="true" />
+              {tr(ui.seatsReadAll)}
+            </button>
+            {selectedSeat ? (
+              <p className="seat-selected" role="status">
+                {tr(ui.seatsSelected)}: <strong>{selectedSeat}</strong>
+              </p>
+            ) : null}
+            {seatReadout ? (
+              <p className="seat-selected" role="status">
+                {seatReadout}
+              </p>
+            ) : null}
+            <p className="note">{tr(ui.seatsNote)}</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ChatPage({
+  lang,
+  mode,
+  messages,
+  thinking,
+  chatInput,
+  setChatInput,
+  sendMessage,
+  listening,
+  startListening,
+  notice,
+}: {
+  lang: Lang;
+  mode: Mode;
+  messages: ChatMessage[];
+  thinking: boolean;
+  chatInput: string;
+  setChatInput: (value: string) => void;
+  sendMessage: (text: string) => void;
+  listening: boolean;
+  startListening: () => void;
+  notice: string;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+  const lastRiderMessage = messages.filter((message) => message.from === 'rider').slice(-1)[0];
+
+  return (
+    <section id="communication" className="section page">
+      <div className="container">
+        <PageHead title={tr(ui.commTitle)} />
+        <div className="comm-grid">
+          <div className="chat-card">
+            <div className="chat-head">
+              <span className="line-badge">BRT 102</span>
+              <span className="micro-badge">{tr(ui.commPrototype)}</span>
+            </div>
+            <div className="chat-log" aria-live="polite">
+              {messages.length === 0 ? (
+                <div className="bubble driver">
+                  <span>{tr(ui.commDriver)}</span>
+                  <p>{tr(ui.commWelcome)}</p>
+                </div>
+              ) : null}
+              {messages.map((message, index) => (
+                <div className={`bubble ${message.from}`} key={`${message.from}-${index}`}>
+                  <span>{message.from === 'rider' ? tr(ui.commRider) : tr(ui.commDriver)}</span>
+                  <p>{message.text}</p>
+                </div>
+              ))}
+              {thinking ? <p className="thinking">{tr(ui.commThinking)}</p> : null}
+            </div>
+            <div className="quick-messages">
+              <span>{tr(ui.commQuick)}</span>
+              <div>
+                {quickMessages.map((message) => (
+                  <button
+                    type="button"
+                    className="chip small"
+                    key={message.en}
+                    onClick={() => sendMessage(L(message, lang))}
+                  >
+                    {L(message, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <form className="chat-form" onSubmit={(event) => {
+              event.preventDefault();
+              sendMessage(chatInput);
+            }}>
+              <button
+                type="button"
+                className="icon-button"
+                aria-label={tr(ui.commMic)}
+                onClick={startListening}
+              >
+                {listening ? <span className="pulse-dot" /> : <Mic size={18} />}
+              </button>
+              <input
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                placeholder={tr(ui.commPlaceholder)}
+                aria-label={tr(ui.commPlaceholder)}
+              />
+              <button className="icon-button accent" type="submit" aria-label={tr(ui.commSend)}>
+                <Send size={18} />
+              </button>
+            </form>
+            {notice ? <p className="form-note">{notice}</p> : null}
+          </div>
+          <aside className="driver-card">
+            <span className="icon-tile">
+              <Bus size={22} aria-hidden="true" />
+            </span>
+            <h3>{tr(ui.commActive)}</h3>
+            <p className="driver-status"><span className="live-dot" />{tr(ui.commAi)}</p>
+            <p>{tr(ui.commConnected)}</p>
+            <div className={`driver-screen ${mode === 'hearing' ? 'is-hearing' : ''}`}>
+              <span>BRT 102</span>
+              <strong>{tr(ui.commDriver)}</strong>
+              <p>{lastRiderMessage?.text ?? tr(ui.commWelcome)}</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SettingsPage({
+  lang,
+  mode,
+  reduceMotion,
+  voiceEnabled,
+  hapticsEnabled,
+  speechRate,
+  resetNotice,
+  setLang,
+  tryMode,
+  setReduceMotion,
+  setVoiceEnabled,
+  setHapticsEnabled,
+  setSpeechRate,
+  speak,
+  flashScreen,
+  resetSettings,
+}: {
+  lang: Lang;
+  mode: Mode;
+  reduceMotion: boolean;
+  voiceEnabled: boolean;
+  hapticsEnabled: boolean;
+  speechRate: number;
+  resetNotice: boolean;
+  setLang: (value: Lang) => void;
+  tryMode: (next: Mode) => void;
+  setReduceMotion: (value: boolean) => void;
+  setVoiceEnabled: (value: boolean) => void;
+  setHapticsEnabled: (value: boolean) => void;
+  setSpeechRate: (value: number) => void;
+  speak: (text: string) => void;
+  flashScreen: () => void;
+  resetSettings: () => void;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+
+  return (
+    <section id="settings" className="section section-tint page">
+      <div className="container">
+        <PageHead title={tr(ui.settingsTitle)} />
+        <div className="settings-grid">
+          <article className="settings-card">
+            <h2>{tr(ui.settingsLanguage)}</h2>
+            <div className="segmented" role="group" aria-label={tr(ui.settingsLanguage)}>
+              <button
+                type="button"
+                className={lang === 'ar' ? 'is-active' : ''}
+                aria-pressed={lang === 'ar'}
+                onClick={() => setLang('ar')}
+              >
+                {tr(ui.arabic)}
+              </button>
+              <button
+                type="button"
+                className={lang === 'en' ? 'is-active' : ''}
+                aria-pressed={lang === 'en'}
+                onClick={() => setLang('en')}
+              >
+                EN
+              </button>
+            </div>
+          </article>
+
+          <article className="settings-card">
+            <h2>{tr(ui.settingsMode)}</h2>
+            <div className="segmented" role="group" aria-label={tr(ui.settingsMode)}>
+              <button
+                type="button"
+                className={mode === 'visual' ? 'is-active' : ''}
+                aria-pressed={mode === 'visual'}
+                onClick={() => tryMode('visual')}
+              >
+                <Volume2 size={15} aria-hidden="true" />
+                {tr(ui.modeVisualShort)}
+              </button>
+              <button
+                type="button"
+                className={mode === 'hearing' ? 'is-active' : ''}
+                aria-pressed={mode === 'hearing'}
+                onClick={() => tryMode('hearing')}
+              >
+                <Vibrate size={15} aria-hidden="true" />
+                {tr(ui.modeHearingShort)}
+              </button>
+            </div>
+          </article>
+
+          <article className="settings-card">
+            <h2>{tr(ui.settingsMotion)}</h2>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={reduceMotion}
+              aria-label={`${tr(ui.settingsMotion)}: ${reduceMotion ? tr(ui.settingsMotionOn) : tr(ui.settingsMotionOff)}`}
+              className={`toggle ${reduceMotion ? 'is-on' : ''}`}
+              onClick={() => setReduceMotion(!reduceMotion)}
+            >
+              {reduceMotion ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}
+              {reduceMotion ? tr(ui.settingsMotionOn) : tr(ui.settingsMotionOff)}
+            </button>
+          </article>
+
+          <article className="settings-card">
+            <h2>{tr(ui.settingsVoice)}</h2>
+            <div className="settings-row">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={voiceEnabled}
+                aria-label={`${tr(ui.settingsVoice)}: ${voiceEnabled ? tr(ui.settingsVoiceOn) : tr(ui.settingsVoiceOff)}`}
+                className={`toggle ${voiceEnabled ? 'is-on' : ''}`}
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+              >
+                {voiceEnabled ? <Volume2 size={15} aria-hidden="true" /> : <Volume2 size={15} opacity={0.4} aria-hidden="true" />}
+                {voiceEnabled ? tr(ui.settingsVoiceOn) : tr(ui.settingsVoiceOff)}
+              </button>
+              <button
+                type="button"
+                className="btn secondary small"
+                onClick={() => speak(tr(ui.modeSample))}
+                disabled={!voiceEnabled}
+              >
+                {tr(ui.settingsTestVoice)}
+              </button>
+            </div>
+            <div className="settings-row">
+              <label htmlFor="speech-rate">{tr(ui.settingsSpeechRate)}</label>
+              <select
+                id="speech-rate"
+                className="settings-select"
+                value={speechRate}
+                disabled={!voiceEnabled}
+                onChange={(event) => setSpeechRate(Number(event.target.value))}
+              >
+                <option value={0.8}>{tr(ui.settingsRateSlow)}</option>
+                <option value={0.95}>{tr(ui.settingsRateNormal)}</option>
+                <option value={1.1}>{tr(ui.settingsRateFast)}</option>
+              </select>
+            </div>
+          </article>
+
+          <article className="settings-card">
+            <h2>{tr(ui.settingsHaptics)}</h2>
+            <div className="settings-row">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hapticsEnabled}
+                aria-label={`${tr(ui.settingsHaptics)}: ${hapticsEnabled ? tr(ui.settingsHapticsOn) : tr(ui.settingsHapticsOff)}`}
+                className={`toggle ${hapticsEnabled ? 'is-on' : ''}`}
+                onClick={() => setHapticsEnabled(!hapticsEnabled)}
+              >
+                <Vibrate size={15} aria-hidden="true" />
+                {hapticsEnabled ? tr(ui.settingsHapticsOn) : tr(ui.settingsHapticsOff)}
+              </button>
+              <button type="button" className="btn secondary small" onClick={flashScreen}>
+                {tr(ui.settingsTestFlash)}
+              </button>
+            </div>
+          </article>
+
+          <article className="settings-card">
+            <h2>{tr(ui.settingsData)}</h2>
+            <button type="button" className="btn secondary small" onClick={resetSettings}>
+              {tr(ui.settingsReset)}
+            </button>
+            {resetNotice ? (
+              <p className="note" role="status">{tr(ui.settingsResetDone)}</p>
+            ) : null}
+          </article>
+        </div>
+        <p className="note settings-note">{tr(ui.settingsSimNote)}</p>
+      </div>
+    </section>
+  );
+}
+
 function App() {
-  const [lang, setLang] = useState<Lang>('ar');
-  const [mode, setMode] = useState<Mode>('visual');
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [flash, setFlash] = useState(false);
+  const [settings, setSettings] = useState<SettingsState>(loadSettings);
   const [activeStep, setActiveStep] = useState(0);
   const [destination, setDestination] = useState('');
   const [trips, setTrips] = useState<TripOption[]>([]);
@@ -160,45 +793,59 @@ function App() {
   const [thinking, setThinking] = useState(false);
   const [listening, setListening] = useState(false);
   const [notice, setNotice] = useState('');
-  const [surveyName, setSurveyName] = useState('');
-  const [surveyCategory, setSurveyCategory] = useState('');
-  const [surveyRating, setSurveyRating] = useState(0);
-  const [surveyNotes, setSurveyNotes] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [resetNotice, setResetNotice] = useState(false);
+  const [flash, setFlash] = useState(false);
 
-  const tr = (value: { ar: string; en: string }) => L(value, lang);
+  const { lang, mode, reduceMotion, voiceEnabled, hapticsEnabled, speechRate } = settings;
+  const tr = (value: Localized) => L(value, lang);
 
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.title =
-      lang === 'ar'
-        ? 'ACCESSIBLE BRT — النقل الذكي والمتاح للجميع'
-        : 'ACCESSIBLE BRT — Smart, accessible transport';
   }, [lang]);
 
   useEffect(() => {
     document.documentElement.dataset.reduceMotion = String(reduceMotion);
   }, [reduceMotion]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch {
+      // Settings stay in memory when storage is unavailable.
+    }
+  }, [settings]);
+
+  const update = (patch: Partial<SettingsState>) => {
+    setSettings((current) => ({ ...current, ...patch }));
+  };
+
+  const setLang = (next: Lang) => update({ lang: next });
+  const setReduceMotion = (value: boolean) => update({ reduceMotion: value });
+  const setVoiceEnabled = (value: boolean) => update({ voiceEnabled: value });
+  const setHapticsEnabled = (value: boolean) => update({ hapticsEnabled: value });
+  const setSpeechRate = (value: number) => update({ speechRate: value });
+
   const speak = (text: string) => {
-    if (!('speechSynthesis' in window)) return;
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
-    utterance.rate = 0.95;
+    utterance.rate = speechRate;
     window.speechSynthesis.speak(utterance);
   };
 
   const flashScreen = () => {
     setFlash(true);
     window.setTimeout(() => setFlash(false), 900);
-    const nav = navigator as Navigator & { vibrate?: (pattern: number[]) => boolean };
-    nav.vibrate?.([80, 50, 80]);
+    if (hapticsEnabled) {
+      const nav = navigator as Navigator & { vibrate?: (pattern: number[]) => boolean };
+      nav.vibrate?.([80, 50, 80]);
+    }
   };
 
   const tryMode = (next: Mode) => {
-    setMode(next);
+    update({ mode: next });
     if (next === 'visual') speak(tr(ui.modeSample));
     else flashScreen();
   };
@@ -273,11 +920,6 @@ function App() {
     }, 900);
   };
 
-  const onChatSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    sendMessage(chatInput);
-  };
-
   const startListening = () => {
     const speechWindow = window as unknown as {
       SpeechRecognition?: new () => {
@@ -320,41 +962,36 @@ function App() {
     }
   };
 
-  const onSurvey = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitted(true);
+  const resetSettings = () => {
+    setSettings(DEFAULT_SETTINGS);
+    setResetNotice(true);
     try {
-      localStorage.setItem(
-        'accessible-brt-survey',
-        JSON.stringify({
-          name: surveyName,
-          category: surveyCategory,
-          rating: surveyRating,
-          notes: surveyNotes,
-          at: new Date().toISOString(),
-        }),
-      );
+      localStorage.removeItem(SETTINGS_KEY);
     } catch {
-      // Local storage is optional for this prototype.
+      // Ignore storage failures.
     }
+    window.setTimeout(() => setResetNotice(false), 3000);
   };
-
-  const allSeats = seatSections.flatMap((section) => section.seats);
-  const availableCount = allSeats.filter((seat) => seat.status === 'available').length;
-  const accessibleCount = allSeats.filter((seat) => seat.status === 'accessible').length;
-  const selectedStep = journeySteps[activeStep];
-  const StepIcon = selectedStep.icon;
 
   return (
     <>
-      <a className="skip-link" href="#main">
+      <RouteEffects lang={lang} />
+      <button
+        type="button"
+        className="skip-link"
+        onClick={() => {
+          const main = document.getElementById('main');
+          main?.focus();
+          main?.scrollIntoView();
+        }}
+      >
         {tr(ui.skip)}
-      </a>
+      </button>
       <div className={`flash-overlay ${flash ? 'is-flashing' : ''}`} aria-hidden="true" />
 
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="#planner" aria-label="ACCESSIBLE BRT">
+          <NavLink className="brand" to="/" end aria-label="ACCESSIBLE BRT">
             <span className="brand-mark">
               <Bus size={21} aria-hidden="true" />
             </span>
@@ -362,421 +999,115 @@ function App() {
               <strong>ACCESSIBLE BRT</strong>
               <small>{tr(ui.brandTag)}</small>
             </span>
-          </a>
+          </NavLink>
           <nav className="nav" aria-label={lang === 'ar' ? 'التنقل' : 'Navigation'}>
             {navItems.map((item) => (
-              <a key={item.id} href={`#${item.id}`}>
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) => (isActive ? 'is-active' : '')}
+              >
                 {L(item.label, lang)}
-              </a>
+              </NavLink>
             ))}
           </nav>
-          <div className="header-controls">
-            <div className="lang-switch" role="group" aria-label={tr(ui.language)}>
-              <button
-                type="button"
-                className={lang === 'ar' ? 'is-active' : ''}
-                aria-pressed={lang === 'ar'}
-                onClick={() => setLang('ar')}
-              >
-                {tr(ui.arabic)}
-              </button>
-              <button
-                type="button"
-                className={lang === 'en' ? 'is-active' : ''}
-                aria-pressed={lang === 'en'}
-                onClick={() => setLang('en')}
-              >
-                EN
-              </button>
-            </div>
-            <button
-              type="button"
-              className="motion-toggle"
-              aria-pressed={reduceMotion}
-              onClick={() => setReduceMotion((current) => !current)}
-            >
-              {reduceMotion ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}
-              {reduceMotion ? tr(ui.motionOn) : tr(ui.motionOff)}
-            </button>
-          </div>
         </div>
       </header>
 
-      <main id="main">
-        <section id="planner" className="section section-first">
-          <div className="container">
-            <div className="app-head">
-              <div className="app-head-copy">
-                <h1>{tr(ui.planTitle)}</h1>
-              </div>
-              <div className="live-status">
-                <span className="live-dot" />
-                <div>
-                  <strong>{tr(ui.heroCardTitle)}</strong>
-                  <small>{tr(ui.heroCardMeta)}</small>
-                </div>
-                <span className="micro-badge">{tr(ui.heroCardDemo)}</span>
-              </div>
-            </div>
-            <form className="planner-card" onSubmit={onPlan}>
-              <label htmlFor="destination">{tr(ui.planLabel)}</label>
-              <div className="planner-row">
-                <input
-                  id="destination"
-                  value={destination}
-                  onChange={(event) => setDestination(event.target.value)}
-                  placeholder={tr(ui.planPlaceholder)}
-                  autoComplete="off"
-                />
-                <button className="btn primary" type="submit">
-                  <Bus size={18} aria-hidden="true" />
-                  {tr(ui.planButton)}
-                </button>
-              </div>
-              <div className="quick-row">
-                <span>{tr(ui.planQuick)}</span>
-                {quickDestinations.map((place) => (
-                  <button
-                    type="button"
-                    className="chip"
-                    key={place.en}
-                    onClick={() => planTrip(L(place, lang))}
-                  >
-                    {L(place, lang)}
-                  </button>
-                ))}
-              </div>
-            </form>
-            <div className="planner-output" aria-live="polite">
-              {planning ? (
-                <p className="status-line">
-                  <span className="spinner" aria-hidden="true" />
-                  {tr(ui.planPlanning)}
-                </p>
-              ) : null}
-              {trips.length > 0 ? (
-                <>
-                  <h3 className="output-title">{tr(ui.planResults)}</h3>
-                  <div className="trip-grid" aria-label={tr(ui.planAria)}>
-                    {trips.map((trip) => (
-                      <TripCard key={trip.id} trip={trip} lang={lang} />
-                    ))}
-                  </div>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </section>
-
-        <section id="journey" className="section section-dark">
-          <div className="container">
-            <SectionHead title={tr(ui.journeyTitle)} />
-            <div className="mode-bar">
-              <span className="mode-bar-label">{tr(ui.modeBarLabel)}</span>
-              <div className="mode-switch" role="group" aria-label={tr(ui.modeBarLabel)}>
-                <button
-                  type="button"
-                  className={mode === 'visual' ? 'is-active' : ''}
-                  aria-pressed={mode === 'visual'}
-                  onClick={() => tryMode('visual')}
-                >
-                  <Volume2 size={15} aria-hidden="true" />
-                  {tr(ui.modeVisualShort)}
-                </button>
-                <button
-                  type="button"
-                  className={mode === 'hearing' ? 'is-active' : ''}
-                  aria-pressed={mode === 'hearing'}
-                  onClick={() => tryMode('hearing')}
-                >
-                  <Vibrate size={15} aria-hidden="true" />
-                  {tr(ui.modeHearingShort)}
-                </button>
-              </div>
-            </div>
-            <div className="journey-grid">
-              <div className="step-list" role="tablist" aria-label={tr(ui.journeyTitle)}>
-                {journeySteps.map((step, index) => {
-                  const Icon = step.icon;
-                  return (
-                    <button
-                      type="button"
-                      key={step.id}
-                      role="tab"
-                      aria-selected={index === activeStep}
-                      className={`step-button ${index === activeStep ? 'is-active' : ''}`}
-                      onClick={() => setActiveStep(index)}
-                    >
-                      <span className="step-number">{index + 1}</span>
-                      <Icon size={18} aria-hidden="true" />
-                      <span>{L(step.title, lang)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="phone" role="tabpanel" aria-live="polite">
-                <div className="phone-top">
-                  <span className="phone-brand">
-                    <Bus size={15} aria-hidden="true" />
-                    {tr(ui.journeyPhoneTitle)}
-                  </span>
-                  <span className="live-pill">
-                    <span className="live-dot" />
-                    {tr(ui.heroCardDemo)}
-                  </span>
-                </div>
-                <div className="phone-body">
-                  <span className="phone-icon">
-                    <StepIcon size={28} aria-hidden="true" />
-                  </span>
-                  <span className="phone-kicker">
-                    {tr(ui.journeyStep)} {activeStep + 1}
-                  </span>
-                  <h3>{L(selectedStep.title, lang)}</h3>
-                  <span className={`mode-pill ${mode === 'hearing' ? 'hearing' : ''}`}>
-                    {mode === 'visual' ? <Volume2 size={14} aria-hidden="true" /> : <Vibrate size={14} aria-hidden="true" />}
-                    {mode === 'visual' ? tr(ui.journeyAudio) : tr(ui.journeyCaptions)}
-                  </span>
-                  <blockquote>{L(selectedStep.sample, lang)}</blockquote>
-                  <div className="phone-actions">
-                    <button
-                      type="button"
-                      className="btn small light"
-                      onClick={() =>
-                        mode === 'visual'
-                          ? speak(L(selectedStep.sample, lang))
-                          : flashScreen()
-                      }
-                    >
-                      {mode === 'visual' ? <Volume2 size={16} /> : <Vibrate size={16} />}
-                      {mode === 'visual' ? tr(ui.journeyListen) : tr(ui.journeyVibrate)}
-                    </button>
-                  </div>
-                </div>
-                <div className="phone-nav">
-                  <button
-                    type="button"
-                    className="phone-nav-button"
-                    onClick={() => setActiveStep((current) => Math.max(0, current - 1))}
-                    disabled={activeStep === 0}
-                  >
-                    {lang === 'ar' ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
-                    {tr(ui.journeyPrev)}
-                  </button>
-                  <span>{activeStep + 1} / {journeySteps.length}</span>
-                  <button
-                    type="button"
-                    className="phone-nav-button"
-                    onClick={() =>
-                      setActiveStep((current) => Math.min(journeySteps.length - 1, current + 1))
-                    }
-                    disabled={activeStep === journeySteps.length - 1}
-                  >
-                    {tr(ui.journeyNext)}
-                    {lang === 'ar' ? <ChevronLeft size={17} /> : <ChevronRight size={17} />}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="seats" className="section section-tint">
-          <div className="container">
-            <SectionHead title={tr(ui.seatsTitle)} />
-            <div className="seat-layout">
-              <SeatMap lang={lang} mode={mode} onSelect={onSeat} />
-              <aside className="seat-info">
-                <div className="seat-count">
-                  <strong>{availableCount}</strong>
-                  <span>{tr(ui.seatsAvailableCount)}</span>
-                </div>
-                <div className="seat-count">
-                  <strong>{accessibleCount}</strong>
-                  <span>{tr(ui.seatsAccessibleCount)}</span>
-                </div>
-                <div className="legend">
-                  <span><i className="dot available" />{tr(ui.seatsAvailable)}</span>
-                  <span><i className="dot occupied" />{tr(ui.seatsOccupied)}</span>
-                  <span><i className="dot accessible" />{tr(ui.seatsAccessible)}</span>
-                </div>
-                <button type="button" className="btn secondary small" onClick={readSeats}>
-                  <Volume2 size={15} aria-hidden="true" />
-                  {tr(ui.seatsReadAll)}
-                </button>
-                {selectedSeat ? (
-                  <p className="seat-selected" role="status">
-                    {tr(ui.seatsSelected)}: <strong>{selectedSeat}</strong>
-                  </p>
-                ) : null}
-                {seatReadout ? (
-                  <p className="seat-selected" role="status">
-                    {seatReadout}
-                  </p>
-                ) : null}
-                <p className="note">{tr(ui.seatsNote)}</p>
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        <section id="communication" className="section">
-          <div className="container">
-            <SectionHead title={tr(ui.commTitle)} />
-            <div className="comm-grid">
-              <div className="chat-card">
-                <div className="chat-head">
-                  <span className="line-badge">BRT 102</span>
-                  <span className="micro-badge">{tr(ui.commPrototype)}</span>
-                </div>
-                <div className="chat-log" aria-live="polite">
-                  {messages.length === 0 ? (
-                    <div className="bubble driver">
-                      <span>{tr(ui.commDriver)}</span>
-                      <p>{tr(ui.commWelcome)}</p>
-                    </div>
-                  ) : null}
-                  {messages.map((message, index) => (
-                    <div className={`bubble ${message.from}`} key={`${message.from}-${index}`}>
-                      <span>{message.from === 'rider' ? tr(ui.commRider) : tr(ui.commDriver)}</span>
-                      <p>{message.text}</p>
-                    </div>
-                  ))}
-                  {thinking ? <p className="thinking">{tr(ui.commThinking)}</p> : null}
-                </div>
-                <div className="quick-messages">
-                  <span>{tr(ui.commQuick)}</span>
-                  <div>
-                    {quickMessages.map((message) => (
-                      <button
-                        type="button"
-                        className="chip small"
-                        key={message.en}
-                        onClick={() => sendMessage(L(message, lang))}
-                      >
-                        {L(message, lang)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <form className="chat-form" onSubmit={onChatSubmit}>
-                  <button
-                    type="button"
-                    className="icon-button"
-                    aria-label={tr(ui.commMic)}
-                    onClick={startListening}
-                  >
-                    {listening ? <span className="pulse-dot" /> : <Mic size={18} />}
-                  </button>
-                  <input
-                    value={chatInput}
-                    onChange={(event) => setChatInput(event.target.value)}
-                    placeholder={tr(ui.commPlaceholder)}
-                    aria-label={tr(ui.commPlaceholder)}
-                  />
-                  <button className="icon-button accent" type="submit" aria-label={tr(ui.commSend)}>
-                    <Send size={18} />
-                  </button>
-                </form>
-                {notice ? <p className="form-note">{notice}</p> : null}
-              </div>
-              <aside className="driver-card">
-                <span className="icon-tile">
-                  <Bus size={22} aria-hidden="true" />
-                </span>
-                <h3>{tr(ui.commActive)}</h3>
-                <p className="driver-status"><span className="live-dot" />{tr(ui.commAi)}</p>
-                <p>{tr(ui.commConnected)}</p>
-                <div className="driver-screen">
-                  <span>BRT 102</span>
-                  <strong>{tr(ui.commDriver)}</strong>
-                  <p>{messages.filter((message) => message.from === 'rider').slice(-1)[0]?.text ?? tr(ui.commWelcome)}</p>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        <section id="survey" className="section section-tint">
-          <div className="container survey-wrap">
-            <div>
-              <SectionHead title={tr(ui.surveyTitle)} />
-              <p className="note">{tr(ui.surveyLocal)}</p>
-            </div>
-            {submitted ? (
-              <div className="survey-success" role="status">
-                <span className="icon-tile">
-                  <Check size={24} aria-hidden="true" />
-                </span>
-                <p>{tr(ui.surveySuccess)}</p>
-              </div>
-            ) : (
-              <form className="survey-card" onSubmit={onSurvey}>
-                <label>
-                  {tr(ui.surveyName)}
-                  <input
-                    value={surveyName}
-                    onChange={(event) => setSurveyName(event.target.value)}
-                    autoComplete="name"
-                  />
-                </label>
-                <label>
-                  {tr(ui.surveyCategory)}
-                  <select
-                    value={surveyCategory}
-                    onChange={(event) => setSurveyCategory(event.target.value)}
-                    required
-                  >
-                    <option value="" disabled>
-                      {lang === 'ar' ? 'اختر الفئة' : 'Choose a category'}
-                    </option>
-                    {ui.surveyCategoryOptions.map((category) => (
-                      <option key={category.en} value={L(category, lang)}>
-                        {L(category, lang)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <fieldset>
-                  <legend>{tr(ui.surveyRating)}</legend>
-                  <div className="rating-row">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        type="button"
-                        key={value}
-                        className={`star-button ${value <= surveyRating ? 'is-filled' : ''}`}
-                        aria-label={`${value} / 5`}
-                        aria-pressed={value <= surveyRating}
-                        onClick={() => setSurveyRating(value)}
-                      >
-                        <Star size={22} fill={value <= surveyRating ? 'currentColor' : 'none'} />
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-                <label>
-                  {tr(ui.surveyNotes)}
-                  <textarea
-                    value={surveyNotes}
-                    onChange={(event) => setSurveyNotes(event.target.value)}
-                    rows={4}
-                  />
-                </label>
-                <button className="btn primary" type="submit" disabled={!surveyRating || !surveyCategory}>
-                  {tr(ui.surveySubmit)}
-                </button>
-              </form>
-            )}
-          </div>
-        </section>
+      <main id="main" tabIndex={-1}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <PlanPage
+                lang={lang}
+                destination={destination}
+                setDestination={setDestination}
+                onPlan={onPlan}
+                planning={planning}
+                trips={trips}
+                planTrip={planTrip}
+              />
+            }
+          />
+          <Route
+            path="/trip"
+            element={
+              <TripPage
+                lang={lang}
+                mode={mode}
+                activeStep={activeStep}
+                setActiveStep={setActiveStep}
+                tryMode={tryMode}
+                speak={speak}
+                flashScreen={flashScreen}
+              />
+            }
+          />
+          <Route
+            path="/seats"
+            element={
+              <SeatsPage
+                lang={lang}
+                mode={mode}
+                onSeat={onSeat}
+                selectedSeat={selectedSeat}
+                seatReadout={seatReadout}
+                readSeats={readSeats}
+              />
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ChatPage
+                lang={lang}
+                mode={mode}
+                messages={messages}
+                thinking={thinking}
+                chatInput={chatInput}
+                setChatInput={setChatInput}
+                sendMessage={sendMessage}
+                listening={listening}
+                startListening={startListening}
+                notice={notice}
+              />
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <SettingsPage
+                lang={lang}
+                mode={mode}
+                reduceMotion={reduceMotion}
+                voiceEnabled={voiceEnabled}
+                hapticsEnabled={hapticsEnabled}
+                speechRate={speechRate}
+                resetNotice={resetNotice}
+                setLang={setLang}
+                tryMode={tryMode}
+                setReduceMotion={setReduceMotion}
+                setVoiceEnabled={setVoiceEnabled}
+                setHapticsEnabled={setHapticsEnabled}
+                setSpeechRate={setSpeechRate}
+                speak={speak}
+                flashScreen={flashScreen}
+                resetSettings={resetSettings}
+              />
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       <footer className="footer">
         <div className="container footer-min">
-          <a className="brand footer-brand" href="#planner">
+          <NavLink className="brand footer-brand" to="/" end>
             <span className="brand-mark"><Bus size={20} aria-hidden="true" /></span>
             <span className="brand-copy"><strong>ACCESSIBLE BRT</strong><small>{tr(ui.brandTag)}</small></span>
-          </a>
+          </NavLink>
           <p>{tr(ui.footerDisclaimer)}</p>
           <p className="footer-rights">{tr(ui.footerRights)}</p>
         </div>

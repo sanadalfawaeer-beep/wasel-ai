@@ -107,7 +107,7 @@ powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 
 ## ACCESSIBLE BRT website (bus-only)
 
-A standalone Arabic-first website built from the ACCESSIBLE BRT prototype spec. It keeps the working tools: destination planning, bus line and boarding stop, arrival time, empty-seat display, the seven-step rider journey, a visual/hearing mode switch, AI driver chat, the seat-sensor simulation, and the survey. The about/features/impact explainer sections are intentionally omitted.
+A standalone Arabic-first website built from the ACCESSIBLE BRT prototype spec. It is split into routed pages: Plan, Trip, Seats, Chat, and Settings. It keeps the working tools: destination planning, bus line and boarding stop, arrival time, empty-seat display, the seven-step rider journey, a visual/hearing mode switch, AI driver chat, the seat-sensor simulation, and persisted accessibility settings. The about/features/impact/survey sections are intentionally omitted.
 
 No backend or Google key is needed:
 

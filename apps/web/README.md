@@ -1,6 +1,6 @@
 # ACCESSIBLE BRT website
 
-Bus-only Arabic-first website for the ACCESSIBLE BRT university project. It keeps the working tools only: trip planning, arrival time, empty-seat display, a seven-step rider journey, a visual/hearing mode switch, AI driver chat, and a survey. There are no about/features/impact explainer sections.
+Bus-only Arabic-first website for the ACCESSIBLE BRT university project. It is split into routed pages: **Plan**, **Trip**, **Seats**, **Chat**, and **Settings**. The working tools are trip planning, arrival time, empty-seat display, a seven-step rider journey, a visual/hearing mode switch, AI driver chat, and persisted accessibility settings. There are no about/features/impact/survey sections.
 
 No backend or Google API key is required. Bus times and seat occupancy are local simulations and are labelled as such throughout the UI.
 
@@ -26,9 +26,21 @@ powershell -ExecutionPolicy Bypass -File scripts\demo-accessible-web.ps1
 npm run build
 ```
 
+## Pages
+
+| Route | Purpose |
+|---|---|
+| `/` | Plan a trip, see the bus line, arrival time, and seats |
+| `/trip` | Seven-step rider journey and visual/hearing switch |
+| `/seats` | Interactive seat map and spoken seat availability |
+| `/chat` | Rider–driver chat |
+| `/settings` | Language, accessibility mode, motion, voice, speech rate, haptics, reset |
+
+Settings are stored in `localStorage` under `accessible-brt-settings`.
+
 ## What is real vs simulated
 
-- Working interactions: destination → bus line, boarding stop, arrival clock, available seats, seat map, TTS, speech recognition where the browser supports it, flash/haptic hearing mode, chat, survey saved to `localStorage`.
+- Working interactions: destination → bus line, boarding stop, arrival clock, available seats, seat map, TTS, speech recognition where the browser supports it, flash/haptic hearing mode, chat, and settings saved to `localStorage`.
 - Simulated: bus times, seat counts, seat states, and driver replies. Real occupancy needs an operator APC feed or crowdsourced reports; real arrival data needs GTFS-RT or an operator API.
 
 ## Accessibility notes
@@ -44,6 +56,6 @@ npm run build
 | File | Purpose |
 |---|---|
 | `src/content.ts` | Arabic/English copy, journey, seats, trips, messages |
-| `src/App.tsx` | Planner, journey, mode switch, seats, chat, survey state |
+| `src/App.tsx` | Routes, planner, journey, seats, chat, settings, shared state |
 | `src/styles.css` | Cherry-red light theme, responsive RTL/LTR layout |
 | `index.html` | RTL shell, metadata, Google Fonts (IBM Plex Sans Arabic + Space Grotesk) |

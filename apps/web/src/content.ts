@@ -37,11 +37,11 @@ export const l = (ar: string, en: string): Localized => ({ ar, en });
 export const L = (value: Localized, lang: Lang): string => value[lang];
 
 export const navItems = [
-  { id: 'planner', label: l('خطط رحلتك', 'Plan a trip') },
-  { id: 'journey', label: l('الرحلة', 'Trip') },
-  { id: 'seats', label: l('المقاعد', 'Seats') },
-  { id: 'communication', label: l('التواصل', 'Chat') },
-  { id: 'survey', label: l('الاستبيان', 'Survey') },
+  { path: '/', label: l('خطط رحلتك', 'Plan a trip') },
+  { path: '/trip', label: l('الرحلة', 'Trip') },
+  { path: '/seats', label: l('المقاعد', 'Seats') },
+  { path: '/chat', label: l('التواصل', 'Chat') },
+  { path: '/settings', label: l('الإعدادات', 'Settings') },
 ];
 
 export const ui = {
@@ -222,26 +222,31 @@ export const ui = {
   commReplyStation: l('المحطة القادمة هي مجمع الشمال. سأبقي الأبواب مفتوحة عند وصولك.', 'The next station is the North Complex. I’ll keep the doors open when we arrive.'),
   commReplyDefault: l('أنا هنا للمساعدة. سأنتظرك حتى تكمل الصعود.', 'I’m here to help. I’ll wait until you finish boarding.'),
 
-  impactEyebrow: l('الأثر المجتمعي والتطويري', 'Community impact'),
-  impactTitle: l('أثر مشروع ACCESSIBLE BRT', 'The impact of ACCESSIBLE BRT'),
-  impactDesc: l('رؤية تطبيقية تحوّل التحديات اليومية إلى فرص للتنقل الحر والآمن.', 'Turning daily barriers into opportunities for free, safe mobility.'),
-
-  surveyEyebrow: l('شاركنا رأيك', 'Share your feedback'),
-  surveyTitle: l('الاستبيان', 'Survey'),
-  surveyDesc: l('آراؤكم هي الحجر الأساس في إثراء هذا المشروع الجامعي.', 'Your feedback shapes this university project.'),
-  surveyName: l('الاسم (اختياري)', 'Name (optional)'),
-  surveyCategory: l('الفئة الفاعلة', 'Rider category'),
-  surveyRating: l('تقييمك لفكرة ومميزات المشروع', 'Rate the project idea and features'),
-  surveyNotes: l('الملاحظات والاقتراحات', 'Notes and suggestions'),
-  surveySubmit: l('إرسال الاستبيان', 'Submit survey'),
-  surveySuccess: l('شكرًا لك! تم تسجيل ملاحظاتك محليًا.', 'Thank you! Your feedback has been saved locally.'),
-  surveyLocal: l('نموذج أولي: تُحفظ الإجابات في هذا المتصفح فقط.', 'Prototype: responses stay in this browser only.'),
-  surveyCategoryOptions: [
-    l('شخص كفيف أو ضعيف البصر', 'Blind or low-vision rider'),
-    l('شخص أصم أو ضعيف السمع', 'Deaf or hard-of-hearing rider'),
-    l('مرافق أو أفراد العائلة', 'Companion or family member'),
-    l('مشغل نقل أو جهة أكاديمية', 'Transit operator or academic'),
-  ],
+  settingsTitle: l('الإعدادات', 'Settings'),
+  settingsLanguage: l('اللغة', 'Language'),
+  settingsMode: l('وضع الإتاحة', 'Accessibility mode'),
+  settingsMotion: l('تقليل الحركة', 'Reduce motion'),
+  settingsMotionOn: l('الحركة مقللة', 'Motion reduced'),
+  settingsMotionOff: l('الحركة مفعلة', 'Motion enabled'),
+  settingsVoice: l('الإرشاد الصوتي', 'Voice guidance'),
+  settingsVoiceOn: l('الصوت مفعّل', 'Voice on'),
+  settingsVoiceOff: l('الصوت متوقف', 'Voice off'),
+  settingsHaptics: l('الاهتزاز والوميض', 'Haptics & flash'),
+  settingsHapticsOn: l('مفعّل', 'On'),
+  settingsHapticsOff: l('متوقف', 'Off'),
+  settingsSpeechRate: l('سرعة الصوت', 'Voice speed'),
+  settingsRateSlow: l('بطيء', 'Slow'),
+  settingsRateNormal: l('عادي', 'Normal'),
+  settingsRateFast: l('سريع', 'Fast'),
+  settingsTestVoice: l('اختبار الصوت', 'Test voice'),
+  settingsTestFlash: l('اختبار الوميض', 'Test flash'),
+  settingsData: l('البيانات', 'Data'),
+  settingsReset: l('إعادة ضبط الإعدادات', 'Reset settings'),
+  settingsResetDone: l('تمت إعادة الضبط', 'Settings reset'),
+  settingsSimNote: l(
+    'بيانات الباص والمقاعد والردود في هذا النموذج محاكاة وليست بيانات تشغيل حية.',
+    'Bus times, seat data, and replies in this prototype are simulated, not live operator data.',
+  ),
 
   footerLinks: l('روابط التنقل السريع', 'Quick links'),
   footerDisclaimer: l(
