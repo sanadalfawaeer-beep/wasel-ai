@@ -204,6 +204,7 @@ export const ui = {
   seatsAvailableCount: l('مقعد متاح', 'available seats'),
   seatsAccessibleCount: l('مقعد مخصص', 'accessible seat'),
   seatsNote: l('بيانات افتراضية لشرح النموذج الأولي، وليست قراءة حية من باص أردني.', 'Simulated data for the prototype, not a live reading from an Amman bus.'),
+  seatsUnavailable: l('بيانات المقاعد غير متاحة لهذا الخط.', 'Seat data is unavailable for this line.'),
   seatsSelected: l('تم اختيار المقعد', 'Selected seat'),
   seatsLegendTitle: l('حالة المقاعد', 'Seat status'),
   seatsReadAll: l('قراءة المقاعد صوتاً', 'Read seats aloud'),

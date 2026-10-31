@@ -480,23 +480,27 @@ function PlanPage({
                   </span>
                 </div>
               </div>
-              <div className="trip-detail-grid">
-                <SeatMap
-                  lang={lang}
-                  mode={mode}
-                  onSelect={onSeat}
-                  sections={selectedTripSeats}
-                />
-                <aside className="trip-detail-side">
-                  <h3>{tr(ui.seatsLegendTitle)}</h3>
-                  <div className="legend">
-                    <span><i className="dot available" />{tr(ui.seatsAvailable)}</span>
-                    <span><i className="dot occupied" />{tr(ui.seatsOccupied)}</span>
-                    <span><i className="dot accessible" />{tr(ui.seatsAccessible)}</span>
-                  </div>
-                  <p className="note">{tr(ui.seatsNote)}</p>
-                </aside>
-              </div>
+              {selectedTrip.seats != null ? (
+                <div className="trip-detail-grid">
+                  <SeatMap
+                    lang={lang}
+                    mode={mode}
+                    onSelect={onSeat}
+                    sections={selectedTripSeats}
+                  />
+                  <aside className="trip-detail-side">
+                    <h3>{tr(ui.seatsLegendTitle)}</h3>
+                    <div className="legend">
+                      <span><i className="dot available" />{tr(ui.seatsAvailable)}</span>
+                      <span><i className="dot occupied" />{tr(ui.seatsOccupied)}</span>
+                      <span><i className="dot accessible" />{tr(ui.seatsAccessible)}</span>
+                    </div>
+                    <p className="note">{tr(ui.seatsNote)}</p>
+                  </aside>
+                </div>
+              ) : (
+                <p className="note">{tr(ui.seatsUnavailable)}</p>
+              )}
             </div>
           ) : null}
 
