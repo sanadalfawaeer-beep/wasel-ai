@@ -48,7 +48,8 @@ Settings are stored in `localStorage` under `accessible-brt-settings`.
 Voice input uses the browser SpeechRecognition API and requires a **secure context**:
 
 - Use `http://localhost:5174` on the same PC, or serve the site over HTTPS.
-- Plain `http://192.168.x.x` addresses are not secure contexts, so browsers block the microphone.
+- Plain `http://192.168.x.x` addresses are not secure contexts, so browsers block the microphone. They may also be unreachable from a phone because of Wi-Fi client isolation or the Windows firewall.
+- For Safari/iOS, use an HTTPS tunnel to the local server. Vite is configured to allow `.trycloudflare.com` hosts for this purpose.
 - Use Chrome or Edge. Some Chromium-based browsers do not ship the speech-recognition service.
 - Allow microphone access when prompted.
 - Spoken replies use the system TTS voices. Arabic speech needs an Arabic voice installed in the OS/browser.
