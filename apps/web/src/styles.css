@@ -647,6 +647,28 @@ html[dir='rtl'] .brand-copy strong {
   flex: 0 0 auto;
 }
 
+.welcome-auto {
+  margin-block-start: 18px;
+  color: var(--on-dark-muted);
+  font-size: 12px;
+}
+
+.welcome-timer {
+  width: min(320px, 100%);
+  height: 3px;
+  margin-block-start: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.welcome-timer span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 1s linear;
+}
+
 /* Hero */
 .hero {
   position: relative;
@@ -920,6 +942,7 @@ html[lang='ar'] .hero h1 {
 }
 
 .trip-card {
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 20px;
@@ -927,12 +950,22 @@ html[lang='ar'] .hero h1 {
   display: flex;
   flex-direction: column;
   gap: 11px;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  appearance: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .trip-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
+}
+
+.trip-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow);
 }
 
 .trip-top {
@@ -1004,11 +1037,126 @@ html[lang='ar'] .hero h1 {
 }
 
 .trip-bottom strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--accent);
 }
 
 .trip-bottom span {
   color: var(--muted);
+}
+
+.trip-seat-cta {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  border-top: 1px dashed var(--line);
+  padding-block-start: 8px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.trip-detail {
+  margin-block-start: 22px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  scroll-margin-top: 100px;
+}
+
+.trip-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.trip-detail-head h2 {
+  font-size: 22px;
+  margin-block: 10px 4px;
+}
+
+.trip-detail-route {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.trip-detail-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.trip-detail-side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.trip-detail-side h3 {
+  font-size: 16px;
+}
+
+.trip-detail .bus-shell {
+  background: var(--surface-2);
+}
+
+.osm-card {
+  margin-block-start: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.osm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 18px;
+}
+
+.osm-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.osm-map {
+  display: block;
+  width: 100%;
+  height: 260px;
+  border: 0;
+}
+
+.osm-credit {
+  display: block;
+  padding: 8px 18px;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: end;
+}
+
+.osm-credit:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 /* Values / features / impact */
@@ -2245,7 +2393,8 @@ html[dir='rtl'] .phone-body blockquote {
     grid-template-columns: 1fr;
   }
 
-  .trip-grid {
+  .trip-grid,
+  .trip-detail-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -2334,6 +2483,10 @@ html[dir='rtl'] .phone-body blockquote {
 
   .seat {
     min-height: 54px;
+  }
+
+  .osm-map {
+    height: 220px;
   }
 
   .footer {

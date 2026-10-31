@@ -1,12 +1,14 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import {
   Accessibility,
+  Armchair,
   ArrowLeft,
   ArrowRight,
   Bus,
   ChevronLeft,
   ChevronRight,
+  MapPin,
   Mic,
   Pause,
   Play,
@@ -27,8 +29,15 @@ import {
   type Localized,
   type Mode,
   type Seat,
+  type SeatSection,
   type TripOption,
 } from './content';
+import {
+  geocodeDestination,
+  localPlace,
+  osmEmbedUrl,
+  type OsmPlace,
+} from './osm';
 
 type ChatMessage = {
   from: 'rider' | 'driver';
@@ -126,6 +135,21 @@ function WelcomePage({
 }) {
   const tr = (value: Localized) => L(value, lang);
   const Arrow = lang === 'ar' ? ArrowLeft : ArrowRight;
+  const [seconds, setSeconds] = useState(5);
+  const chooseRef = useRef(onChoose);
+
+  useEffect(() => {
+    chooseRef.current = onChoose;
+  }, [onChoose]);
+
+  useEffect(() => {
+    if (seconds <= 0) {
+      chooseRef.current('visual');
+      return;
+    }
+    const timer = window.setTimeout(() => setSeconds((current) => current - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [seconds]);
 
   return (
     <div className="welcome-page">
@@ -181,19 +205,38 @@ function WelcomePage({
             <Arrow size={20} aria-hidden="true" />
           </button>
         </div>
+        <p className="welcome-auto" role="status">{tr(ui.welcomeAutoHint)}</p>
+        <div className="welcome-timer" aria-hidden="true">
+          <span style={{ width: `${(seconds / 5) * 100}%` }} />
+        </div>
       </main>
     </div>
   );
 }
 
-function TripCard({ trip, lang }: { trip: TripOption; lang: Lang }) {
+function TripCard({
+  trip,
+  lang,
+  selected,
+  onSelect,
+}: {
+  trip: TripOption;
+  lang: Lang;
+  selected: boolean;
+  onSelect: (trip: TripOption) => void;
+}) {
   const arrival = new Intl.DateTimeFormat(lang === 'ar' ? 'ar-JO' : 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
   }).format(new Date(trip.arrivalAt));
 
   return (
-    <article className="trip-card">
+    <button
+      type="button"
+      className={`trip-card ${selected ? 'is-selected' : ''}`}
+      aria-pressed={selected}
+      onClick={() => onSelect(trip)}
+    >
       <div className="trip-top">
         <span
           className="line-badge"
@@ -217,6 +260,7 @@ function TripCard({ trip, lang }: { trip: TripOption; lang: Lang }) {
       </div>
       <div className="trip-bottom">
         <strong>
+          <Armchair size={14} aria-hidden="true" />
           {trip.seats != null
             ? `${trip.seats} ${L(ui.planSeats, lang)}`
             : L(ui.planStanding, lang)}
@@ -225,7 +269,10 @@ function TripCard({ trip, lang }: { trip: TripOption; lang: Lang }) {
           {L(ui.planNext, lang)}: {trip.next} {L(ui.minutesShort, lang)}
         </span>
       </div>
-    </article>
+      <span className="trip-seat-cta">
+        {selected ? L(ui.planSelected, lang) : L(ui.planViewSeats, lang)}
+      </span>
+    </button>
   );
 }
 
@@ -233,10 +280,12 @@ function SeatMap({
   lang,
   mode,
   onSelect,
+  sections = seatSections,
 }: {
   lang: Lang;
   mode: Mode;
   onSelect: (seat: Seat) => void;
+  sections?: SeatSection[];
 }) {
   const statusLabel = (seat: Seat) =>
     seat.status === 'available'
@@ -252,7 +301,7 @@ function SeatMap({
         <span className="steering-wheel" aria-hidden="true" />
       </div>
       <p className="door-label">{L(ui.seatsDoor, lang)}</p>
-      {seatSections.map((section) => {
+      {sections.map((section) => {
         const sectionAvailable = section.seats.filter(
           (seat) => seat.status === 'available',
         ).length;
@@ -287,22 +336,49 @@ function SeatMap({
   );
 }
 
+function seatsForTrip(trip: TripOption): SeatSection[] {
+  let remaining = trip.seats ?? 0;
+  return seatSections.map((section) => ({
+    ...section,
+    seats: section.seats.map((seat) => {
+      if (seat.status === 'accessible') return seat;
+      if (remaining > 0) {
+        remaining -= 1;
+        return { ...seat, status: 'available' as const };
+      }
+      return { ...seat, status: 'occupied' as const };
+    }),
+  }));
+}
+
 function PlanPage({
   lang,
+  mode,
   destination,
   setDestination,
   onPlan,
   planning,
   trips,
   planTrip,
+  selectedTrip,
+  selectedTripSeats,
+  onSelectTrip,
+  onSeat,
+  destinationPoint,
 }: {
   lang: Lang;
+  mode: Mode;
   destination: string;
   setDestination: (value: string) => void;
   onPlan: (event: FormEvent<HTMLFormElement>) => void;
   planning: boolean;
   trips: TripOption[];
   planTrip: (value?: string) => void;
+  selectedTrip: TripOption | null;
+  selectedTripSeats: SeatSection[];
+  onSelectTrip: (trip: TripOption) => void;
+  onSeat: (seat: Seat) => void;
+  destinationPoint: OsmPlace | null;
 }) {
   const tr = (value: Localized) => L(value, lang);
 
@@ -365,10 +441,89 @@ function PlanPage({
               <h2 className="output-title">{tr(ui.planResults)}</h2>
               <div className="trip-grid" aria-label={tr(ui.planAria)}>
                 {trips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} lang={lang} />
+                  <TripCard
+                    key={trip.id}
+                    trip={trip}
+                    lang={lang}
+                    selected={selectedTrip?.id === trip.id}
+                    onSelect={onSelectTrip}
+                  />
                 ))}
               </div>
             </>
+          ) : null}
+
+          {selectedTrip ? (
+            <div id="trip-detail" className="trip-detail">
+              <div className="trip-detail-head">
+                <div>
+                  <span
+                    className="line-badge"
+                    style={{ borderColor: selectedTrip.color, color: selectedTrip.color }}
+                  >
+                    <Bus size={14} aria-hidden="true" />
+                    {selectedTrip.line}
+                  </span>
+                  <h2>{tr(ui.planSeatsTitle)}</h2>
+                  <p className="trip-detail-route">
+                    {L(selectedTrip.board, lang)}
+                    {lang === 'ar' ? <ArrowLeft size={15} aria-hidden="true" /> : <ArrowRight size={15} aria-hidden="true" />}
+                    {selectedTrip.alight}
+                  </p>
+                </div>
+                <div className="seat-count">
+                  <strong>{selectedTrip.seats ?? '—'}</strong>
+                  <span>
+                    {selectedTrip.seats != null
+                      ? tr(ui.planSeats)
+                      : tr(ui.planStanding)}
+                  </span>
+                </div>
+              </div>
+              <div className="trip-detail-grid">
+                <SeatMap
+                  lang={lang}
+                  mode={mode}
+                  onSelect={onSeat}
+                  sections={selectedTripSeats}
+                />
+                <aside className="trip-detail-side">
+                  <h3>{tr(ui.seatsLegendTitle)}</h3>
+                  <div className="legend">
+                    <span><i className="dot available" />{tr(ui.seatsAvailable)}</span>
+                    <span><i className="dot occupied" />{tr(ui.seatsOccupied)}</span>
+                    <span><i className="dot accessible" />{tr(ui.seatsAccessible)}</span>
+                  </div>
+                  <p className="note">{tr(ui.seatsNote)}</p>
+                </aside>
+              </div>
+            </div>
+          ) : null}
+
+          {destinationPoint && trips.length > 0 ? (
+            <div className="osm-card">
+              <div className="osm-head">
+                <span className="osm-title">
+                  <MapPin size={16} aria-hidden="true" />
+                  {destination || tr(ui.planLabel)}
+                </span>
+                <span className="micro-badge">OpenStreetMap</span>
+              </div>
+              <iframe
+                className="osm-map"
+                title={`OpenStreetMap — ${destination || tr(ui.planLabel)}`}
+                src={osmEmbedUrl(destinationPoint)}
+                loading="lazy"
+              />
+              <a
+                className="osm-credit"
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noreferrer"
+              >
+                © OpenStreetMap contributors
+              </a>
+            </div>
           ) : null}
         </div>
       </div>
@@ -922,6 +1077,9 @@ function App() {
   const [destination, setDestination] = useState('');
   const [trips, setTrips] = useState<TripOption[]>([]);
   const [planning, setPlanning] = useState(false);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [destinationPoint, setDestinationPoint] = useState<OsmPlace | null>(null);
+  const geocodeId = useRef(0);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [seatReadout, setSeatReadout] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -1030,6 +1188,15 @@ function App() {
     setDestination(dest);
     setPlanning(true);
     setTrips([]);
+    setSelectedTripId(null);
+    setDestinationPoint(localPlace(dest));
+
+    const requestId = geocodeId.current + 1;
+    geocodeId.current = requestId;
+    void geocodeDestination(dest, lang).then((point) => {
+      if (requestId === geocodeId.current) setDestinationPoint(point);
+    });
+
     window.setTimeout(() => {
       const results = getTrips(dest, lang);
       if (preferredLine !== 'none') {
@@ -1055,6 +1222,16 @@ function App() {
   const onPlan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     planTrip();
+  };
+
+  const selectTrip = (trip: TripOption) => {
+    setSelectedTripId(trip.id);
+    window.setTimeout(() => {
+      document.getElementById('trip-detail')?.scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    }, 80);
   };
 
   const onSeat = (seat: Seat) => {
@@ -1164,6 +1341,9 @@ function App() {
     window.setTimeout(() => setResetNotice(false), 3000);
   };
 
+  const selectedTrip = trips.find((trip) => trip.id === selectedTripId) ?? null;
+  const selectedTripSeats = selectedTrip ? seatsForTrip(selectedTrip) : [];
+
   if (!onboarded) {
     return (
       <>
@@ -1242,12 +1422,18 @@ function App() {
             element={
               <PlanPage
                 lang={lang}
+                mode={mode}
                 destination={destination}
                 setDestination={setDestination}
                 onPlan={onPlan}
                 planning={planning}
                 trips={trips}
                 planTrip={planTrip}
+                selectedTrip={selectedTrip}
+                selectedTripSeats={selectedTripSeats}
+                onSelectTrip={selectTrip}
+                onSeat={onSeat}
+                destinationPoint={destinationPoint}
               />
             }
           />
