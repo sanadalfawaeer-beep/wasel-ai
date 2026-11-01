@@ -36,6 +36,7 @@ import {
   geocodeDestination,
   localPlace,
   osmEmbedUrl,
+  searchPlaces,
   type OsmPlace,
 } from './osm';
 
@@ -122,8 +123,16 @@ function PageHead({ title }: { title: string }) {
   );
 }
 
+type SpeechAlternative = {
+  transcript?: string;
+  confidence?: number;
+};
+
+type SpeechResult = Array<SpeechAlternative> & { isFinal?: boolean };
+
 type SpeechResultEvent = {
-  results?: Array<Array<{ transcript?: string }>>;
+  resultIndex?: number;
+  results?: ArrayLike<SpeechResult>;
 };
 
 type SpeechRecognitionInstance = {
@@ -133,6 +142,8 @@ type SpeechRecognitionInstance = {
   onend: (() => void) | null;
   onerror: (() => void) | null;
   start: () => void;
+  stop?: () => void;
+  abort?: () => void;
 };
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
@@ -143,6 +154,46 @@ function getSpeechRecognition(): SpeechRecognitionConstructor | null {
     webkitSpeechRecognition?: SpeechRecognitionConstructor;
   };
   return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
+}
+
+function normalizeVoiceText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+    .replace(/[\u064B-\u0652]/g, '')
+    .replace(/[إأآ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[،,.!?؟:;]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isYes(value: string): boolean {
+  return /(^|\s)(نعم|ايوه|ايوا|اجل|صح|تمام|اوكي|اوك|yes|ok|okay)(\s|$)/.test(value);
+}
+
+function isNo(value: string): boolean {
+  return /(^|\s)(لا|كلا|مش|no|nope)(\s|$)/.test(value);
+}
+
+function isRepeat(value: string): boolean {
+  return /(اعد|عيد|كرر|مره ثانيه|مرة ثانية|repeat|again)/.test(value);
+}
+
+function isChangeDestination(value: string): boolean {
+  return /(غير الوجهه|وجهه جديده|وجهة جديدة|غير المكان|change destination|new destination)/.test(value);
+}
+
+function isStop(value: string): boolean {
+  return /(توقف|اوقف|اسكت|الغاء|الغي|stop|cancel|quiet)/.test(value);
+}
+
+function parseSpokenIndex(value: string): number | null {
+  if (/(^|\s)(1|one|first|الاول|اول|واحد)(\s|$)/.test(value)) return 0;
+  if (/(^|\s)(2|two|second|الثاني|الثانى|ثاني|اثنين|اثنان)(\s|$)/.test(value)) return 1;
+  if (/(^|\s)(3|three|third|الثالث|ثالث|ثلاثه|ثلاثة)(\s|$)/.test(value)) return 2;
+  return null;
 }
 
 function WelcomePage({
@@ -389,8 +440,16 @@ function PlanPage({
   voiceListening,
   voiceNotice,
   voiceIssue,
+  voiceInterim,
+  voiceCandidates,
+  voicePrompt,
+  voiceSearching,
   onVoice,
   onReadOptions,
+  onChooseCandidate,
+  onResetDestination,
+  onRepeatVoice,
+  onStopVoice,
 }: {
   lang: Lang;
   mode: Mode;
@@ -408,10 +467,37 @@ function PlanPage({
   voiceListening: boolean;
   voiceNotice: string;
   voiceIssue: string;
+  voiceInterim: string;
+  voiceCandidates: OsmPlace[];
+  voicePrompt: string;
+  voiceSearching: boolean;
   onVoice: () => void;
   onReadOptions: () => void;
+  onChooseCandidate: (place: OsmPlace) => void;
+  onResetDestination: () => void;
+  onRepeatVoice: () => void;
+  onStopVoice: () => void;
 }) {
   const tr = (value: Localized) => L(value, lang);
+  const confirmMode = voiceCandidates.length > 0;
+  const panelLabel = voiceSearching
+    ? tr(ui.voiceSearching)
+    : voiceListening
+      ? confirmMode
+        ? tr(ui.voiceListeningPlace)
+        : trips.length > 0
+          ? tr(ui.voiceListeningChoice)
+          : tr(ui.voiceListening)
+      : confirmMode
+        ? tr(ui.voiceConfirmListening)
+        : trips.length > 0
+          ? tr(ui.voiceChooseBus)
+          : tr(ui.voiceTapDestination);
+  const panelHint = confirmMode
+    ? tr(ui.voiceCandidatesHint)
+    : trips.length > 0
+      ? tr(ui.voiceChooseHint)
+      : tr(ui.voiceDestinationHint);
 
   return (
     <section id="planner" className="section section-first">
@@ -436,49 +522,88 @@ function PlanPage({
               type="button"
               className={`voice-planner ${voiceListening ? 'is-listening' : ''}`}
               onClick={onVoice}
-              disabled={voiceListening}
-              aria-label={
-                voiceListening
-                  ? trips.length > 0
-                    ? tr(ui.voiceListeningChoice)
-                    : tr(ui.voiceListening)
-                  : trips.length > 0
-                    ? tr(ui.voiceChooseBus)
-                    : tr(ui.voiceTapDestination)
-              }
+              disabled={voiceListening || voiceSearching}
+              aria-label={panelLabel}
             >
               <span className="voice-orb">
-                {voiceListening ? <span className="voice-wave" aria-hidden="true" /> : <Mic size={26} aria-hidden="true" />}
+                {voiceListening || voiceSearching ? <span className="voice-wave" aria-hidden="true" /> : <Mic size={26} aria-hidden="true" />}
               </span>
               <span className="voice-copy">
-                <strong>
-                  {voiceListening
-                    ? trips.length > 0
-                      ? tr(ui.voiceListeningChoice)
-                      : tr(ui.voiceListening)
-                    : trips.length > 0
-                      ? tr(ui.voiceChooseBus)
-                      : tr(ui.voiceTapDestination)}
-                </strong>
-                <small>
-                  {trips.length > 0 ? tr(ui.voiceChooseHint) : tr(ui.voiceDestinationHint)}
-                </small>
+                <strong>{panelLabel}</strong>
+                <small>{panelHint}</small>
               </span>
             </button>
+
             {voiceIssue ? (
               <p className="voice-warning" role="status">
                 <span aria-hidden="true">!</span>
                 {voiceIssue}
               </p>
             ) : null}
+
+            {voiceListening && voiceInterim ? (
+              <p className="voice-live" role="status">
+                {tr(ui.voiceHeard)} {voiceInterim}
+              </p>
+            ) : null}
+
+            {voiceCandidates.length > 0 ? (
+              <div className="voice-confirm">
+                <p className="voice-confirm-title">{voicePrompt}</p>
+                <div className="voice-candidates">
+                  {voiceCandidates.slice(0, 3).map((place, index) => (
+                    <button
+                      type="button"
+                      className="voice-candidate"
+                      key={`${place.lat}-${place.lon}-${place.label}`}
+                      onClick={() => onChooseCandidate(place)}
+                    >
+                      <span className="voice-candidate-index">{index + 1}</span>
+                      <span className="voice-candidate-copy">
+                        <strong>{place.label}</strong>
+                        {place.address && place.address !== place.label ? (
+                          <small>{place.address}</small>
+                        ) : null}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <div className="voice-actions">
+                  <button
+                    type="button"
+                    className="btn primary small"
+                    onClick={() => onChooseCandidate(voiceCandidates[0])}
+                  >
+                    {tr(ui.voiceYes)}
+                  </button>
+                  <button type="button" className="btn secondary small" onClick={onResetDestination}>
+                    {tr(ui.voiceChange)}
+                  </button>
+                  <button type="button" className="btn secondary small" onClick={onRepeatVoice}>
+                    {tr(ui.voiceRepeat)}
+                  </button>
+                  <button type="button" className="btn secondary small" onClick={onStopVoice}>
+                    {tr(ui.voiceStop)}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             {voiceNotice ? (
               <p className="note voice-notice" role="status">{voiceNotice}</p>
             ) : null}
-            {trips.length > 0 ? (
+
+            {trips.length > 0 && voiceCandidates.length === 0 ? (
               <div className="voice-actions">
                 <button type="button" className="btn secondary small" onClick={onReadOptions}>
                   <Volume2 size={15} aria-hidden="true" />
                   {tr(ui.voiceReadOptions)}
+                </button>
+                <button type="button" className="btn secondary small" onClick={onResetDestination}>
+                  {tr(ui.voiceChange)}
+                </button>
+                <button type="button" className="btn secondary small" onClick={onStopVoice}>
+                  {tr(ui.voiceStop)}
                 </button>
               </div>
             ) : null}
@@ -1108,7 +1233,13 @@ function App() {
   const [listening, setListening] = useState(false);
   const [voiceListening, setVoiceListening] = useState(false);
   const [voiceNotice, setVoiceNotice] = useState('');
+  const [voiceInterim, setVoiceInterim] = useState('');
+  const [voiceCandidates, setVoiceCandidates] = useState<OsmPlace[]>([]);
+  const [voicePrompt, setVoicePrompt] = useState('');
+  const [voiceSearching, setVoiceSearching] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const voiceSearchId = useRef(0);
   const [notice, setNotice] = useState('');
   const [resetNotice, setResetNotice] = useState(false);
   const [flash, setFlash] = useState(false);
@@ -1238,19 +1369,26 @@ function App() {
     return `${intro} ${parts.join(' ')} ${tr(ui.voiceChooseBus)}`;
   };
 
-  const planTrip = (value?: string) => {
+  const planTrip = (value?: string, point?: OsmPlace | null) => {
     const dest = (value ?? destination).trim() || tr(ui.planDefault);
+    voiceSearchId.current += 1;
+    setVoiceCandidates([]);
+    setVoicePrompt('');
+    setVoiceSearching(false);
+    setVoiceInterim('');
     setDestination(dest);
     setPlanning(true);
     setTrips([]);
     setSelectedTripId(null);
-    setDestinationPoint(localPlace(dest));
+    setDestinationPoint(point ?? localPlace(dest, lang));
 
-    const requestId = geocodeId.current + 1;
-    geocodeId.current = requestId;
-    void geocodeDestination(dest, lang).then((point) => {
-      if (requestId === geocodeId.current) setDestinationPoint(point);
-    });
+    if (!point) {
+      const requestId = geocodeId.current + 1;
+      geocodeId.current = requestId;
+      void geocodeDestination(dest, lang).then((found) => {
+        if (requestId === geocodeId.current) setDestinationPoint(found);
+      });
+    }
 
     window.setTimeout(() => {
       const results = getTrips(dest, lang);
@@ -1259,10 +1397,12 @@ function App() {
           a.line === preferredLine ? -1 : b.line === preferredLine ? 1 : 0,
         );
       }
+      const summary = tripSummary(results);
       setTrips(results);
       setPlanning(false);
+      setVoicePrompt(summary);
       if ((mode === 'visual' || autoReadPlan) && voiceEnabled) {
-        speak(tripSummary(results));
+        speak(summary);
       }
     }, 450);
   };
@@ -1290,12 +1430,38 @@ function App() {
   };
 
   const chooseTripByVoice = (transcript: string) => {
-    const value = transcript.toLowerCase();
-    let index = -1;
+    const value = normalizeVoiceText(transcript);
 
-    if (/(first|one|1|الأول|الاول|واحد)/.test(value)) index = 0;
-    else if (/(second|two|2|الثاني|الثانى|اثنين|اثنان)/.test(value)) index = 1;
-    else if (/(third|three|3|الثالث|ثلاثة|ثلاثه)/.test(value)) index = 2;
+    if (/(اسرع|fastest)/.test(value)) {
+      const fastest = [...trips].sort(
+        (a, b) => a.next + a.ride - (b.next + b.ride),
+      )[0];
+      if (fastest) {
+        selectTrip(fastest);
+        setVoiceNotice(`${tr(ui.voiceSelected)} ${fastest.line}`);
+        return;
+      }
+    }
+
+    if (/(اقرب|closest)/.test(value)) {
+      const closest = [...trips].sort((a, b) => a.walk - b.walk)[0];
+      if (closest) {
+        selectTrip(closest);
+        setVoiceNotice(`${tr(ui.voiceSelected)} ${closest.line}`);
+        return;
+      }
+    }
+
+    if (/(اكثر|most)/.test(value) && /(مقاعد|seats)/.test(value)) {
+      const mostSeats = [...trips].sort((a, b) => (b.seats ?? -1) - (a.seats ?? -1))[0];
+      if (mostSeats) {
+        selectTrip(mostSeats);
+        setVoiceNotice(`${tr(ui.voiceSelected)} ${mostSeats.line}`);
+        return;
+      }
+    }
+
+    let index = parseSpokenIndex(value) ?? -1;
 
     if (index < 0) {
       const numbers = value.match(/\d{3}/g);
@@ -1321,10 +1487,179 @@ function App() {
     }
   };
 
+  const chooseVoiceCandidate = (place: OsmPlace) => {
+    setVoiceCandidates([]);
+    setVoicePrompt('');
+    setVoiceSearching(false);
+    setVoiceInterim('');
+    setVoiceNotice('');
+    setSelectedTripId(null);
+    setDestination(place.label);
+    planTrip(place.label, place);
+  };
+
+  const resetVoiceDestination = () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    voiceSearchId.current += 1;
+    setVoiceCandidates([]);
+    setVoicePrompt('');
+    setVoiceSearching(false);
+    setVoiceInterim('');
+    setVoiceListening(false);
+    setVoiceNotice('');
+    setTrips([]);
+    setSelectedTripId(null);
+    setDestinationPoint(null);
+    setDestination('');
+    setPlanning(false);
+    window.setTimeout(() => document.getElementById('destination')?.focus(), 50);
+    speak(tr(ui.planTitle));
+  };
+
+  const stopVoice = () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    try {
+      recognitionRef.current?.stop?.();
+    } catch {
+      // Ignore recognition shutdown errors.
+    }
+    recognitionRef.current = null;
+    voiceSearchId.current += 1;
+    setVoiceListening(false);
+    setVoiceSearching(false);
+    setVoiceInterim('');
+    setVoiceNotice(tr(ui.voiceStopped));
+  };
+
+  const repeatVoice = () => {
+    const text =
+      voicePrompt ||
+      (trips.length > 0 ? tripSummary(trips) : tr(ui.voiceTapDestination));
+    setVoiceNotice(text);
+    speak(text);
+  };
+
+  const searchVoiceDestination = (transcript: string, confidence?: number) => {
+    const clean = transcript.trim();
+    if (!clean) {
+      const message = tr(ui.voiceNoInput);
+      setVoiceNotice(message);
+      speak(message);
+      return;
+    }
+
+    const value = normalizeVoiceText(clean);
+    if (isStop(value)) {
+      stopVoice();
+      return;
+    }
+    if (isRepeat(value)) {
+      speak(tr(ui.voiceTapDestination));
+      return;
+    }
+    if (
+      typeof confidence === 'number' &&
+      confidence > 0 &&
+      confidence < 0.45 &&
+      !localPlace(clean, lang)
+    ) {
+      const message = tr(ui.voiceLowConfidence);
+      setVoiceNotice(message);
+      speak(message);
+      return;
+    }
+
+    setDestination(clean);
+    setVoiceCandidates([]);
+    setVoicePrompt('');
+    setVoiceSearching(true);
+    setVoiceNotice(tr(ui.voiceSearching));
+
+    const requestId = voiceSearchId.current + 1;
+    voiceSearchId.current = requestId;
+
+    void searchPlaces(clean, lang).then((places) => {
+      if (requestId !== voiceSearchId.current) return;
+      setVoiceSearching(false);
+
+      if (!places.length) {
+        const message = tr(ui.voiceNoPlaces);
+        setVoiceNotice(message);
+        speak(message);
+        return;
+      }
+
+      const top = places.slice(0, 3);
+      const prompt =
+        top.length === 1
+          ? `${tr(ui.voiceConfirmPrompt)} ${top[0].label}؟`
+          : `${tr(ui.voiceCandidatesTitle)}: ${top
+              .map((place, index) => `${index + 1}. ${place.label}`)
+              .join('. ')}. ${tr(ui.voiceConfirmListening)}`;
+
+      setVoiceCandidates(top);
+      setVoicePrompt(prompt);
+      setVoiceNotice('');
+      speak(prompt);
+    });
+  };
+
+  const handleVoiceTranscript = (
+    transcript: string,
+    confidence: number | undefined,
+    stage: 'destination' | 'confirm' | 'choice',
+  ) => {
+    const value = normalizeVoiceText(transcript);
+
+    if (isStop(value)) {
+      stopVoice();
+      return;
+    }
+
+    if (stage === 'confirm') {
+      if (isRepeat(value)) {
+        repeatVoice();
+        return;
+      }
+      if (isYes(value)) {
+        const first = voiceCandidates[0];
+        if (first) chooseVoiceCandidate(first);
+        return;
+      }
+      if (isNo(value) || isChangeDestination(value)) {
+        resetVoiceDestination();
+        return;
+      }
+      const index = parseSpokenIndex(value);
+      if (index !== null && voiceCandidates[index]) {
+        chooseVoiceCandidate(voiceCandidates[index]);
+        return;
+      }
+      searchVoiceDestination(transcript, confidence);
+      return;
+    }
+
+    if (stage === 'choice') {
+      if (isRepeat(value)) {
+        repeatVoice();
+        return;
+      }
+      if (isChangeDestination(value) || isNo(value)) {
+        resetVoiceDestination();
+        return;
+      }
+      chooseTripByVoice(transcript);
+      return;
+    }
+
+    searchVoiceDestination(transcript, confidence);
+  };
+
   const startVoice = () => {
-    if (voiceListening) return;
+    if (voiceListening || voiceSearching) return;
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     setVoiceNotice('');
+    setVoiceInterim('');
 
     const Recognition = getSpeechRecognition();
     if (!Recognition) {
@@ -1333,37 +1668,52 @@ function App() {
       return;
     }
 
-    const choosing = trips.length > 0;
+    const stage: 'destination' | 'confirm' | 'choice' = voiceCandidates.length
+      ? 'confirm'
+      : trips.length > 0
+        ? 'choice'
+        : 'destination';
 
     try {
       const recognition = new Recognition();
+      recognitionRef.current = recognition;
       recognition.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.onresult = (event) => {
-        const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+        const result = event.results?.[0];
+        const alternative = result?.[0];
+        const transcript = alternative?.transcript?.trim();
+
         if (!transcript) {
-          const message = tr(ui.voiceNoInput);
-          setVoiceNotice(message);
-          speak(message);
+          if (result?.isFinal) {
+            const message = tr(ui.voiceNoInput);
+            setVoiceNotice(message);
+            speak(message);
+          }
           return;
         }
-        setVoiceNotice(`${tr(ui.voiceHeard)} ${transcript}`);
-        if (choosing) {
-          chooseTripByVoice(transcript);
-        } else {
-          setDestination(transcript);
-          planTrip(transcript);
-        }
+
+        setVoiceInterim(transcript);
+        if (stage === 'destination') setDestination(transcript);
+        if (result?.isFinal === false) return;
+
+        setVoiceInterim('');
+        handleVoiceTranscript(transcript, alternative?.confidence, stage);
       };
-      recognition.onend = () => setVoiceListening(false);
+      recognition.onend = () => {
+        setVoiceListening(false);
+        recognitionRef.current = null;
+      };
       recognition.onerror = () => {
         setVoiceListening(false);
+        recognitionRef.current = null;
         setVoiceNotice(tr(ui.voiceMicError));
       };
       recognition.start();
       setVoiceListening(true);
     } catch {
       setVoiceListening(false);
+      recognitionRef.current = null;
       setVoiceNotice(tr(ui.voiceMicError));
     }
   };
@@ -1552,8 +1902,16 @@ function App() {
                 voiceListening={voiceListening}
                 voiceNotice={voiceNotice}
                 voiceIssue={voiceIssue}
+                voiceInterim={voiceInterim}
+                voiceCandidates={voiceCandidates}
+                voicePrompt={voicePrompt}
+                voiceSearching={voiceSearching}
                 onVoice={startVoice}
                 onReadOptions={() => speak(tripSummary(trips))}
+                onChooseCandidate={chooseVoiceCandidate}
+                onResetDestination={resetVoiceDestination}
+                onRepeatVoice={repeatVoice}
+                onStopVoice={stopVoice}
               />
             }
           />
