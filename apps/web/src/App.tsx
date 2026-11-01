@@ -1424,7 +1424,11 @@ function App() {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
       audioRef.current.pause();
-      audioRef.current = null;
+      try {
+        audioRef.current.currentTime = 0;
+      } catch {
+        // Some browsers do not allow seeking before metadata.
+      }
     }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     try {
@@ -1465,12 +1469,20 @@ function App() {
     synth.speak(utterance);
   };
 
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari =
+    /Safari/i.test(navigator.userAgent) &&
+    !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS/i.test(navigator.userAgent);
+  const canBargeIn = !isIOS && !isSafari;
+
   const startBargeIn = (
     spoken: string,
     stage: 'destination' | 'confirm' | 'choice',
     runId: number,
   ) => {
-    if (!handsFree) return;
+    if (!handsFree || !canBargeIn) return;
     const Recognition = getSpeechRecognition();
     if (!Recognition) return;
     try {
@@ -1518,7 +1530,6 @@ function App() {
       speechRunId.current += 1;
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current = null;
       }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       try {
@@ -1571,31 +1582,37 @@ function App() {
       if (options.autoListen && handsFree && mode === 'visual') {
         window.setTimeout(() => {
           if (runId === speechRunId.current) startVoiceRef.current();
-        }, 250);
+        }, 600);
       }
     };
 
     if (ttsVoice !== 'browser' && typeof Audio !== 'undefined') {
+      let audio = audioRef.current;
+      if (!audio) {
+        audio = document.createElement('audio');
+        audio.preload = 'auto';
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        audioRef.current = audio;
+      }
+
       const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(ttsVoice)}&rate=${speechRate}`;
-      const audio = new Audio(url);
-      audioRef.current = audio;
       audio.onplay = () => {
         if (options.bargeIn && handsFree) {
           startBargeIn(text, options.stage ?? 'destination', runId);
         }
       };
       audio.onended = () => {
-        if (runId === speechRunId.current) audioRef.current = null;
         finish();
       };
       audio.onerror = () => {
         if (runId !== speechRunId.current) return;
-        audioRef.current = null;
         speakBrowser(text, finish, runId, options);
       };
+      audio.src = url;
+      audio.volume = 1;
       void audio.play().catch(() => {
         if (runId !== speechRunId.current) return;
-        audioRef.current = null;
         speakBrowser(text, finish, runId, options);
       });
     } else {
