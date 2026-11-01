@@ -248,7 +248,7 @@ function WelcomePage({
 }: {
   lang: Lang;
   setLang: (value: Lang) => void;
-  onChoose: (mode: Mode) => void;
+  onChoose: (mode: Mode, auto?: boolean) => void;
 }) {
   const tr = (value: Localized) => L(value, lang);
   const Arrow = lang === 'ar' ? ArrowLeft : ArrowRight;
@@ -261,7 +261,7 @@ function WelcomePage({
 
   useEffect(() => {
     if (seconds <= 0) {
-      chooseRef.current('visual');
+      chooseRef.current('visual', true);
       return;
     }
     const timer = window.setTimeout(() => setSeconds((current) => current - 1), 1000);
@@ -492,7 +492,9 @@ function PlanPage({
   voiceCandidates,
   voicePrompt,
   voiceSearching,
+  autoVoiceSelected,
   onVoice,
+  onActivateVoice,
   onReadOptions,
   onChooseCandidate,
   onResetDestination,
@@ -519,7 +521,9 @@ function PlanPage({
   voiceCandidates: OsmPlace[];
   voicePrompt: string;
   voiceSearching: boolean;
+  autoVoiceSelected: boolean;
   onVoice: () => void;
+  onActivateVoice: () => void;
   onReadOptions: () => void;
   onChooseCandidate: (place: OsmPlace) => void;
   onResetDestination: () => void;
@@ -577,6 +581,20 @@ function PlanPage({
 
         {mode === 'visual' ? (
           <div className="voice-planner-wrap">
+            {autoVoiceSelected ? (
+              <div className="voice-auto-banner">
+                <span className="voice-auto-icon">
+                  <Mic size={22} aria-hidden="true" />
+                </span>
+                <div>
+                  <strong>{tr(ui.autoAudioTitle)}</strong>
+                  <p>{tr(ui.autoAudioBody)}</p>
+                </div>
+                <button type="button" className="btn primary small" onClick={onActivateVoice}>
+                  {tr(ui.autoAudioStart)}
+                </button>
+              </div>
+            ) : null}
             <button
               type="button"
               className={`voice-planner ${voiceListening ? 'is-listening' : ''}`}
@@ -1021,6 +1039,18 @@ function ChatPage({
                 ))}
               </div>
             </div>
+            <div className="chat-voice">
+              <button
+                type="button"
+                className={`btn secondary small ${listening ? 'is-recording' : ''}`}
+                onClick={startListening}
+                disabled={listening}
+              >
+                {listening ? <span className="pulse-dot" /> : <Mic size={16} aria-hidden="true" />}
+                {listening ? tr(ui.commListening) : tr(ui.commSpeakMessage)}
+              </button>
+              <span className="note">{tr(ui.commTranscriptHint)}</span>
+            </div>
             <form className="chat-form" onSubmit={(event) => {
               event.preventDefault();
               sendMessage(chatInput);
@@ -1043,7 +1073,11 @@ function ChatPage({
                 <Send size={18} />
               </button>
             </form>
-            {notice ? <p className="form-note">{notice}</p> : null}
+            {notice ? (
+              <p className={notice === tr(ui.commTranscribed) ? 'note chat-transcript-note' : 'form-note'}>
+                {notice}
+              </p>
+            ) : null}
           </div>
           <aside className="driver-card">
             <span className="icon-tile">
@@ -1326,6 +1360,7 @@ function SettingsPage({
 function App() {
   const [settings, setSettings] = useState<SettingsState>(loadSettings);
   const [onboarded, setOnboarded] = useState(false);
+  const [autoVoiceSelected, setAutoVoiceSelected] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [destination, setDestination] = useState('');
   const [trips, setTrips] = useState<TripOption[]>([]);
@@ -1703,12 +1738,13 @@ function App() {
     else flashScreen();
   };
 
-  const chooseMode = (next: Mode) => {
+  const chooseMode = (next: Mode, auto = false) => {
     primeAudioContext();
     update({
       mode: next,
       ...(next === 'visual' ? { voiceEnabled: true } : {}),
     });
+    setAutoVoiceSelected(auto && next === 'visual');
     setOnboarded(true);
     if (next === 'visual') {
       speak(tr(ui.welcomeVisualSample), {
@@ -2078,6 +2114,7 @@ function App() {
 
   const startVoice = () => {
     if (voiceListening || voiceSearching) return;
+    setAutoVoiceSelected(false);
     stopAudioAndSpeech();
     playListeningChime();
     voiceHeardRef.current = false;
@@ -2184,6 +2221,7 @@ function App() {
   const sendMessage = (text: string) => {
     const value = text.trim();
     if (!value || thinking) return;
+    setNotice('');
     setMessages((current) => [...current, { from: 'rider', text: value }]);
     setChatInput('');
     setThinking(true);
@@ -2197,21 +2235,36 @@ function App() {
   };
 
   const startListening = () => {
+    if (listening) return;
     const Recognition = getSpeechRecognition();
     if (!Recognition) {
       setNotice(tr(ui.commMicUnsupported));
       return;
     }
+    let heard = false;
+    let failed = false;
     try {
       const recognition = new Recognition();
       recognition.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.onresult = (event) => {
-        const transcript = event.results?.[0]?.[0]?.transcript;
-        if (transcript) setChatInput(transcript);
+        const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+        if (transcript) {
+          heard = true;
+          setChatInput(transcript);
+        }
       };
-      recognition.onend = () => setListening(false);
-      recognition.onerror = () => setListening(false);
+      recognition.onend = () => {
+        setListening(false);
+        if (!failed) {
+          setNotice(heard ? tr(ui.commTranscribed) : tr(ui.voiceNoInput));
+        }
+      };
+      recognition.onerror = () => {
+        failed = true;
+        setListening(false);
+        setNotice(tr(ui.voiceMicError));
+      };
       recognition.start();
       setListening(true);
       setNotice('');
@@ -2348,7 +2401,9 @@ function App() {
                 voiceCandidates={voiceCandidates}
                 voicePrompt={voicePrompt}
                 voiceSearching={voiceSearching}
+                autoVoiceSelected={autoVoiceSelected}
                 onVoice={startVoice}
+                onActivateVoice={startVoice}
                 onReadOptions={() =>
                   speak(tripSummary(trips), {
                     bargeIn: true,

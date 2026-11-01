@@ -841,6 +841,46 @@ html[lang='ar'] .hero h1 {
   margin-bottom: 16px;
 }
 
+.voice-auto-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 12px 15px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 16px;
+  background: var(--accent-soft);
+}
+
+.voice-auto-banner > div {
+  flex: 1;
+  min-width: 180px;
+}
+
+.voice-auto-banner strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.voice-auto-banner p {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.voice-auto-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
 .voice-planner {
   width: 100%;
   display: flex;
@@ -2168,6 +2208,30 @@ html[dir='rtl'] .phone-body blockquote {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.chat-voice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+
+.chat-voice .btn {
+  min-height: 36px;
+  padding: 5px 11px;
+}
+
+.chat-voice .btn.is-recording {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.chat-transcript-note {
+  color: var(--ok);
+  margin-block-start: 7px;
 }
 
 .chat-form {
