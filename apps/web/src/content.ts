@@ -112,6 +112,7 @@ export const ui = {
   planRide: l('الباص', 'Ride'),
   planStops: l('محطات', 'stops'),
   planSeats: l('مقاعد متاحة', 'seats available'),
+  planSeatOne: l('مقعد متاح', 'seat available'),
   planStanding: l('وقوف', 'Standing'),
   planNext: l('الباص القادم', 'Next bus'),
   planArrive: l('وقت الوصول', 'Arrival'),

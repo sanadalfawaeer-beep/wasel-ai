@@ -84,7 +84,10 @@ async def synthesize(
 
     if not generator or not first:
         if isinstance(last_error, TimeoutError):
-            raise HTTPException(status_code=504, detail="Speech synthesis timed out.") from last_error
+            raise HTTPException(
+                status_code=504,
+                detail="Speech synthesis timed out.",
+            ) from last_error
         raise HTTPException(
             status_code=502,
             detail="Speech synthesis is unavailable.",

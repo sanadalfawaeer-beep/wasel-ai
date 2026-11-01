@@ -382,7 +382,7 @@ function TripCard({
         <strong>
           <Armchair size={14} aria-hidden="true" />
           {trip.seats != null
-            ? `${trip.seats} ${L(ui.planSeats, lang)}`
+            ? `${trip.seats} ${L(trip.seats === 1 ? ui.planSeatOne : ui.planSeats, lang)}`
             : L(ui.planStanding, lang)}
         </strong>
         <span>
@@ -1768,13 +1768,14 @@ function App() {
       lang === 'ar'
         ? `${results.length} خيارات.`
         : `${results.length} options.`;
+    const separator = lang === 'ar' ? '، ' : ', ';
     const parts = results.map((trip, index) => {
       const seatsText =
         trip.seats != null
-          ? `${trip.seats} ${tr(ui.planSeats)}`
+          ? `${trip.seats} ${tr(trip.seats === 1 ? ui.planSeatOne : ui.planSeats)}`
           : tr(ui.planStanding);
       const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
-      return `${optionLabel} ${index + 1}: ${trip.line}، ${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}، ${seatsText}.`;
+      return `${optionLabel} ${index + 1}: ${trip.line}${separator}${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}${separator}${seatsText}.`;
     });
     return `${intro} ${parts.join(' ')} ${tr(ui.voiceAskChoice)} ${tr(ui.voiceChoiceShort)}`;
   };
@@ -1830,7 +1831,7 @@ function App() {
     setSelectedTripId(trip.id);
     const seatsText =
       trip.seats != null
-        ? `${trip.seats} ${tr(ui.planSeats)}`
+        ? `${trip.seats} ${tr(trip.seats === 1 ? ui.planSeatOne : ui.planSeats)}`
         : tr(ui.planStanding);
     const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
     const arrivalText = `${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}`;
@@ -1997,7 +1998,7 @@ function App() {
     if (
       typeof confidence === 'number' &&
       confidence > 0 &&
-      confidence < 0.45 &&
+      confidence < 0.15 &&
       !localPlace(clean, lang)
     ) {
       const message = tr(ui.voiceLowConfidence);
@@ -2035,9 +2036,10 @@ function App() {
       }
 
       const top = places.slice(0, 3);
+      const questionMark = lang === 'ar' ? '؟' : '?';
       const prompt =
         top.length === 1
-          ? `${tr(ui.voiceConfirmPrompt)} ${top[0].label}؟`
+          ? `${tr(ui.voiceConfirmPrompt)} ${top[0].label}${questionMark}`
           : `${tr(ui.voiceCandidatesTitle)}: ${top
               .map((place, index) => `${index + 1}. ${place.label}`)
               .join('. ')}. ${tr(ui.voiceConfirmListening)}`;
