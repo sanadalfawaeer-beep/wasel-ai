@@ -11,6 +11,10 @@ VOICES = {
     "ar-JO-TaimNeural",
     "ar-EG-SalmaNeural",
     "ar-SA-HamedNeural",
+    "en-US-AvaNeural",
+    "en-US-AndrewNeural",
+    "en-US-EmmaNeural",
+    "en-US-BrianNeural",
 }
 
 _CACHE: dict[str, bytes] = {}
@@ -38,36 +42,53 @@ async def synthesize(
             headers={"Cache-Control": "private, max-age=3600"},
         )
 
-    audio = bytearray()
+    def make_generator():
+        audio = bytearray()
 
-    async def generate():
-        communicate = edge_tts.Communicate(text, voice, rate=rate_value)
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                data = chunk["data"]
-                audio.extend(data)
-                yield data
+        async def generate():
+            communicate = edge_tts.Communicate(text, voice, rate=rate_value)
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    data = chunk["data"]
+                    audio.extend(data)
+                    yield data
 
-        if audio:
-            if len(_CACHE) >= _CACHE_LIMIT:
-                _CACHE.pop(next(iter(_CACHE)))
-            _CACHE[cache_key] = bytes(audio)
+            if audio:
+                if len(_CACHE) >= _CACHE_LIMIT:
+                    _CACHE.pop(next(iter(_CACHE)))
+                _CACHE[cache_key] = bytes(audio)
 
-    generator = generate()
+        return generate()
 
-    try:
-        first = await asyncio.wait_for(anext(generator), timeout=20)
-    except TimeoutError as exc:
-        await generator.aclose()
-        raise HTTPException(status_code=504, detail="Speech synthesis timed out.") from exc
-    except StopAsyncIteration as exc:
-        raise HTTPException(status_code=502, detail="Speech synthesis returned no audio.") from exc
-    except Exception as exc:
-        await generator.aclose()
+    generator = None
+    first = b""
+    last_error: Exception | None = None
+
+    for attempt in range(2):
+        generator = make_generator()
+        try:
+            first = await asyncio.wait_for(anext(generator), timeout=20)
+            break
+        except TimeoutError as exc:
+            last_error = exc
+            await generator.aclose()
+        except StopAsyncIteration as exc:
+            last_error = exc
+            await generator.aclose()
+        except Exception as exc:
+            last_error = exc
+            await generator.aclose()
+
+        if attempt == 0:
+            await asyncio.sleep(0.2)
+
+    if not generator or not first:
+        if isinstance(last_error, TimeoutError):
+            raise HTTPException(status_code=504, detail="Speech synthesis timed out.") from last_error
         raise HTTPException(
             status_code=502,
             detail="Speech synthesis is unavailable.",
-        ) from exc
+        ) from last_error
 
     async def stream_body():
         try:

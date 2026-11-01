@@ -945,6 +945,11 @@ html[lang='ar'] .hero h1 {
   line-height: 1.7;
 }
 
+.voice-wait {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .voice-candidates {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

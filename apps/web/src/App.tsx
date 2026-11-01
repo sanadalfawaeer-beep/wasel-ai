@@ -189,7 +189,7 @@ function normalizeVoiceText(value: string): string {
 }
 
 function isYes(value: string): boolean {
-  return /(^|\s)(نعم|ايوه|ايوا|اجل|صح|تمام|اوكي|اوك|yes|ok|okay)(\s|$)/.test(value);
+  return /(^|\s)(نعم|ايوه|ايوا|اجل|صح|تمام|اوكي|اوك|yes|yeah|yep|correct|right|sure|ok|okay)(\s|$)/.test(value);
 }
 
 function isNo(value: string): boolean {
@@ -609,6 +609,7 @@ function PlanPage({
             {voiceCandidates.length > 0 ? (
               <div className="voice-confirm">
                 <p className="voice-confirm-title">{voicePrompt}</p>
+                <p className="voice-wait">{tr(ui.voiceWaitTone)}</p>
                 <div className="voice-candidates">
                   {voiceCandidates.slice(0, 3).map((place, index) => (
                     <button
@@ -1346,6 +1347,9 @@ function App() {
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const bargeRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const lastSpokenRef = useRef('');
+  const voiceHeardRef = useRef(false);
   const startVoiceRef = useRef<() => void>(() => {});
   const handleVoiceTranscriptRef = useRef<
     (transcript: string, confidence: number | undefined, stage: 'destination' | 'confirm' | 'choice') => void
@@ -1369,6 +1373,14 @@ function App() {
     handsFree,
   } = settings;
   const tr = (value: Localized) => L(value, lang);
+  const voiceForLanguage =
+    ttsVoice === 'browser'
+      ? 'browser'
+      : lang === 'ar'
+        ? ttsVoice
+        : ttsVoice === 'ar-JO-TaimNeural'
+          ? 'en-US-AndrewNeural'
+          : 'en-US-AvaNeural';
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -1405,19 +1417,19 @@ function App() {
   }, [settings]);
 
   useEffect(() => {
-    if (ttsVoice === 'browser' || !voiceEnabled) return;
+    if (voiceForLanguage === 'browser' || !voiceEnabled) return;
     const prompts = new Set([
       L(ui.welcomeVisualSample, lang),
       L(ui.voiceAskChoice, lang),
       L(ui.voiceChoiceShort, lang),
     ]);
     prompts.forEach((text) => {
-      const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(ttsVoice)}&rate=${speechRate}`;
+      const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voiceForLanguage)}&rate=${speechRate}`;
       void fetch(url).catch(() => {
         // Browser speech remains available if the TTS service is down.
       });
     });
-  }, [ttsVoice, voiceEnabled, lang, speechRate]);
+  }, [voiceForLanguage, voiceEnabled, lang, speechRate]);
 
   const update = (patch: Partial<SettingsState>) => {
     setSettings((current) => ({ ...current, ...patch }));
@@ -1581,9 +1593,47 @@ function App() {
     }
   };
 
+  const primeAudioContext = () => {
+    try {
+      let context = audioContextRef.current;
+      if (!context) {
+        const AudioContextClass =
+          window.AudioContext ??
+          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (!AudioContextClass) return;
+        context = new AudioContextClass();
+        audioContextRef.current = context;
+      }
+      if (context.state === 'suspended') void context.resume();
+    } catch {
+      // Audio cues are optional.
+    }
+  };
+
+  const playListeningChime = () => {
+    try {
+      primeAudioContext();
+      const context = audioContextRef.current;
+      if (!context) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.frequency.value = 660;
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.055, context.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.16);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.18);
+    } catch {
+      // A chime is optional.
+    }
+  };
+
   const speak = (text: string, options: SpeakOptions = {}) => {
     if (!voiceEnabled) return;
     stopAudioAndSpeech();
+    lastSpokenRef.current = text;
     const runId = speechRunId.current;
 
     const finish = () => {
@@ -1597,11 +1647,11 @@ function App() {
       if (options.autoListen && handsFree && mode === 'visual') {
         window.setTimeout(() => {
           if (runId === speechRunId.current) startVoiceRef.current();
-        }, 300);
+        }, canBargeIn ? 300 : 800);
       }
     };
 
-    if (ttsVoice !== 'browser' && typeof Audio !== 'undefined') {
+    if (voiceForLanguage !== 'browser' && typeof Audio !== 'undefined') {
       let audio = audioRef.current;
       if (!audio) {
         audio = document.createElement('audio');
@@ -1611,7 +1661,7 @@ function App() {
         audioRef.current = audio;
       }
 
-      const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(ttsVoice)}&rate=${speechRate}`;
+      const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voiceForLanguage)}&rate=${speechRate}`;
       audio.onplay = () => {
         if (options.bargeIn && handsFree) {
           startBargeIn(text, options.stage ?? 'destination', runId);
@@ -1654,6 +1704,7 @@ function App() {
   };
 
   const chooseMode = (next: Mode) => {
+    primeAudioContext();
     update({
       mode: next,
       ...(next === 'visual' ? { voiceEnabled: true } : {}),
@@ -1988,6 +2039,14 @@ function App() {
         if (first) chooseVoiceCandidate(first);
         return;
       }
+      const topCandidate = voiceCandidates[0];
+      if (topCandidate) {
+        const label = normalizeVoiceText(topCandidate.label);
+        if (label.includes(value) || value.includes(label)) {
+          chooseVoiceCandidate(topCandidate);
+          return;
+        }
+      }
       if (isNo(value) || isChangeDestination(value)) {
         resetVoiceDestination();
         return;
@@ -2020,6 +2079,8 @@ function App() {
   const startVoice = () => {
     if (voiceListening || voiceSearching) return;
     stopAudioAndSpeech();
+    playListeningChime();
+    voiceHeardRef.current = false;
     setVoiceNotice('');
     setVoiceInterim('');
 
@@ -2059,6 +2120,11 @@ function App() {
           return;
         }
 
+        if (stage === 'destination' && isEchoOf(transcript, lastSpokenRef.current)) {
+          return;
+        }
+
+        voiceHeardRef.current = true;
         setVoiceInterim(transcript);
         if (stage === 'destination') setDestination(transcript);
         if (result?.isFinal === false) return;
@@ -2067,12 +2133,17 @@ function App() {
         handleVoiceTranscript(transcript, alternative?.confidence, stage);
       };
       recognition.onend = () => {
-        setVoiceListening(false);
+        if (recognitionRef.current !== recognition) return;
         recognitionRef.current = null;
+        setVoiceListening(false);
+        if (!voiceHeardRef.current) {
+          setVoiceNotice(tr(ui.voiceNoInput));
+        }
       };
       recognition.onerror = () => {
-        setVoiceListening(false);
+        if (recognitionRef.current !== recognition) return;
         recognitionRef.current = null;
+        setVoiceListening(false);
         setVoiceNotice(tr(ui.voiceMicError));
       };
       recognition.start();
