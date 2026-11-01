@@ -47,6 +47,7 @@ type ChatMessage = {
 };
 
 type PreferredLine = 'none' | 'BRT 102' | 'Amman Bus 101' | 'BRT 103';
+type TtsVoice = 'ar-JO-SanaNeural' | 'ar-JO-TaimNeural' | 'browser';
 
 type SettingsState = {
   lang: Lang;
@@ -57,6 +58,8 @@ type SettingsState = {
   speechRate: number;
   preferredLine: PreferredLine;
   autoReadPlan: boolean;
+  ttsVoice: TtsVoice;
+  handsFree: boolean;
 };
 
 const SETTINGS_KEY = 'accessible-brt-settings';
@@ -70,6 +73,8 @@ const DEFAULT_SETTINGS: SettingsState = {
   speechRate: 0.95,
   preferredLine: 'none',
   autoReadPlan: false,
+  ttsVoice: 'ar-JO-SanaNeural',
+  handsFree: true,
 };
 
 function loadSettings(): SettingsState {
@@ -78,6 +83,7 @@ function loadSettings(): SettingsState {
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw) as Partial<SettingsState>;
     const preferredLines: PreferredLine[] = ['none', 'BRT 102', 'Amman Bus 101', 'BRT 103'];
+    const ttsVoices: TtsVoice[] = ['ar-JO-SanaNeural', 'ar-JO-TaimNeural', 'browser'];
     return {
       lang: parsed.lang === 'en' ? 'en' : 'ar',
       mode: parsed.mode === 'hearing' ? 'hearing' : 'visual',
@@ -91,6 +97,11 @@ function loadSettings(): SettingsState {
           ? parsed.preferredLine
           : 'none',
       autoReadPlan: Boolean(parsed.autoReadPlan),
+      ttsVoice:
+        parsed.ttsVoice && ttsVoices.includes(parsed.ttsVoice)
+          ? parsed.ttsVoice
+          : 'ar-JO-SanaNeural',
+      handsFree: parsed.handsFree !== false,
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -139,12 +150,19 @@ type SpeechResultEvent = {
 type SpeechRecognitionInstance = {
   lang: string;
   interimResults: boolean;
+  continuous?: boolean;
   onresult: ((event: SpeechResultEvent) => void) | null;
   onend: (() => void) | null;
   onerror: (() => void) | null;
   start: () => void;
   stop?: () => void;
   abort?: () => void;
+};
+
+type SpeakOptions = {
+  bargeIn?: boolean;
+  autoListen?: boolean;
+  stage?: 'destination' | 'confirm' | 'choice';
 };
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
@@ -195,6 +213,32 @@ function parseSpokenIndex(value: string): number | null {
   if (/(^|\s)(2|two|second|الثاني|الثانى|ثاني|اثنين|اثنان)(\s|$)/.test(value)) return 1;
   if (/(^|\s)(3|three|third|الثالث|ثالث|ثلاثه|ثلاثة)(\s|$)/.test(value)) return 2;
   return null;
+}
+
+function isEchoOf(heard: string, spoken: string): boolean {
+  const said = normalizeVoiceText(heard).split(' ').filter(Boolean);
+  if (said.length < 2) return false;
+  const spokenWords = new Set(normalizeVoiceText(spoken).split(' ').filter(Boolean));
+  const overlap = said.filter((word) => spokenWords.has(word)).length / said.length;
+  return overlap >= 0.5;
+}
+
+function pickBrowserVoice(voices: SpeechSynthesisVoice[], lang: Lang): SpeechSynthesisVoice | undefined {
+  const target = lang === 'ar' ? 'ar' : 'en';
+  return voices
+    .filter((voice) => voice.lang.toLowerCase().startsWith(target))
+    .sort((a, b) => {
+      const score = (voice: SpeechSynthesisVoice) => {
+        const name = voice.name.toLowerCase();
+        let value = 0;
+        if (/natural|neural|enhanced|premium|online/.test(name)) value += 100;
+        if (voice.lang.toLowerCase().startsWith('ar-jo')) value += 40;
+        if (/maged|sana|taim|hamed|amany|laila|zeina|salma/.test(name)) value += 20;
+        if (!voice.localService) value += 10;
+        return value;
+      };
+      return score(b) - score(a);
+    })[0];
 }
 
 function WelcomePage({
@@ -1028,6 +1072,8 @@ function SettingsPage({
   speechRate,
   preferredLine,
   autoReadPlan,
+  ttsVoice,
+  handsFree,
   resetNotice,
   setLang,
   tryMode,
@@ -1037,6 +1083,8 @@ function SettingsPage({
   setSpeechRate,
   setPreferredLine,
   setAutoReadPlan,
+  setTtsVoice,
+  setHandsFree,
   speak,
   flashScreen,
   resetSettings,
@@ -1050,6 +1098,8 @@ function SettingsPage({
   speechRate: number;
   preferredLine: PreferredLine;
   autoReadPlan: boolean;
+  ttsVoice: TtsVoice;
+  handsFree: boolean;
   resetNotice: boolean;
   setLang: (value: Lang) => void;
   tryMode: (next: Mode) => void;
@@ -1059,7 +1109,9 @@ function SettingsPage({
   setSpeechRate: (value: number) => void;
   setPreferredLine: (value: PreferredLine) => void;
   setAutoReadPlan: (value: boolean) => void;
-  speak: (text: string) => void;
+  setTtsVoice: (value: TtsVoice) => void;
+  setHandsFree: (value: boolean) => void;
+  speak: (text: string, options?: { bargeIn?: boolean; autoListen?: boolean; stage?: 'destination' | 'confirm' | 'choice' }) => void;
   flashScreen: () => void;
   resetSettings: () => void;
   showWelcome: () => void;
@@ -1184,6 +1236,34 @@ function SettingsPage({
                 <option value={1.1}>{tr(ui.settingsRateFast)}</option>
               </select>
             </div>
+            <div className="settings-row">
+              <label htmlFor="assistant-voice">{tr(ui.settingsAssistantVoice)}</label>
+              <select
+                id="assistant-voice"
+                className="settings-select"
+                value={ttsVoice}
+                disabled={!voiceEnabled}
+                onChange={(event) => setTtsVoice(event.target.value as TtsVoice)}
+              >
+                <option value="ar-JO-SanaNeural">{tr(ui.settingsVoiceSana)}</option>
+                <option value="ar-JO-TaimNeural">{tr(ui.settingsVoiceTaim)}</option>
+                <option value="browser">{tr(ui.settingsVoiceBrowser)}</option>
+              </select>
+            </div>
+            <div className="settings-row">
+              <span className="settings-row-label">{tr(ui.settingsHandsFree)}</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={handsFree}
+                aria-label={`${tr(ui.settingsHandsFree)}: ${handsFree ? tr(ui.settingsOn) : tr(ui.settingsOff)}`}
+                className={`toggle ${handsFree ? 'is-on' : ''}`}
+                onClick={() => setHandsFree(!handsFree)}
+              >
+                <Mic size={15} aria-hidden="true" />
+                {handsFree ? tr(ui.settingsOn) : tr(ui.settingsOff)}
+              </button>
+            </div>
           </article>
 
           <article className="settings-card">
@@ -1264,6 +1344,13 @@ function App() {
   const [voiceSearching, setVoiceSearching] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const bargeRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const startVoiceRef = useRef<() => void>(() => {});
+  const handleVoiceTranscriptRef = useRef<
+    (transcript: string, confidence: number | undefined, stage: 'destination' | 'confirm' | 'choice') => void
+  >(() => {});
+  const speechRunId = useRef(0);
   const voiceSearchId = useRef(0);
   const [notice, setNotice] = useState('');
   const [resetNotice, setResetNotice] = useState(false);
@@ -1278,6 +1365,8 @@ function App() {
     speechRate,
     preferredLine,
     autoReadPlan,
+    ttsVoice,
+    handsFree,
   } = settings;
   const tr = (value: Localized) => L(value, lang);
 
@@ -1326,23 +1415,192 @@ function App() {
   const setSpeechRate = (value: number) => update({ speechRate: value });
   const setPreferredLine = (value: PreferredLine) => update({ preferredLine: value });
   const setAutoReadPlan = (value: boolean) => update({ autoReadPlan: value });
+  const setTtsVoice = (value: TtsVoice) => update({ ttsVoice: value });
+  const setHandsFree = (value: boolean) => update({ handsFree: value });
 
-  const speak = (text: string) => {
-    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+  const stopAudioAndSpeech = () => {
+    speechRunId.current += 1;
+    if (audioRef.current) {
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    try {
+      bargeRecognitionRef.current?.abort?.();
+      recognitionRef.current?.abort?.();
+    } catch {
+      // Ignore recognition shutdown errors.
+    }
+    bargeRecognitionRef.current = null;
+    recognitionRef.current = null;
+    setVoiceListening(false);
+  };
+
+  const speakBrowser = (
+    text: string,
+    finish: () => void,
+    runId: number,
+    options: SpeakOptions,
+  ) => {
+    if (!('speechSynthesis' in window)) {
+      finish();
+      return;
+    }
     const synth = window.speechSynthesis;
-    synth.cancel();
     if (synth.paused) synth.resume();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
     utterance.rate = speechRate;
-    const availableVoices = synth.getVoices();
-    const preferred = availableVoices.find((voice) =>
-      voice.lang.toLowerCase().startsWith(lang === 'ar' ? 'ar' : 'en'),
-    );
-    const fallback =
-      availableVoices.find((voice) => voice.default) ?? availableVoices[0];
-    if (preferred ?? fallback) utterance.voice = preferred ?? fallback;
+    const best = pickBrowserVoice(synth.getVoices(), lang);
+    if (best) utterance.voice = best;
+    utterance.onstart = () => {
+      if (options.bargeIn && handsFree) {
+        startBargeIn(text, options.stage ?? 'destination', runId);
+      }
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
     synth.speak(utterance);
+  };
+
+  const startBargeIn = (
+    spoken: string,
+    stage: 'destination' | 'confirm' | 'choice',
+    runId: number,
+  ) => {
+    if (!handsFree) return;
+    const Recognition = getSpeechRecognition();
+    if (!Recognition) return;
+    try {
+      bargeRecognitionRef.current?.abort?.();
+    } catch {
+      // Ignore previous barge-in shutdown errors.
+    }
+
+    const recognition = new Recognition();
+    bargeRecognitionRef.current = recognition;
+    recognition.lang = lang === 'ar' ? 'ar-JO' : 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    recognition.onresult = (event) => {
+      if (runId !== speechRunId.current) return;
+      const result = event.results?.[event.results.length - 1] ?? event.results?.[0];
+      const alternative = result?.[0];
+      const transcript = alternative?.transcript?.trim();
+      if (!transcript || isEchoOf(transcript, spoken)) return;
+
+      const value = normalizeVoiceText(transcript);
+      const spokenValue = normalizeVoiceText(spoken);
+      if (
+        value.split(' ').length < 3 &&
+        spokenValue.includes(value)
+      ) {
+        return;
+      }
+      const command =
+        isStop(value) ||
+        isRepeat(value) ||
+        isYes(value) ||
+        isNo(value) ||
+        isChangeDestination(value) ||
+        parseSpokenIndex(value) !== null ||
+        /\d{3}/.test(value);
+      const isFinal = result?.isFinal !== false;
+      const destinationWord = Boolean(localPlace(transcript, lang));
+
+      if (!command && (!isFinal || (value.split(' ').length < 2 && !destinationWord))) {
+        return;
+      }
+
+      speechRunId.current += 1;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      try {
+        recognition.abort?.();
+      } catch {
+        // Ignore abort errors.
+      }
+      bargeRecognitionRef.current = null;
+      handleVoiceTranscriptRef.current(transcript, alternative?.confidence, stage);
+    };
+
+    recognition.onend = () => {
+      if (bargeRecognitionRef.current !== recognition) return;
+      bargeRecognitionRef.current = null;
+      if (runId !== speechRunId.current) return;
+      const stillSpeaking = audioRef.current
+        ? !audioRef.current.paused && !audioRef.current.ended
+        : 'speechSynthesis' in window && window.speechSynthesis.speaking;
+      if (stillSpeaking) {
+        window.setTimeout(() => startBargeIn(spoken, stage, runId), 250);
+      }
+    };
+
+    recognition.onerror = () => {
+      if (bargeRecognitionRef.current === recognition) {
+        bargeRecognitionRef.current = null;
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      bargeRecognitionRef.current = null;
+    }
+  };
+
+  const speak = (text: string, options: SpeakOptions = {}) => {
+    if (!voiceEnabled) return;
+    stopAudioAndSpeech();
+    const runId = speechRunId.current;
+
+    const finish = () => {
+      if (runId !== speechRunId.current) return;
+      try {
+        bargeRecognitionRef.current?.abort?.();
+      } catch {
+        // Ignore barge-in shutdown errors.
+      }
+      bargeRecognitionRef.current = null;
+      if (options.autoListen && handsFree && mode === 'visual') {
+        window.setTimeout(() => {
+          if (runId === speechRunId.current) startVoiceRef.current();
+        }, 250);
+      }
+    };
+
+    if (ttsVoice !== 'browser' && typeof Audio !== 'undefined') {
+      const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(ttsVoice)}&rate=${speechRate}`;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onplay = () => {
+        if (options.bargeIn && handsFree) {
+          startBargeIn(text, options.stage ?? 'destination', runId);
+        }
+      };
+      audio.onended = () => {
+        if (runId === speechRunId.current) audioRef.current = null;
+        finish();
+      };
+      audio.onerror = () => {
+        if (runId !== speechRunId.current) return;
+        audioRef.current = null;
+        speakBrowser(text, finish, runId, options);
+      };
+      void audio.play().catch(() => {
+        if (runId !== speechRunId.current) return;
+        audioRef.current = null;
+        speakBrowser(text, finish, runId, options);
+      });
+    } else {
+      speakBrowser(text, finish, runId, options);
+    }
   };
 
   const flashScreen = () => {
@@ -1369,8 +1627,15 @@ function App() {
       ...(next === 'visual' ? { voiceEnabled: true } : {}),
     });
     setOnboarded(true);
-    if (next === 'visual') speak(tr(ui.welcomeVisualSample));
-    else flashScreen();
+    if (next === 'visual') {
+      speak(tr(ui.welcomeVisualSample), {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'destination',
+      });
+    } else {
+      flashScreen();
+    }
   };
 
   const showWelcome = () => {
@@ -1428,7 +1693,11 @@ function App() {
       setPlanning(false);
       setVoicePrompt(summary);
       if ((mode === 'visual' || autoReadPlan) && voiceEnabled) {
-        speak(summary);
+        speak(summary, {
+          bargeIn: true,
+          autoListen: true,
+          stage: 'choice',
+        });
       }
     }, 450);
   };
@@ -1508,7 +1777,11 @@ function App() {
     } else {
       const message = tr(ui.voiceChoiceRetry);
       setVoiceNotice(message);
-      speak(message);
+      speak(message, {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'choice',
+      });
     }
   };
 
@@ -1524,7 +1797,7 @@ function App() {
   };
 
   const resetVoiceDestination = () => {
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    stopAudioAndSpeech();
     voiceSearchId.current += 1;
     setVoiceCandidates([]);
     setVoicePrompt('');
@@ -1538,11 +1811,15 @@ function App() {
     setDestination('');
     setPlanning(false);
     window.setTimeout(() => document.getElementById('destination')?.focus(), 50);
-    speak(tr(ui.planTitle));
+    speak(tr(ui.planTitle), {
+      bargeIn: true,
+      autoListen: true,
+      stage: 'destination',
+    });
   };
 
   const stopVoice = () => {
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    stopAudioAndSpeech();
     try {
       recognitionRef.current?.stop?.();
     } catch {
@@ -1561,7 +1838,15 @@ function App() {
       voicePrompt ||
       (trips.length > 0 ? tripSummary(trips) : tr(ui.voiceTapDestination));
     setVoiceNotice(text);
-    speak(text);
+    speak(text, {
+      bargeIn: true,
+      autoListen: true,
+      stage: voiceCandidates.length
+        ? 'confirm'
+        : trips.length > 0
+          ? 'choice'
+          : 'destination',
+    });
   };
 
   const searchVoiceDestination = (transcript: string, confidence?: number) => {
@@ -1569,7 +1854,11 @@ function App() {
     if (!clean) {
       const message = tr(ui.voiceNoInput);
       setVoiceNotice(message);
-      speak(message);
+      speak(message, {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'destination',
+      });
       return;
     }
 
@@ -1579,7 +1868,11 @@ function App() {
       return;
     }
     if (isRepeat(value)) {
-      speak(tr(ui.voiceTapDestination));
+      speak(tr(ui.voiceTapDestination), {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'destination',
+      });
       return;
     }
     if (
@@ -1590,7 +1883,11 @@ function App() {
     ) {
       const message = tr(ui.voiceLowConfidence);
       setVoiceNotice(message);
-      speak(message);
+      speak(message, {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'destination',
+      });
       return;
     }
 
@@ -1610,7 +1907,11 @@ function App() {
       if (!places.length) {
         const message = tr(ui.voiceNoPlaces);
         setVoiceNotice(message);
-        speak(message);
+        speak(message, {
+          bargeIn: true,
+          autoListen: true,
+          stage: 'destination',
+        });
         return;
       }
 
@@ -1625,7 +1926,11 @@ function App() {
       setVoiceCandidates(top);
       setVoicePrompt(prompt);
       setVoiceNotice('');
-      speak(prompt);
+      speak(prompt, {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'confirm',
+      });
     });
   };
 
@@ -1682,7 +1987,7 @@ function App() {
 
   const startVoice = () => {
     if (voiceListening || voiceSearching) return;
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    stopAudioAndSpeech();
     setVoiceNotice('');
     setVoiceInterim('');
 
@@ -1713,7 +2018,11 @@ function App() {
           if (result?.isFinal) {
             const message = tr(ui.voiceNoInput);
             setVoiceNotice(message);
-            speak(message);
+            speak(message, {
+              bargeIn: true,
+              autoListen: true,
+              stage,
+            });
           }
           return;
         }
@@ -1742,6 +2051,11 @@ function App() {
       setVoiceNotice(tr(ui.voiceMicError));
     }
   };
+
+  useEffect(() => {
+    handleVoiceTranscriptRef.current = handleVoiceTranscript;
+    startVoiceRef.current = startVoice;
+  });
 
   const onSeat = (seat: Seat) => {
     const status =
@@ -1815,7 +2129,7 @@ function App() {
   };
 
   const micSupported = Boolean(getSpeechRecognition());
-  const speechSupported = 'speechSynthesis' in window;
+  const speechSupported = ttsVoice !== 'browser' || 'speechSynthesis' in window;
   const hasArabicVoice = voices.some((voice) =>
     voice.lang.toLowerCase().startsWith('ar'),
   );
@@ -1827,7 +2141,7 @@ function App() {
         ? tr(ui.voiceUnsupportedBrowser)
         : !speechSupported
           ? tr(ui.voiceTtsUnsupported)
-          : voices.length > 0 && !hasArabicVoice
+          : ttsVoice === 'browser' && voices.length > 0 && !hasArabicVoice
             ? tr(ui.voiceNoArabic)
             : '';
 
@@ -1932,7 +2246,13 @@ function App() {
                 voicePrompt={voicePrompt}
                 voiceSearching={voiceSearching}
                 onVoice={startVoice}
-                onReadOptions={() => speak(tripSummary(trips))}
+                onReadOptions={() =>
+                  speak(tripSummary(trips), {
+                    bargeIn: true,
+                    autoListen: true,
+                    stage: 'choice',
+                  })
+                }
                 onChooseCandidate={chooseVoiceCandidate}
                 onResetDestination={resetVoiceDestination}
                 onRepeatVoice={repeatVoice}
@@ -1983,6 +2303,8 @@ function App() {
                 speechRate={speechRate}
                 preferredLine={preferredLine}
                 autoReadPlan={autoReadPlan}
+                ttsVoice={ttsVoice}
+                handsFree={handsFree}
                 resetNotice={resetNotice}
                 setLang={setLang}
                 tryMode={tryMode}
@@ -1992,6 +2314,8 @@ function App() {
                 setSpeechRate={setSpeechRate}
                 setPreferredLine={setPreferredLine}
                 setAutoReadPlan={setAutoReadPlan}
+                setTtsVoice={setTtsVoice}
+                setHandsFree={setHandsFree}
                 speak={speak}
                 flashScreen={flashScreen}
                 resetSettings={resetSettings}

@@ -109,7 +109,7 @@ powershell -ExecutionPolicy Bypass -File scripts/google-check.ps1
 
 A standalone Arabic-first website built from the ACCESSIBLE BRT prototype spec and branded as Wasel A.I. Every fresh load opens with an audio/visual help choice (auto-selecting audio help after 5 seconds), then splits into routed pages: Plan, Trip, Chat, and Settings. It keeps the working tools: press-to-talk destination planning that reads available buses and accepts a spoken bus choice, bus line and boarding stop, arrival time, empty-seat display, seat details that appear when a bus is selected, an OpenStreetMap destination map, the seven-step rider journey, an audio/visual help switch, AI driver chat, and persisted accessibility settings. The about/features/impact/survey sections are intentionally omitted.
 
-No backend or API key is needed; destination search and the map use keyless OpenStreetMap services:
+No API key is needed; destination search and the map use keyless OpenStreetMap services. The natural Arabic voice uses the local FastAPI TTS endpoint (run `uv sync` in `services/api`); the browser voice is the fallback.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\demo-accessible-web.ps1
@@ -169,4 +169,4 @@ Open the printed URL, tap **Bus** → **City Mall**. The demo is simulated and l
 
 Phase 0 vertical slice. The UI is complete enough to demo the full loop: plan → cues → guidance → arrival → conversation → bus planner → settings. The Bus tab currently uses demo occupancy; real seat data needs an operator feed. Real indoor maps, venue accounts, and the accessibility graph are Phase 1/2.
 
-The separate `apps/web` site is the bus-only Wasel A.I. prototype: Arabic-first, fully client-side, OpenStreetMap-backed, and usable without a backend or API key.
+The separate `apps/web` site is the bus-only Wasel A.I. prototype: Arabic-first, OpenStreetMap-backed, and usable without an API key. The natural neural voice uses an optional local FastAPI TTS endpoint; browser speech is the fallback.

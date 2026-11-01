@@ -5,6 +5,7 @@ description = "Wasel AI route planner: FastAPI + Strands Agents + DeepSeek"
 requires-python = ">=3.12"
 dependencies = [
     "anyio>=4.4",
+    "edge-tts>=7.3.1",
     "fastapi>=0.115",
     "httpx>=0.28",
     "pydantic>=2.10",

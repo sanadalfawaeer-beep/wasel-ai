@@ -24,7 +24,7 @@
 - Four mock UJ destinations, Google Places/Routes adapters, deterministic fallback.
 - Bus tab with Amman itineraries, departure countdowns, and clearly labelled simulated occupancy.
 - Standalone ACCESSIBLE BRT bus-only website in `apps/web`: routed Plan/Trip/Chat/Settings pages, Arabic-first RTL, English toggle, seat map on bus selection, AI chat, persisted accessibility settings, no backend key required.
-- 16 backend tests, 12 mobile tests, website build, contrast gate, web export, CI.
+- 18 backend tests, 12 mobile tests, website build, edge-TTS natural voice endpoint, contrast gate, web export, CI.
 
 **Not yet pilot-ready**
 

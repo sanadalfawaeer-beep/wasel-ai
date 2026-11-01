@@ -2312,7 +2312,8 @@ html[dir='rtl'] .phone-body blockquote {
   flex-wrap: wrap;
 }
 
-.settings-row label {
+.settings-row label,
+.settings-row-label {
   color: var(--muted);
   font-size: 13px;
 }

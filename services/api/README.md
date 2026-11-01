@@ -10,9 +10,10 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `GET /api/health` — planner mode, model, key presence.
 - `POST /api/plan` — walking route planning for the guide.
 - `POST /api/transit/plan` — Amman bus itineraries (mock or Google Transit).
+- `GET /api/tts?text=...&voice=ar-JO-SanaNeural` — neural Arabic MP3 for the Wasel A.I. website (Edge TTS).
 - `GET /api/demo?lang=en` — the UJ demo route without the LLM.
 
-The agent plans; the phone guides. Strands runs once per request and is never in the real-time cue loop.
+The agent plans; the phone guides. Strands runs once per request and is never in the real-time cue loop. The TTS endpoint uses Edge's online neural voices and falls back to the browser voice in the website when the API is unavailable.
 
 ## Modes
 

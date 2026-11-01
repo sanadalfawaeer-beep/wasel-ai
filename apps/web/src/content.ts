@@ -58,8 +58,8 @@ export const ui = {
   welcomeVisualDesc: l('إرشاد صوتي خلال الرحلة', 'Voice guidance through the trip'),
   welcomeHearingDesc: l('نص فوري ووميض واهتزاز', 'Live captions, flash, and haptics'),
   welcomeVisualSample: l(
-    'تم اختيار المساعدة الصوتية. سأرشدك صوتياً خلال الرحلة.',
-    'Audio help selected. I will guide you by voice.',
+    'تم اختيار المساعدة الصوتية. إلى أين تريد الذهاب؟',
+    'Audio help selected. Where do you want to go?',
   ),
   welcomeAutoHint: l(
     'سيتم اختيار المساعدة الصوتية تلقائياً بعد 5 ثوانٍ',
@@ -306,6 +306,11 @@ export const ui = {
   settingsLineNone: l('بدون تفضيل', 'No preference'),
   settingsAutoRead: l('قراءة نتائج الرحلة', 'Auto-read trip results'),
   settingsShowWelcome: l('عرض شاشة البداية', 'Show welcome screen'),
+  settingsAssistantVoice: l('صوت المساعد', 'Assistant voice'),
+  settingsVoiceSana: l('سنا — أردني طبيعي', 'Sana — Jordanian natural'),
+  settingsVoiceTaim: l('تيم — أردني طبيعي', 'Taim — Jordanian natural'),
+  settingsVoiceBrowser: l('صوت المتصفح', 'Browser voice'),
+  settingsHandsFree: l('الاستماع التلقائي', 'Hands-free listening'),
   settingsSpeechRate: l('سرعة الصوت', 'Voice speed'),
   settingsRateSlow: l('بطيء', 'Slow'),
   settingsRateNormal: l('عادي', 'Normal'),
