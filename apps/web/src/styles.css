@@ -1128,6 +1128,19 @@ html[lang='ar'] .hero h1 {
   margin-bottom: 12px;
 }
 
+.voice-choice-question {
+  margin-block: -4px 12px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.voice-choice-question span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .trip-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1180,6 +1193,19 @@ html[lang='ar'] .hero h1 {
   font-weight: 700;
   line-height: 1;
   background: var(--surface-2);
+}
+
+.trip-option-number {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  line-height: 1;
+  flex: 0 0 auto;
 }
 
 .micro-badge {
@@ -1281,6 +1307,16 @@ html[lang='ar'] .hero h1 {
   gap: 5px;
   color: var(--muted);
   font-size: 13px;
+}
+
+.trip-detail-arrival {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 6px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .trip-detail-grid {

@@ -8,6 +8,7 @@ import {
   Bus,
   ChevronLeft,
   ChevronRight,
+  Clock,
   MapPin,
   Mic,
   Pause,
@@ -289,11 +290,13 @@ function WelcomePage({
 function TripCard({
   trip,
   lang,
+  number,
   selected,
   onSelect,
 }: {
   trip: TripOption;
   lang: Lang;
+  number: number;
   selected: boolean;
   onSelect: (trip: TripOption) => void;
 }) {
@@ -314,6 +317,7 @@ function TripCard({
           className="line-badge"
           style={{ borderColor: trip.color, color: trip.color }}
         >
+          <span className="trip-option-number">{number}</span>
           <Bus size={14} aria-hidden="true" />
           {trip.line}
         </span>
@@ -491,13 +495,24 @@ function PlanPage({
       : confirmMode
         ? tr(ui.voiceConfirmListening)
         : trips.length > 0
-          ? tr(ui.voiceChooseBus)
+          ? tr(ui.voiceAskChoice)
           : tr(ui.voiceTapDestination);
   const panelHint = confirmMode
     ? tr(ui.voiceCandidatesHint)
     : trips.length > 0
       ? tr(ui.voiceChooseHint)
       : tr(ui.voiceDestinationHint);
+  const selectedArrival = selectedTrip
+    ? new Intl.DateTimeFormat(lang === 'ar' ? 'ar-JO' : 'en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(new Date(selectedTrip.arrivalAt))
+    : '';
+  const selectedMinutes = selectedTrip
+    ? selectedTrip.next === 1
+      ? tr(ui.voiceMinute)
+      : tr(ui.voiceMinutes)
+    : '';
 
   return (
     <section id="planner" className="section section-first">
@@ -650,12 +665,18 @@ function PlanPage({
           {trips.length > 0 ? (
             <>
               <h2 className="output-title">{tr(ui.planResults)}</h2>
+              {mode === 'visual' ? (
+                <p className="voice-choice-question">
+                  {tr(ui.voiceAskChoice)} <span>{tr(ui.voiceChooseHint)}</span>
+                </p>
+              ) : null}
               <div className="trip-grid" aria-label={tr(ui.planAria)}>
-                {trips.map((trip) => (
+                {trips.map((trip, index) => (
                   <TripCard
                     key={trip.id}
                     trip={trip}
                     lang={lang}
+                    number={index + 1}
                     selected={selectedTrip?.id === trip.id}
                     onSelect={onSelectTrip}
                   />
@@ -680,6 +701,10 @@ function PlanPage({
                     {L(selectedTrip.board, lang)}
                     {lang === 'ar' ? <ArrowLeft size={15} aria-hidden="true" /> : <ArrowRight size={15} aria-hidden="true" />}
                     {selectedTrip.alight}
+                  </p>
+                  <p className="trip-detail-arrival">
+                    <Clock size={15} aria-hidden="true" />
+                    {tr(ui.voiceArrivesIn)} {selectedTrip.next} {selectedMinutes} · {tr(ui.planArrive)}: {selectedArrival}
                   </p>
                 </div>
                 <div className="seat-count">
@@ -1364,9 +1389,10 @@ function App() {
         trip.seats != null
           ? `${trip.seats} ${tr(ui.planSeats)}`
           : tr(ui.planStanding);
-      return `${optionLabel} ${index + 1}. ${trip.line}. ${tr(ui.planNext)} ${trip.next} ${tr(ui.minutesShort)}. ${seatsText}.`;
+      const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
+      return `${optionLabel} ${index + 1}. ${trip.line}. ${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}. ${seatsText}.`;
     });
-    return `${intro} ${parts.join(' ')} ${tr(ui.voiceChooseBus)}`;
+    return `${intro} ${parts.join(' ')} ${tr(ui.voiceAskChoice)} ${tr(ui.voiceChooseBus)}`;
   };
 
   const planTrip = (value?: string, point?: OsmPlace | null) => {
@@ -1414,12 +1440,15 @@ function App() {
 
   const selectTrip = (trip: TripOption) => {
     setSelectedTripId(trip.id);
+    const seatsText =
+      trip.seats != null
+        ? `${trip.seats} ${tr(ui.planSeats)}`
+        : tr(ui.planStanding);
+    const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
+    const arrivalText = `${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}`;
+    setVoiceNotice(`${tr(ui.voiceSelected)} ${trip.line}. ${arrivalText}.`);
     if (mode === 'visual') {
-      const seatsText =
-        trip.seats != null
-          ? `${trip.seats} ${tr(ui.planSeats)}`
-          : tr(ui.planStanding);
-      speak(`${tr(ui.voiceSelected)} ${trip.line}. ${seatsText}.`);
+      speak(`${tr(ui.voiceSelected)} ${trip.line}. ${arrivalText}. ${seatsText}.`);
     }
     window.setTimeout(() => {
       document.getElementById('trip-detail')?.scrollIntoView({
@@ -1438,7 +1467,6 @@ function App() {
       )[0];
       if (fastest) {
         selectTrip(fastest);
-        setVoiceNotice(`${tr(ui.voiceSelected)} ${fastest.line}`);
         return;
       }
     }
@@ -1447,7 +1475,6 @@ function App() {
       const closest = [...trips].sort((a, b) => a.walk - b.walk)[0];
       if (closest) {
         selectTrip(closest);
-        setVoiceNotice(`${tr(ui.voiceSelected)} ${closest.line}`);
         return;
       }
     }
@@ -1456,7 +1483,6 @@ function App() {
       const mostSeats = [...trips].sort((a, b) => (b.seats ?? -1) - (a.seats ?? -1))[0];
       if (mostSeats) {
         selectTrip(mostSeats);
-        setVoiceNotice(`${tr(ui.voiceSelected)} ${mostSeats.line}`);
         return;
       }
     }
@@ -1479,7 +1505,6 @@ function App() {
     const chosen = trips[index];
     if (chosen) {
       selectTrip(chosen);
-      setVoiceNotice(`${tr(ui.voiceSelected)} ${chosen.line}`);
     } else {
       const message = tr(ui.voiceChoiceRetry);
       setVoiceNotice(message);
