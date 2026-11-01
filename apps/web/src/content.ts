@@ -58,8 +58,8 @@ export const ui = {
   welcomeVisualDesc: l('إرشاد صوتي خلال الرحلة', 'Voice guidance through the trip'),
   welcomeHearingDesc: l('نص فوري ووميض واهتزاز', 'Live captions, flash, and haptics'),
   welcomeVisualSample: l(
-    'تم اختيار المساعدة الصوتية. إلى أين تريد الذهاب؟',
-    'Audio help selected. Where do you want to go?',
+    'إلى أين تريد الذهاب؟',
+    'Where do you want to go?',
   ),
   welcomeAutoHint: l(
     'سيتم اختيار المساعدة الصوتية تلقائياً بعد 5 ثوانٍ',
@@ -166,6 +166,7 @@ export const ui = {
   voiceSelected: l('اخترت', 'Selected'),
   voiceReadOptions: l('إعادة قراءة الخيارات', 'Read options again'),
   voiceAskChoice: l('أي باص تختار؟', 'Which bus do you want?'),
+  voiceChoiceShort: l('قل رقم الخيار.', 'Say the option number.'),
   voiceArrivesIn: l('يصل بعد', 'Arrives in'),
   voiceMinute: l('دقيقة', 'minute'),
   voiceMinutes: l('دقائق', 'minutes'),

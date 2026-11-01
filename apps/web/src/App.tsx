@@ -1404,6 +1404,21 @@ function App() {
     }
   }, [settings]);
 
+  useEffect(() => {
+    if (ttsVoice === 'browser' || !voiceEnabled) return;
+    const prompts = new Set([
+      L(ui.welcomeVisualSample, lang),
+      L(ui.voiceAskChoice, lang),
+      L(ui.voiceChoiceShort, lang),
+    ]);
+    prompts.forEach((text) => {
+      const url = `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(ttsVoice)}&rate=${speechRate}`;
+      void fetch(url).catch(() => {
+        // Browser speech remains available if the TTS service is down.
+      });
+    });
+  }, [ttsVoice, voiceEnabled, lang, speechRate]);
+
   const update = (patch: Partial<SettingsState>) => {
     setSettings((current) => ({ ...current, ...patch }));
   };
@@ -1582,7 +1597,7 @@ function App() {
       if (options.autoListen && handsFree && mode === 'visual') {
         window.setTimeout(() => {
           if (runId === speechRunId.current) startVoiceRef.current();
-        }, 600);
+        }, 300);
       }
     };
 
@@ -1664,17 +1679,17 @@ function App() {
     const optionLabel = lang === 'ar' ? 'الخيار' : 'Option';
     const intro =
       lang === 'ar'
-        ? `وجدت ${results.length} خيارات.`
-        : `I found ${results.length} options.`;
+        ? `${results.length} خيارات.`
+        : `${results.length} options.`;
     const parts = results.map((trip, index) => {
       const seatsText =
         trip.seats != null
           ? `${trip.seats} ${tr(ui.planSeats)}`
           : tr(ui.planStanding);
       const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
-      return `${optionLabel} ${index + 1}. ${trip.line}. ${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}. ${seatsText}.`;
+      return `${optionLabel} ${index + 1}: ${trip.line}، ${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}، ${seatsText}.`;
     });
-    return `${intro} ${parts.join(' ')} ${tr(ui.voiceAskChoice)} ${tr(ui.voiceChooseBus)}`;
+    return `${intro} ${parts.join(' ')} ${tr(ui.voiceAskChoice)} ${tr(ui.voiceChoiceShort)}`;
   };
 
   const planTrip = (value?: string, point?: OsmPlace | null) => {
@@ -1716,7 +1731,7 @@ function App() {
           stage: 'choice',
         });
       }
-    }, 450);
+    }, 120);
   };
 
   const onPlan = (event: FormEvent<HTMLFormElement>) => {
