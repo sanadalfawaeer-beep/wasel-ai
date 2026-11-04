@@ -12,6 +12,10 @@ Browser ──HTTPS──► FastAPI (Render)
                     └── /api/tts       neural speech
 ```
 
+**Current deployment:** <https://wasel-ai-ce0s.onrender.com>  
+**Service ID:** `srv-dblnktnf3r2c73e63vng`  
+**Plan:** free (cold starts after inactivity).
+
 ## Hosted pilot: Render
 
 The repository includes `render.yaml` and a multi-stage `Dockerfile`.

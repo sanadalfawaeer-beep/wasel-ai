@@ -174,4 +174,6 @@ Open the printed URL, tap **Bus** → **City Mall**. The demo is simulated and l
 
 Phase 0 vertical slice. The UI is complete enough to demo the full loop: plan → cues → guidance → arrival → conversation → bus planner → settings. The Bus tab currently uses demo occupancy; real seat data needs an operator feed. Real indoor maps, venue accounts, and the accessibility graph are Phase 1/2.
 
-The separate `apps/web` site is the bus-only Wasel A.I. prototype: Arabic-first, OpenStreetMap-backed, and usable without an API key. The natural neural voice uses an optional local FastAPI TTS endpoint; browser speech is the fallback.
+The separate `apps/web` site is the bus-only Wasel A.I. prototype: Arabic-first, OpenStreetMap-backed, and usable without an API key. The natural neural voice uses the hosted FastAPI TTS endpoint; browser speech is the fallback.
+
+**Live deployment:** <https://wasel-ai-ce0s.onrender.com> — Render free tier. The first request after 15 minutes of inactivity can take 30–60 seconds. The site and API run as one Docker service; see [Deploy Wasel A.I.](docs/deploy.md).
