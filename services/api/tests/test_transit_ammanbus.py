@@ -37,6 +37,21 @@ def test_ammanbus_plans_a_direct_scheduled_trip() -> None:
     assert bus.occupancy == "unknown"
 
 
+def test_ammanbus_explains_when_service_has_ended() -> None:
+    client = AmmanBusClient()
+    result = client.plan(
+        "Sweileh",
+        LatLng(lat=31.9539, lng=35.9106),
+        "en",
+        Destination(name="Sweileh", address="Amman", lat=32.0197, lng=35.8347),
+        now=datetime(2026, 11, 4, 22, 30, tzinfo=AMMAN_TZ),
+    )
+
+    assert result.provider == "ammanbus"
+    assert result.itineraries == []
+    assert "ended for today" in result.note
+
+
 def test_ammanbus_requires_a_resolvable_destination() -> None:
     client = AmmanBusClient()
     with pytest.raises(MapsError):

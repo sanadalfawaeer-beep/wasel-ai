@@ -273,6 +273,15 @@ class AmmanBusClient:
                 if lang == "ar"
                 else "Scheduled Amman Bus data. Live delays and seat availability are unavailable."
             )
+        elif now.hour >= 21 or now.hour < 6:
+            note = (
+                "انتهت رحلات اليوم على الأرجح. جرّب صباح الغد أو محطة قريبة."
+                if lang == "ar"
+                else (
+                    "Service has probably ended for today. "
+                    "Try again in the morning or use a nearby stop."
+                )
+            )
         else:
             note = (
                 "لا توجد رحلة مباشرة خلال الساعتين القادمتين. جرّب محطة قريبة أو وقتًا لاحقًا."
