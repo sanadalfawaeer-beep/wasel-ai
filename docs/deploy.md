@@ -65,7 +65,7 @@ In Render, open the service → **Settings → Custom Domains**, add the domain,
 
 ### 5. Always-on
 
-`render.yaml` uses the **starter** plan. The free plan spins down after inactivity, which adds a long cold start and is not suitable for a rider standing at a bus stop. Keep starter for a pilot.
+`render.yaml` currently uses the **free** plan so the first deployment costs nothing. The free plan spins down after inactivity, so the first request can take 30–60 seconds. That is acceptable for a demo, not for a rider standing at a bus stop. Before a pilot, switch `plan` to `starter` in `render.yaml` (or in Render's service settings).
 
 Approximate running cost: Render Starter ~$7/month, a domain ~$10–15/year, plus Google Maps and Azure Speech usage. Cap both cloud accounts with budget alerts.
 

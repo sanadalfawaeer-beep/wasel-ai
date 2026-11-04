@@ -2,7 +2,7 @@ services:
   - type: web
     name: wasel-ai
     runtime: docker
-    plan: starter
+    plan: free
     region: frankfurt
     dockerfilePath: ./Dockerfile
     dockerContext: .
