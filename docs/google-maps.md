@@ -28,6 +28,18 @@ PLANNER_MODE=auto
 
 `auto` uses Google when the key exists, otherwise mock mode. Use `google` to force it, or `mock` to force demo data.
 
+## Hosted website (Render)
+
+Add the same server key as `GOOGLE_MAPS_API_KEY` in the Render service environment variables. Render restarts the service automatically. Then check:
+
+```powershell
+curl.exe https://wasel-ai-ce0s.onrender.com/api/health
+```
+
+The response must include `"google_key":true` and `"mode":"google"`. Open the website, allow location access, and plan a trip. The results should show an **Estimated** badge and **Powered by Google** attribution. If the key is absent or the API fails, the website deliberately falls back to demo routes and labels them.
+
+The key must have **Routes API** and **Places API (New)** enabled. Keep it server-side; do not restrict it to an HTTP referrer because the browser never calls Google directly.
+
 ## Validate it
 
 ```powershell

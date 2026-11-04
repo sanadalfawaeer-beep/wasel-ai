@@ -120,6 +120,7 @@ export const ui = {
   planPrototype: l('بيانات تجريبية', 'Prototype data'),
   planEstimated: l('حسب الجدول', 'Estimated'),
   planLive: l('مباشر', 'Live'),
+  planPoweredByGoogle: l('مدعوم من Google', 'Powered by Google'),
   planRealUnavailable: l(
     'تعذر جلب بيانات النقل الآن. نعرض مسارات تجريبية.',
     'Transit data is unavailable right now. Showing demo routes.',

@@ -816,6 +816,9 @@ function PlanPage({
                   {planNote}
                 </p>
               ) : null}
+              {dataStatus !== 'demo' ? (
+                <p className="google-attribution">{tr(ui.planPoweredByGoogle)}</p>
+              ) : null}
               {mode === 'visual' ? (
                 <p className="voice-choice-question">
                   {tr(ui.voiceAskChoice)} <span>{tr(ui.voiceChooseHint)}</span>

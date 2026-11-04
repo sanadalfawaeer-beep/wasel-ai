@@ -1196,6 +1196,12 @@ html[lang='ar'] .hero h1 {
   margin-block: -4px 12px;
 }
 
+.google-attribution {
+  color: var(--muted);
+  font-size: 10px;
+  margin-block: -6px 12px;
+}
+
 .planner-output {
   margin-block-start: 22px;
 }
