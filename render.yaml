@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: wasel-ai
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DEBUG
+        value: "false"
+      - key: PLANNER_MODE
+        value: auto
+      - key: USE_LLM
+        value: "true"
+      - key: TTS_PROVIDER
+        value: auto
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: AZURE_SPEECH_KEY
+        sync: false
+      - key: AZURE_SPEECH_REGION
+        sync: false

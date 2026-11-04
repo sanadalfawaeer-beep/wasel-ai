@@ -1,0 +1,11 @@
+.git
+.github
+apps/mobile
+apps/web/node_modules
+apps/web/dist
+services/api/.venv
+services/api/.env
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache

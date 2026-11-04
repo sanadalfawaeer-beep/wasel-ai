@@ -119,6 +119,10 @@ Open <http://localhost:5174>. Use the localhost URL for voice input; browsers bl
 
 Times, seat counts, seat states, and driver replies are simulated and labelled in the UI. Real occupancy needs an operator APC feed or crowdsourced reports; real arrivals need GTFS-RT or an operator API.
 
+### Deploy
+
+The website and API ship as one Docker service. The included `Dockerfile` builds the React app and serves it from FastAPI; `render.yaml` is a Render Blueprint with a health check and production environment variables. See [Deploy Wasel A.I.](docs/deploy.md).
+
 ## Standalone mobile bus demo
 
 No backend or Google key needed:
@@ -158,6 +162,7 @@ Open the printed URL, tap **Bus** → **City Mall**. The demo is simulated and l
 - [Architecture](docs/architecture.md)
 - [API](docs/api.md)
 - [Google Maps setup and validation](docs/google-maps.md)
+- [Deployment](docs/deploy.md)
 - [Amman bus planner](docs/bus.md)
 - [UI design system](docs/design/ui-spec.md)
 - [Accessibility testing](docs/accessibility/testing-plan.md)

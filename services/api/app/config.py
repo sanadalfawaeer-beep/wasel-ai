@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     request_timeout_s: float = 12.0
     agent_timeout_s: float = 8.0
 
+    # TTS: "auto" prefers Azure when a key is configured and falls back to
+    # Edge TTS. Set "azure" or "edge" to force a provider.
+    tts_provider: Literal["auto", "azure", "edge"] = "auto"
+    azure_speech_key: str = ""
+    azure_speech_region: str = ""
+
     @property
     def resolved_mode(self) -> Literal["mock", "google"]:
         if self.planner_mode == "mock":
@@ -46,6 +52,16 @@ class Settings(BaseSettings):
     @property
     def llm_enabled(self) -> bool:
         return self.use_llm and bool(self.deepseek_api_key)
+
+    @property
+    def resolved_tts_provider(self) -> Literal["azure", "edge"]:
+        if self.tts_provider == "azure":
+            return "azure"
+        if self.tts_provider == "edge":
+            return "edge"
+        if self.azure_speech_key and self.azure_speech_region:
+            return "azure"
+        return "edge"
 
 
 @lru_cache

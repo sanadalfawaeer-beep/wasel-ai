@@ -77,6 +77,24 @@ See [Bus planner](bus.md) for the full response and the occupancy limitation.
 
 Returns the built-in University of Jordan route without invoking the LLM. Useful for UI work and for a backup demo.
 
+## `GET /api/tts`
+
+Returns MP3 speech for a short prompt. The voice must be on the server allowlist.
+
+```http
+GET /api/tts?text=Where%20do%20you%20want%20to%20go%3F&voice=en-US-AvaNeural&rate=0.95
+```
+
+`rate` is `0.5`–`1.5`. The provider is selected by `TTS_PROVIDER`:
+
+| Value | Behavior |
+|---|---|
+| `auto` | Azure Speech when `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` are set, otherwise Edge TTS |
+| `azure` | Azure only; fail if it is unavailable |
+| `edge` | Edge TTS only; prototype use |
+
+Arabic voices: `ar-JO-SanaNeural`, `ar-JO-TaimNeural`, `ar-EG-SalmaNeural`, `ar-SA-HamedNeural`. English voices: `en-US-AvaNeural`, `en-US-AndrewNeural`, `en-US-EmmaNeural`, `en-US-BrianNeural`.
+
 ## `GET /api/health`
 
 ```json
@@ -85,7 +103,9 @@ Returns the built-in University of Jordan route without invoking the LLM. Useful
   "mode": "mock",
   "model": null,
   "llm": false,
-  "google_key": false
+  "google_key": false,
+  "tts": "edge",
+  "azure_tts": false
 }
 ```
 
