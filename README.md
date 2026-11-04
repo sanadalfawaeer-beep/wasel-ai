@@ -117,7 +117,7 @@ powershell -ExecutionPolicy Bypass -File scripts\demo-accessible-web.ps1
 
 Open <http://localhost:5174>. Use the localhost URL for voice input; browsers block the microphone on plain `http://192.168.x.x` LAN addresses. For Safari/iOS, put the local server behind an HTTPS tunnel; Vite is configured to accept `.trycloudflare.com` hosts. Voice input needs microphone permission; Arabic spoken replies need an Arabic system voice.
 
-Times, seat counts, seat states, and driver replies are simulated and labelled in the UI. Real occupancy needs an operator APC feed or crowdsourced reports; real arrivals need GTFS-RT or an operator API.
+When `GOOGLE_MAPS_API_KEY` is set, the website plans from the rider’s location using Google Routes transit and labels the results **Estimated**. Without a key, or if the transit service is unavailable, it falls back to clearly labelled demo routes. Seat counts, seat states, and driver replies are simulated in either case until an operator APC/AVL or messaging integration exists. Real occupancy needs an operator APC feed or crowdsourced reports; live arrivals need GTFS-RT or an operator API.
 
 ### Deploy
 

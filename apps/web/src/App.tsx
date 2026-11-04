@@ -40,11 +40,22 @@ import {
   searchPlaces,
   type OsmPlace,
 } from './osm';
+import {
+  planTransit,
+  toTripOptions,
+  type ApiTransitPlan,
+  type GeoPoint,
+} from './transit';
 
 type ChatMessage = {
   from: 'rider' | 'driver';
   text: string;
 };
+
+type DataStatus = 'demo' | 'estimated' | 'live';
+type OriginStatus = 'unknown' | 'locating' | 'current' | 'fallback';
+
+const AMMAN_FALLBACK: GeoPoint = { lat: 31.9539, lng: 35.9106 };
 
 type PreferredLine = 'none' | 'BRT 102' | 'Amman Bus 101' | 'BRT 103';
 type TtsVoice = 'ar-JO-SanaNeural' | 'ar-JO-TaimNeural' | 'browser';
@@ -173,6 +184,28 @@ function getSpeechRecognition(): SpeechRecognitionConstructor | null {
     webkitSpeechRecognition?: SpeechRecognitionConstructor;
   };
   return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
+}
+
+function getBrowserPosition(): Promise<GeoPoint> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is unavailable.'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }),
+      reject,
+      {
+        enableHighAccuracy: true,
+        timeout: 7000,
+        maximumAge: 60_000,
+      },
+    );
+  });
 }
 
 function normalizeVoiceText(value: string): string {
@@ -365,7 +398,17 @@ function TripCard({
           <Bus size={14} aria-hidden="true" />
           {trip.line}
         </span>
-        <span className="micro-badge">{L(ui.planPrototype, lang)}</span>
+        <span
+          className={`micro-badge ${
+            trip.demo ? 'demo' : trip.realtime ? 'live' : 'estimated'
+          }`}
+        >
+          {trip.demo
+            ? L(ui.planPrototype, lang)
+            : trip.realtime
+              ? L(ui.planLive, lang)
+              : L(ui.planEstimated, lang)}
+        </span>
       </div>
       <p className="trip-route">
         {L(trip.board, lang)}
@@ -383,7 +426,9 @@ function TripCard({
           <Armchair size={14} aria-hidden="true" />
           {trip.seats != null
             ? `${trip.seats} ${L(trip.seats === 1 ? ui.planSeatOne : ui.planSeats, lang)}`
-            : L(ui.planStanding, lang)}
+            : trip.occupancy === 'unknown'
+              ? L(ui.planSeatUnknown, lang)
+              : L(ui.planStanding, lang)}
         </strong>
         <span>
           {L(ui.planNext, lang)}: {trip.next} {L(ui.minutesShort, lang)}
@@ -479,11 +524,15 @@ function PlanPage({
   onPlan,
   planning,
   trips,
+  dataStatus,
+  planNote,
+  originStatus,
   planTrip,
   selectedTrip,
   selectedTripSeats,
   onSelectTrip,
   onSeat,
+  onUseLocation,
   destinationPoint,
   voiceListening,
   voiceNotice,
@@ -508,11 +557,15 @@ function PlanPage({
   onPlan: (event: FormEvent<HTMLFormElement>) => void;
   planning: boolean;
   trips: TripOption[];
+  dataStatus: DataStatus;
+  planNote: string;
+  originStatus: OriginStatus;
   planTrip: (value?: string) => void;
   selectedTrip: TripOption | null;
   selectedTripSeats: SeatSection[];
   onSelectTrip: (trip: TripOption) => void;
   onSeat: (seat: Seat) => void;
+  onUseLocation: () => void;
   destinationPoint: OsmPlace | null;
   voiceListening: boolean;
   voiceNotice: string;
@@ -561,6 +614,14 @@ function PlanPage({
       ? tr(ui.voiceMinute)
       : tr(ui.voiceMinutes)
     : '';
+  const originLabel =
+    originStatus === 'current'
+      ? tr(ui.planLocationCurrent)
+      : originStatus === 'locating'
+        ? tr(ui.planLocationLocating)
+        : originStatus === 'fallback'
+          ? tr(ui.planLocationFallback)
+          : tr(ui.planLocationPrompt);
 
   return (
     <section id="planner" className="section section-first">
@@ -569,13 +630,19 @@ function PlanPage({
           <div className="app-head-copy">
             <h1>{tr(ui.planTitle)}</h1>
           </div>
-          <div className="live-status">
+          <div className={`live-status ${dataStatus}`}>
             <span className="live-dot" />
             <div>
               <strong>{tr(ui.heroCardTitle)}</strong>
               <small>{tr(ui.heroCardMeta)}</small>
             </div>
-            <span className="micro-badge">{tr(ui.heroCardDemo)}</span>
+            <span className={`micro-badge ${dataStatus}`}>
+              {dataStatus === 'live'
+                ? tr(ui.planLive)
+                : dataStatus === 'estimated'
+                  ? tr(ui.planEstimated)
+                  : tr(ui.heroCardDemo)}
+            </span>
           </div>
         </div>
 
@@ -718,6 +785,22 @@ function PlanPage({
           </div>
         </form>
 
+        <div className={`origin-row ${originStatus}`}>
+          <span className="origin-pill">
+            {originStatus === 'locating' ? (
+              <span className="spinner" aria-hidden="true" />
+            ) : (
+              <MapPin size={14} aria-hidden="true" />
+            )}
+            {originLabel}
+          </span>
+          {originStatus === 'fallback' ? (
+            <button type="button" className="chip small" onClick={onUseLocation}>
+              {tr(ui.planLocationRetry)}
+            </button>
+          ) : null}
+        </div>
+
         <div className="planner-output" aria-live="polite">
           {planning ? (
             <p className="status-line">
@@ -728,6 +811,11 @@ function PlanPage({
           {trips.length > 0 ? (
             <>
               <h2 className="output-title">{tr(ui.planResults)}</h2>
+              {planNote ? (
+                <p className="note plan-source-note" role="status">
+                  {planNote}
+                </p>
+              ) : null}
               {mode === 'visual' ? (
                 <p className="voice-choice-question">
                   {tr(ui.voiceAskChoice)} <span>{tr(ui.voiceChooseHint)}</span>
@@ -775,7 +863,9 @@ function PlanPage({
                   <span>
                     {selectedTrip.seats != null
                       ? tr(ui.planSeats)
-                      : tr(ui.planStanding)}
+                      : selectedTrip.occupancy === 'unknown'
+                        ? tr(ui.planSeatUnknown)
+                        : tr(ui.planStanding)}
                   </span>
                 </div>
               </div>
@@ -1365,9 +1455,14 @@ function App() {
   const [destination, setDestination] = useState('');
   const [trips, setTrips] = useState<TripOption[]>([]);
   const [planning, setPlanning] = useState(false);
+  const [dataStatus, setDataStatus] = useState<DataStatus>('demo');
+  const [planNote, setPlanNote] = useState('');
+  const [originStatus, setOriginStatus] = useState<OriginStatus>('unknown');
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [destinationPoint, setDestinationPoint] = useState<OsmPlace | null>(null);
   const geocodeId = useRef(0);
+  const planId = useRef(0);
+  const originRef = useRef<GeoPoint | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -1773,15 +1868,19 @@ function App() {
       const seatsText =
         trip.seats != null
           ? `${trip.seats} ${tr(trip.seats === 1 ? ui.planSeatOne : ui.planSeats)}`
-          : tr(ui.planStanding);
+          : trip.occupancy === 'unknown'
+            ? tr(ui.planSeatUnknown)
+            : tr(ui.planStanding);
       const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
       return `${optionLabel} ${index + 1}: ${trip.line}${separator}${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}${separator}${seatsText}.`;
     });
     return `${intro} ${parts.join(' ')} ${tr(ui.voiceAskChoice)} ${tr(ui.voiceChoiceShort)}`;
   };
 
-  const planTrip = (value?: string, point?: OsmPlace | null) => {
+  const planTrip = async (value?: string, point?: OsmPlace | null) => {
     const dest = (value ?? destination).trim() || tr(ui.planDefault);
+    const requestId = planId.current + 1;
+    planId.current = requestId;
     voiceSearchId.current += 1;
     setVoiceCandidates([]);
     setVoicePrompt('');
@@ -1789,42 +1888,101 @@ function App() {
     setVoiceInterim('');
     setDestination(dest);
     setPlanning(true);
+    setPlanNote('');
     setTrips([]);
     setSelectedTripId(null);
     setDestinationPoint(point ?? localPlace(dest, lang));
 
     if (!point) {
-      const requestId = geocodeId.current + 1;
-      geocodeId.current = requestId;
+      const geocodeRequestId = geocodeId.current + 1;
+      geocodeId.current = geocodeRequestId;
       void geocodeDestination(dest, lang).then((found) => {
-        if (requestId === geocodeId.current) setDestinationPoint(found);
+        if (geocodeRequestId === geocodeId.current) setDestinationPoint(found);
       });
     }
 
-    window.setTimeout(() => {
-      const results = getTrips(dest, lang);
-      if (preferredLine !== 'none') {
-        results.sort((a, b) =>
-          a.line === preferredLine ? -1 : b.line === preferredLine ? 1 : 0,
-        );
+    let origin = originRef.current;
+    if (!origin) {
+      setOriginStatus('locating');
+      try {
+        origin = await getBrowserPosition();
+        setOriginStatus('current');
+      } catch {
+        origin = AMMAN_FALLBACK;
+        setOriginStatus('fallback');
       }
-      const summary = tripSummary(results);
-      setTrips(results);
-      setPlanning(false);
-      setVoicePrompt(summary);
-      if ((mode === 'visual' || autoReadPlan) && voiceEnabled) {
-        speak(summary, {
-          bargeIn: true,
-          autoListen: true,
-          stage: 'choice',
-        });
+      originRef.current = origin;
+    }
+
+    if (requestId !== planId.current) return;
+
+    let apiPlan: ApiTransitPlan | null = null;
+    let apiFailed = false;
+    try {
+      apiPlan = await planTransit(dest, origin, lang);
+    } catch {
+      apiFailed = true;
+    }
+
+    if (requestId !== planId.current) return;
+
+    let results: TripOption[];
+    if (apiPlan?.provider === 'google' && apiPlan.itineraries.length > 0) {
+      results = toTripOptions(apiPlan);
+      const includesDemo = apiPlan.demo
+        || apiPlan.itineraries.some((itinerary) => itinerary.demo);
+      setDataStatus(
+        includesDemo
+          ? 'demo'
+          : apiPlan.itineraries.some((itinerary) => itinerary.realtime)
+            ? 'live'
+            : 'estimated',
+      );
+      setPlanNote(apiPlan.note ?? '');
+    } else {
+      results = getTrips(dest, lang);
+      setDataStatus('demo');
+      if (apiFailed) setPlanNote(tr(ui.planRealUnavailable));
+    }
+
+    if (preferredLine !== 'none') {
+      results.sort((a, b) =>
+        a.line === preferredLine ? -1 : b.line === preferredLine ? 1 : 0,
+      );
+    }
+
+    const summary = tripSummary(results);
+    setTrips(results);
+    setPlanning(false);
+    setVoicePrompt(summary);
+    if ((mode === 'visual' || autoReadPlan) && voiceEnabled) {
+      speak(summary, {
+        bargeIn: true,
+        autoListen: true,
+        stage: 'choice',
+      });
+    }
+  };
+
+  const useMyLocation = async () => {
+    setOriginStatus('locating');
+    try {
+      const point = await getBrowserPosition();
+      originRef.current = point;
+      setOriginStatus('current');
+      if (destination.trim()) {
+        await planTrip(destination);
+      } else {
+        document.getElementById('destination')?.focus();
       }
-    }, 120);
+    } catch {
+      setOriginStatus('fallback');
+    }
   };
 
   const onPlan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    planTrip();
+    void planTrip();
   };
 
   const selectTrip = (trip: TripOption) => {
@@ -1832,7 +1990,9 @@ function App() {
     const seatsText =
       trip.seats != null
         ? `${trip.seats} ${tr(trip.seats === 1 ? ui.planSeatOne : ui.planSeats)}`
-        : tr(ui.planStanding);
+        : trip.occupancy === 'unknown'
+          ? tr(ui.planSeatUnknown)
+          : tr(ui.planStanding);
     const minutes = trip.next === 1 ? tr(ui.voiceMinute) : tr(ui.voiceMinutes);
     const arrivalText = `${tr(ui.voiceArrivesIn)} ${trip.next} ${minutes}`;
     setVoiceNotice(`${tr(ui.voiceSelected)} ${trip.line}. ${arrivalText}.`);
@@ -1919,6 +2079,7 @@ function App() {
   const resetVoiceDestination = () => {
     stopAudioAndSpeech();
     voiceSearchId.current += 1;
+    planId.current += 1;
     setVoiceCandidates([]);
     setVoicePrompt('');
     setVoiceSearching(false);
@@ -1930,6 +2091,8 @@ function App() {
     setDestinationPoint(null);
     setDestination('');
     setPlanning(false);
+    setDataStatus('demo');
+    setPlanNote('');
     window.setTimeout(() => document.getElementById('destination')?.focus(), 50);
     speak(tr(ui.planTitle), {
       bargeIn: true,
@@ -2390,11 +2553,15 @@ function App() {
                 onPlan={onPlan}
                 planning={planning}
                 trips={trips}
+                dataStatus={dataStatus}
+                planNote={planNote}
+                originStatus={originStatus}
                 planTrip={planTrip}
                 selectedTrip={selectedTrip}
                 selectedTripSeats={selectedTripSeats}
                 onSelectTrip={selectTrip}
                 onSeat={onSeat}
+                onUseLocation={useMyLocation}
                 destinationPoint={destinationPoint}
                 voiceListening={voiceListening}
                 voiceNotice={voiceNotice}

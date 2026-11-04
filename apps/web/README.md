@@ -2,7 +2,9 @@
 
 Bus-only Arabic-first website for the Wasel A.I. / ACCESSIBLE BRT university project. Every fresh load opens with an audio/visual help choice; doing nothing for 5 seconds selects audio help. It then splits into routed pages: **Plan**, **Trip**, **Chat**, and **Settings**. The working tools are press-to-talk trip planning, spoken bus options and spoken bus choice, arrival time, empty-seat display, seat details that appear when a bus is selected, a seven-step rider journey, an audio/visual help switch, AI driver chat, and persisted accessibility settings. There are no about/features/impact/survey sections.
 
-No API key is required. Destination search uses OpenStreetMap Nominatim and the map uses OpenStreetMap tiles. An optional local FastAPI endpoint provides smooth neural Arabic voices through Edge TTS; if it is unavailable, the browser voice is used. Bus times and seat occupancy remain local simulations and are labelled as such throughout the UI.
+No API key is required to run the demo. Destination search uses OpenStreetMap Nominatim and the map uses OpenStreetMap tiles. An optional local FastAPI endpoint provides smooth neural Arabic voices through Edge TTS; if it is unavailable, the browser voice is used.
+
+When `GOOGLE_MAPS_API_KEY` is configured on the API, the planner calls Google Routes transit for real Amman bus lines, stops, and estimated times. The browser asks for the rider’s location so the route starts from where they are. If the key is missing, the API is unreachable, or the rider denies location access, the UI clearly falls back to demo routes from central Amman. Seat occupancy remains unavailable for real Google itineraries.
 
 ## Run
 
@@ -49,8 +51,13 @@ Settings are stored in `localStorage` under `accessible-brt-settings`.
 ## What is real vs simulated
 
 - Working interactions: press-to-talk destination, spoken bus options, spoken bus choice, boarding stop, arrival clock, available seats, selectable bus with seat map, TTS, flash/haptic visual-help mode, chat, and settings saved to `localStorage`.
-- OpenStreetMap: destination coordinates come from Nominatim (with local Amman fallbacks) and the destination map is an OpenStreetMap embed with attribution. No Google API.
-- Simulated: bus times, seat counts, seat states, and driver replies. Real occupancy needs an operator APC feed or crowdsourced reports; real arrival data needs GTFS-RT or an operator API.
+- Real transit: when the API has `GOOGLE_MAPS_API_KEY`, routes, lines, stops, and estimated departure times come from Google Routes transit. The rider’s location is used as the origin. The UI labels these as **Estimated**, never **Live**.
+- OpenStreetMap: destination coordinates come from Nominatim (with local Amman fallbacks) and the destination map is an OpenStreetMap embed with attribution.
+- Simulated fallback: when Google transit is unavailable or no key is configured, bus times, seat counts, seat states, and driver replies are demo data and labelled as such. Real occupancy needs an operator APC feed or crowdsourced reports; live arrival data needs GTFS-RT or an operator API.
+
+## Location
+
+The first plan asks for browser location permission so the route can start from the rider’s position. Location is sent only to the Wasel API and Google Routes for that plan; it is not stored. If permission is denied or the request times out, the app says so and plans from central Amman. The **Use my location** button retries.
 
 ## Voice troubleshooting
 

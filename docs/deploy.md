@@ -40,6 +40,8 @@ Render deploys from a Git repository. Push this repository to GitHub (private is
 
 `render.yaml` sets `DEBUG=false`, `PLANNER_MODE=auto`, and `TTS_PROVIDER=auto`. Auto uses Azure Speech when a key/region is present and falls back to Edge TTS otherwise.
 
+The website calls `POST /api/transit/plan` and sends the rider’s browser location. With `GOOGLE_MAPS_API_KEY` configured, the API returns Google Routes transit itineraries and labels them **Estimated** in the UI. Without a key, it returns demo data and the site labels it **Prototype data**. Google Cloud requires a billing account; set a quota cap and budget alert before enabling the key.
+
 ### 3. Deploy and verify
 
 Render builds the Docker image and runs:

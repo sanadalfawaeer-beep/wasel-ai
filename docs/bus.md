@@ -18,6 +18,8 @@ The Bus tab answers three questions:
 
 Amman's GTFS is live in Google Maps, so Google mode is the fastest path to real bus itineraries. It is still an estimate, not a guaranteed live feed. Do not label it `Live` without a GTFS-Realtime or operator AVL source.
 
+The website calls `POST /api/transit/plan` and uses the rider’s browser location as the origin. With no Google key it falls back to local demo routes and labels them **Prototype data**. With a key it shows Google itineraries with an **Estimated** badge and no seat count.
+
 ## Empty seats
 
 There is no public seat-occupancy feed in Amman. Exact counts require one of:

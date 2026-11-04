@@ -91,16 +91,16 @@ export const ui = {
   statAi: l('ذكاء اصطناعي داعم', 'Supportive AI'),
   statIot: l('حساسات مقاعد ذكية', 'Smart seat sensors'),
   statModes: l('أنماط إتاحة', 'Accessibility modes'),
-  heroCardTitle: l('BRT 102 · قادم الآن', 'BRT 102 · arriving'),
-  heroCardMeta: l('الدوار السابع · 4 دقائق · 5 مقاعد', '7th Circle · 4 min · 5 seats'),
+  heroCardTitle: l('باص عمّان', 'Amman bus'),
+  heroCardMeta: l('الخطوط والمواعيد والمحطات', 'Routes, times and stops'),
   heroVisualCaption: l('محطة الباص السريع — عمّان/الزرقاء', 'BRT station — Amman/Zarqa'),
   heroVisualSub: l('ربط تقني شامل للمحطات الذكية والحافلات الحمراء المجهزة', 'Connected smart stations and equipped red buses'),
 
   planEyebrow: l('مخطط الرحلات', 'Trip planner'),
   planTitle: l('إلى أين تريد الذهاب؟', 'Where do you want to go?'),
   planDesc: l(
-    'اكتب وجهتك في عمّان وسنعرض لك خط الباص، موقف الصعود، موعد الوصول، والمقاعد المتاحة.',
-    'Enter an Amman destination and we’ll show the bus line, boarding stop, arrival time, and available seats.',
+    'اكتب وجهتك في عمّان وسنعرض لك خط الباص، موقف الصعود، وموعد الوصول.',
+    'Enter an Amman destination and we’ll show the bus line, boarding stop, and arrival time.',
   ),
   planLabel: l('الوجهة', 'Destination'),
   planPlaceholder: l('مثال: سيتي مول، وسط البلد، عبدون', 'e.g. City Mall, Downtown, Abdoun'),
@@ -113,10 +113,25 @@ export const ui = {
   planStops: l('محطات', 'stops'),
   planSeats: l('مقاعد متاحة', 'seats available'),
   planSeatOne: l('مقعد متاح', 'seat available'),
+  planSeatUnknown: l('بيانات المقاعد غير متاحة', 'Seat data unavailable'),
   planStanding: l('وقوف', 'Standing'),
   planNext: l('الباص القادم', 'Next bus'),
   planArrive: l('وقت الوصول', 'Arrival'),
   planPrototype: l('بيانات تجريبية', 'Prototype data'),
+  planEstimated: l('حسب الجدول', 'Estimated'),
+  planLive: l('مباشر', 'Live'),
+  planRealUnavailable: l(
+    'تعذر جلب بيانات النقل الآن. نعرض مسارات تجريبية.',
+    'Transit data is unavailable right now. Showing demo routes.',
+  ),
+  planLocationCurrent: l('نستخدم موقعك الحالي', 'Using your location'),
+  planLocationLocating: l('جارٍ تحديد موقعك…', 'Finding your location…'),
+  planLocationFallback: l(
+    'تعذر تحديد موقعك. نستخدم وسط عمّان.',
+    'Location unavailable. Using central Amman.',
+  ),
+  planLocationPrompt: l('حدد موقعك لرحلات أدق', 'Use your location for accurate routes'),
+  planLocationRetry: l('استخدم موقعي', 'Use my location'),
   planViewSeats: l('اعرض المقاعد', 'View seats'),
   planSelected: l('الباص المختار', 'Selected bus'),
   planSeatsTitle: l('مقاعد الباص المختار', 'Seats on this bus'),
@@ -598,9 +613,12 @@ export interface TripOption {
   ride: number;
   stops: number;
   seats: number | null;
-  occupancy: 'seats' | 'standing';
+  occupancy: 'seats' | 'standing' | 'unknown';
   next: number;
   arrivalAt: string;
+  provider?: string;
+  demo?: boolean;
+  realtime?: boolean;
 }
 
 export const quickDestinations = [
@@ -832,6 +850,9 @@ export function getTrips(destination: string, _lang: Lang): TripOption[] {
     ...trip,
     alight,
     arrivalAt: new Date(now + (trip.next + trip.ride) * 60_000).toISOString(),
+    provider: 'local',
+    demo: true,
+    realtime: false,
   }));
 }
 

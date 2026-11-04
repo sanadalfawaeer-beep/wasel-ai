@@ -468,6 +468,21 @@ html[dir='rtl'] .brand-copy strong {
   margin-inline-start: 4px;
 }
 
+.live-status.demo .live-dot {
+  background: var(--muted);
+  box-shadow: 0 0 0 4px rgba(107, 114, 128, 0.12);
+}
+
+.live-status.estimated .live-dot {
+  background: var(--warn);
+  box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.12);
+}
+
+.live-status.live .live-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
+}
+
 .section-dark {
   background: var(--dark);
   color: var(--on-dark);
@@ -1147,6 +1162,40 @@ html[lang='ar'] .hero h1 {
   min-height: 32px;
 }
 
+.origin-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 10px;
+}
+
+.origin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.origin-row.current .origin-pill {
+  color: var(--ok);
+}
+
+.origin-row.fallback .origin-pill {
+  color: var(--warn);
+}
+
+.origin-pill .spinner {
+  width: 13px;
+  height: 13px;
+  border-width: 1.5px;
+}
+
+.plan-source-note {
+  margin-block: -4px 12px;
+}
+
 .planner-output {
   margin-block-start: 22px;
 }
@@ -1270,6 +1319,24 @@ html[lang='ar'] .hero h1 {
   color: var(--warn);
   background: #fdf4e8;
   border-color: #f2dcc0;
+}
+
+.micro-badge.live {
+  color: var(--ok);
+  background: #ecfdf8;
+  border-color: #bdece4;
+}
+
+.micro-badge.estimated {
+  color: var(--warn);
+  background: #fdf4e8;
+  border-color: #f2dcc0;
+}
+
+.micro-badge.demo {
+  color: var(--muted);
+  background: var(--surface-2);
+  border-color: var(--line);
 }
 
 .trip-route {
