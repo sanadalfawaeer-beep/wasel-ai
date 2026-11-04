@@ -61,6 +61,14 @@ export const ui = {
     'إلى أين تريد الذهاب؟',
     'Where do you want to go?',
   ),
+  welcomeAudioChosen: l(
+    'تم اختيار المساعدة الصوتية. إلى أين تريد الذهاب؟',
+    'Audio help selected. Where do you want to go?',
+  ),
+  welcomeAudioAuto: l(
+    'تم اختيار المساعدة الصوتية تلقائياً. إلى أين تريد الذهاب؟',
+    'Audio help was selected automatically. Where do you want to go?',
+  ),
   welcomeAutoHint: l(
     'سيتم اختيار المساعدة الصوتية تلقائياً بعد 5 ثوانٍ',
     'Audio help will be selected automatically in 5 seconds',

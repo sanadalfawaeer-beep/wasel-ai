@@ -173,6 +173,8 @@ type SpeechRecognitionInstance = {
 type SpeakOptions = {
   bargeIn?: boolean;
   autoListen?: boolean;
+  forcePlayback?: boolean;
+  forceAutoListen?: boolean;
   stage?: 'destination' | 'confirm' | 'choice';
 };
 
@@ -664,12 +666,20 @@ function PlanPage({
                   <Mic size={22} aria-hidden="true" />
                 </span>
                 <div>
-                  <strong>{tr(ui.autoAudioTitle)}</strong>
-                  <p>{tr(ui.autoAudioBody)}</p>
+                  <strong>
+                    {voiceListening ? tr(ui.voiceListening) : tr(ui.autoAudioTitle)}
+                  </strong>
+                  <p>
+                    {voiceListening
+                      ? tr(ui.voiceDestinationHint)
+                      : tr(ui.autoAudioBody)}
+                  </p>
                 </div>
-                <button type="button" className="btn primary small" onClick={onActivateVoice}>
-                  {tr(ui.autoAudioStart)}
-                </button>
+                {voiceListening ? null : (
+                  <button type="button" className="btn primary small" onClick={onActivateVoice}>
+                    {tr(ui.autoAudioStart)}
+                  </button>
+                )}
               </div>
             ) : null}
             <button
@@ -1581,6 +1591,8 @@ function App() {
     if (voiceForLanguage === 'browser' || !voiceEnabled) return;
     const prompts = new Set([
       L(ui.welcomeVisualSample, lang),
+      L(ui.welcomeAudioChosen, lang),
+      L(ui.welcomeAudioAuto, lang),
       L(ui.voiceAskChoice, lang),
       L(ui.voiceChoiceShort, lang),
     ]);
@@ -1792,7 +1804,7 @@ function App() {
   };
 
   const speak = (text: string, options: SpeakOptions = {}) => {
-    if (!voiceEnabled) return;
+    if (!voiceEnabled && !options.forcePlayback) return;
     stopAudioAndSpeech();
     lastSpokenRef.current = text;
     const runId = speechRunId.current;
@@ -1805,7 +1817,10 @@ function App() {
         // Ignore barge-in shutdown errors.
       }
       bargeRecognitionRef.current = null;
-      if (options.autoListen && handsFree && mode === 'visual') {
+      if (
+        options.autoListen &&
+        (options.forceAutoListen || (handsFree && mode === 'visual'))
+      ) {
         window.setTimeout(() => {
           if (runId === speechRunId.current) startVoiceRef.current();
         }, canBargeIn ? 300 : 800);
@@ -1873,9 +1888,14 @@ function App() {
     setAutoVoiceSelected(auto && next === 'visual');
     setOnboarded(true);
     if (next === 'visual') {
-      speak(tr(ui.welcomeVisualSample), {
+      const announcement = auto
+        ? ui.welcomeAudioAuto
+        : ui.welcomeAudioChosen;
+      speak(tr(announcement), {
         bargeIn: true,
         autoListen: true,
+        forcePlayback: true,
+        forceAutoListen: true,
         stage: 'destination',
       });
     } else {
@@ -1920,6 +1940,7 @@ function App() {
     setDestination(dest);
     setPlanning(true);
     setPlanNote('');
+    setAutoVoiceSelected(false);
     setTrips([]);
     setSelectedTripId(null);
     setDestinationPoint(point ?? localPlace(dest, lang));
@@ -2350,7 +2371,6 @@ function App() {
 
   const startVoice = () => {
     if (voiceListening || voiceSearching) return;
-    setAutoVoiceSelected(false);
     stopAudioAndSpeech();
     playListeningChime();
     voiceHeardRef.current = false;
