@@ -52,7 +52,7 @@ type ChatMessage = {
   text: string;
 };
 
-type DataStatus = 'demo' | 'estimated' | 'live';
+type DataStatus = 'demo' | 'estimated' | 'scheduled' | 'live';
 type OriginStatus = 'unknown' | 'locating' | 'current' | 'fallback';
 
 const AMMAN_FALLBACK: GeoPoint = { lat: 31.9539, lng: 35.9106 };
@@ -400,14 +400,22 @@ function TripCard({
         </span>
         <span
           className={`micro-badge ${
-            trip.demo ? 'demo' : trip.realtime ? 'live' : 'estimated'
+            trip.demo
+              ? 'demo'
+              : trip.realtime
+                ? 'live'
+                : trip.provider === 'ammanbus'
+                  ? 'scheduled'
+                  : 'estimated'
           }`}
         >
           {trip.demo
             ? L(ui.planPrototype, lang)
             : trip.realtime
               ? L(ui.planLive, lang)
-              : L(ui.planEstimated, lang)}
+              : trip.provider === 'ammanbus'
+                ? L(ui.planScheduled, lang)
+                : L(ui.planEstimated, lang)}
         </span>
       </div>
       <p className="trip-route">
@@ -639,9 +647,11 @@ function PlanPage({
             <span className={`micro-badge ${dataStatus}`}>
               {dataStatus === 'live'
                 ? tr(ui.planLive)
-                : dataStatus === 'estimated'
-                  ? tr(ui.planEstimated)
-                  : tr(ui.heroCardDemo)}
+                : dataStatus === 'scheduled'
+                  ? tr(ui.planScheduled)
+                  : dataStatus === 'estimated'
+                    ? tr(ui.planEstimated)
+                    : tr(ui.heroCardDemo)}
             </span>
           </div>
         </div>
@@ -808,16 +818,34 @@ function PlanPage({
               {tr(ui.planPlanning)}
             </p>
           ) : null}
+          {planNote ? (
+            <p className="note plan-source-note" role="status">
+              {planNote}
+            </p>
+          ) : null}
           {trips.length > 0 ? (
             <>
               <h2 className="output-title">{tr(ui.planResults)}</h2>
-              {planNote ? (
-                <p className="note plan-source-note" role="status">
-                  {planNote}
-                </p>
-              ) : null}
               {dataStatus !== 'demo' ? (
-                <p className="google-attribution">{tr(ui.planPoweredByGoogle)}</p>
+                <p className="google-attribution">
+                  {dataStatus === 'scheduled' ? (
+                    <a
+                      href="https://online.ammanbus.jo/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {tr(ui.planPoweredByAmmanBus)}
+                    </a>
+                  ) : (
+                    <a
+                      href="https://maps.google.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {tr(ui.planPoweredByGoogle)}
+                    </a>
+                  )}
+                </p>
               ) : null}
               {mode === 'visual' ? (
                 <p className="voice-choice-question">
@@ -1896,13 +1924,11 @@ function App() {
     setSelectedTripId(null);
     setDestinationPoint(point ?? localPlace(dest, lang));
 
-    if (!point) {
-      const geocodeRequestId = geocodeId.current + 1;
-      geocodeId.current = geocodeRequestId;
-      void geocodeDestination(dest, lang).then((found) => {
-        if (geocodeRequestId === geocodeId.current) setDestinationPoint(found);
-      });
-    }
+    const geocodeRequestId = geocodeId.current + 1;
+    geocodeId.current = geocodeRequestId;
+    const pointPromise = point
+      ? Promise.resolve(point)
+      : geocodeDestination(dest, lang);
 
     let origin = originRef.current;
     if (!origin) {
@@ -1919,10 +1945,23 @@ function App() {
 
     if (requestId !== planId.current) return;
 
+    const resolvedPoint = await pointPromise;
+    if (requestId !== planId.current) return;
+    if (resolvedPoint && geocodeRequestId === geocodeId.current) {
+      setDestinationPoint(resolvedPoint);
+    }
+    const apiDestination = resolvedPoint
+      ? {
+          lat: resolvedPoint.lat,
+          lng: resolvedPoint.lon,
+          name: resolvedPoint.label,
+        }
+      : null;
+
     let apiPlan: ApiTransitPlan | null = null;
     let apiFailed = false;
     try {
-      apiPlan = await planTransit(dest, origin, lang);
+      apiPlan = await planTransit(dest, origin, lang, apiDestination);
     } catch {
       apiFailed = true;
     }
@@ -1930,22 +1969,51 @@ function App() {
     if (requestId !== planId.current) return;
 
     let results: TripOption[];
-    if (apiPlan?.provider === 'google' && apiPlan.itineraries.length > 0) {
+    let planMessage = '';
+    const realProvider =
+      apiPlan?.provider === 'google' || apiPlan?.provider === 'ammanbus';
+    if (apiPlan && realProvider && apiPlan.itineraries.length > 0) {
       results = toTripOptions(apiPlan);
-      const includesDemo = apiPlan.demo
-        || apiPlan.itineraries.some((itinerary) => itinerary.demo);
+      const includesDemo =
+        apiPlan.demo || apiPlan.itineraries.some((itinerary) => itinerary.demo);
       setDataStatus(
         includesDemo
           ? 'demo'
           : apiPlan.itineraries.some((itinerary) => itinerary.realtime)
             ? 'live'
-            : 'estimated',
+            : apiPlan.provider === 'ammanbus'
+              ? 'scheduled'
+              : 'estimated',
       );
-      setPlanNote(apiPlan.note ?? '');
+      planMessage = apiPlan.note ?? '';
+      setPlanNote(planMessage);
+    } else if (apiPlan && realProvider) {
+      results = [];
+      setDataStatus(
+        apiPlan.provider === 'ammanbus' ? 'scheduled' : 'estimated',
+      );
+      planMessage = apiPlan.note || tr(ui.planNoResults);
+      setPlanNote(planMessage);
     } else {
       results = getTrips(dest, lang);
       setDataStatus('demo');
-      if (apiFailed) setPlanNote(tr(ui.planRealUnavailable));
+      if (apiFailed) {
+        planMessage = tr(ui.planRealUnavailable);
+        setPlanNote(planMessage);
+      }
+    }
+
+    if (!results.length) {
+      setTrips([]);
+      setPlanning(false);
+      setVoicePrompt(planMessage);
+      if ((mode === 'visual' || autoReadPlan) && voiceEnabled && planMessage) {
+        speak(planMessage, {
+          bargeIn: true,
+          stage: 'destination',
+        });
+      }
+      return;
     }
 
     if (preferredLine !== 'none') {

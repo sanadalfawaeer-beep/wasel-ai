@@ -18,6 +18,7 @@ COPY services/api/pyproject.toml services/api/uv.lock ./
 RUN uv sync --frozen --no-dev
 
 COPY services/api/app ./app
+COPY services/api/data ./data
 COPY --from=web /web/dist ./web
 
 ENV PATH="/app/.venv/bin:$PATH"

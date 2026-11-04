@@ -34,13 +34,14 @@ Render deploys from a Git repository. Push this repository to GitHub (private is
 | Variable | Required | Purpose |
 |---|---|---|
 | `DEEPSEEK_API_KEY` | For the LLM planner | DeepSeek key; rotate the development key first. |
-| `GOOGLE_MAPS_API_KEY` | For real Amman bus routes | Routes + Places API; keep server-side. |
+| `GOOGLE_MAPS_API_KEY` | Optional Google transit | Only when `TRANSIT_PROVIDER=google`; keep server-side. |
+| `TRANSIT_PROVIDER` | Real bus routes | `ammanbus` for the bundled Amman Bus timetable, `google`, or `mock`. |
 | `AZURE_SPEECH_KEY` | For production TTS | Azure Speech resource key. |
 | `AZURE_SPEECH_REGION` | For production TTS | Example: `westeurope`. |
 
-`render.yaml` sets `DEBUG=false`, `PLANNER_MODE=auto`, and `TTS_PROVIDER=auto`. Auto uses Azure Speech when a key/region is present and falls back to Edge TTS otherwise.
+`render.yaml` sets `DEBUG=false`, `PLANNER_MODE=auto`, `TRANSIT_PROVIDER=ammanbus`, and `TTS_PROVIDER=auto`. Auto TTS uses Azure Speech when a key/region is present and falls back to Edge TTS otherwise.
 
-The website calls `POST /api/transit/plan` and sends the rider’s browser location. With `GOOGLE_MAPS_API_KEY` configured, the API returns Google Routes transit itineraries and labels them **Estimated** in the UI. Without a key, it returns demo data and the site labels it **Prototype data**. Google Cloud requires a billing account; set a quota cap and budget alert before enabling the key.
+The website calls `POST /api/transit/plan` and sends the rider’s browser location plus destination coordinates. `TRANSIT_PROVIDER=ammanbus` uses the bundled snapshot of the official Amman Bus/BRT timetable and labels results **Scheduled**. If the snapshot is missing or the provider fails, the API falls back to demo data and the site labels it **Prototype data**. Google Routes remains available as an alternative with `TRANSIT_PROVIDER=google` and `GOOGLE_MAPS_API_KEY`; it requires a billing account, quota cap, and budget alert.
 
 ### 3. Deploy and verify
 

@@ -4,7 +4,7 @@ Bus-only Arabic-first website for the Wasel A.I. / ACCESSIBLE BRT university pro
 
 No API key is required to run the demo. Destination search uses OpenStreetMap Nominatim and the map uses OpenStreetMap tiles. An optional local FastAPI endpoint provides smooth neural Arabic voices through Edge TTS; if it is unavailable, the browser voice is used.
 
-When `GOOGLE_MAPS_API_KEY` is configured on the API, the planner calls Google Routes transit for real Amman bus lines, stops, and estimated times. The browser asks for the rider’s location so the route starts from where they are. If the key is missing, the API is unreachable, or the rider denies location access, the UI clearly falls back to demo routes from central Amman. Seat occupancy remains unavailable for real Google itineraries.
+The planner calls the hosted API, which uses a local snapshot of the official Amman Bus/BRT route and timetable data. The browser asks for the rider’s location so the route starts from where they are. If the transit API is unreachable or the rider denies location access, the UI clearly falls back to demo routes from central Amman. Seat occupancy remains unavailable for real Amman Bus itineraries.
 
 ## Run
 
@@ -51,13 +51,13 @@ Settings are stored in `localStorage` under `accessible-brt-settings`.
 ## What is real vs simulated
 
 - Working interactions: press-to-talk destination, spoken bus options, spoken bus choice, boarding stop, arrival clock, available seats, selectable bus with seat map, TTS, flash/haptic visual-help mode, chat, and settings saved to `localStorage`.
-- Real transit: when the API has `GOOGLE_MAPS_API_KEY`, routes, lines, stops, and estimated departure times come from Google Routes transit. The rider’s location is used as the origin. The UI labels these as **Estimated**, never **Live**.
+- Real transit: routes, lines, stops, and scheduled departure times come from a local snapshot of the official Amman Bus/BRT timetable. The rider’s location is used as the origin. The UI labels these as **Scheduled**, never **Live**, and links to **Amman Bus** for attribution.
 - OpenStreetMap: destination coordinates come from Nominatim (with local Amman fallbacks) and the destination map is an OpenStreetMap embed with attribution.
-- Simulated fallback: when Google transit is unavailable or no key is configured, bus times, seat counts, seat states, and driver replies are demo data and labelled as such. Real occupancy needs an operator APC feed or crowdsourced reports; live arrival data needs GTFS-RT or an operator API.
+- Simulated fallback: when the transit API is unavailable, the app says so and uses demo data for the results. Seat counts, seat states, and driver replies are demo data and labelled as such. Real occupancy needs an operator APC feed or crowdsourced reports; live arrival data needs GTFS-RT or an operator API.
 
 ## Location
 
-The first plan asks for browser location permission so the route can start from the rider’s position. Location is sent only to the Wasel API and Google Routes for that plan; it is not stored. If permission is denied or the request times out, the app says so and plans from central Amman. The **Use my location** button retries.
+The first plan asks for browser location permission so the route can start from the rider’s position. Location is sent only to the Wasel API for that plan; it is not stored. If permission is denied or the request times out, the app says so and plans from central Amman. The **Use my location** button retries.
 
 ## Voice troubleshooting
 
@@ -87,6 +87,7 @@ Voice input uses the browser SpeechRecognition API and requires a **secure conte
 |---|---|
 | `src/content.ts` | Arabic/English copy, journey, seats, trips, messages |
 | `src/osm.ts` | Nominatim geocoding, local Amman fallbacks, OSM embed URL |
+| `src/transit.ts` | Calls `/api/transit/plan`, maps real itineraries to the UI |
 | `src/App.tsx` | Routes, planner, journey, seats, chat, settings, shared state |
 | `src/styles.css` | Cherry-red light theme, responsive RTL/LTR layout |
 | `index.html` | RTL shell, metadata, Google Fonts (IBM Plex Sans Arabic + Space Grotesk) |

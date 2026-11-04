@@ -32,6 +32,7 @@ from .models import (
     TransitPlanResponse,
     TransitRequest,
 )
+from .transit_ammanbus import AmmanBusClient
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,13 @@ def _bus_leg(
 
 
 class MockTransitClient:
-    def plan(self, text: str, origin: LatLng, lang: Lang) -> TransitPlanResponse:
+    def plan(
+        self,
+        text: str,
+        origin: LatLng,
+        lang: Lang,
+        destination: Destination | None = None,
+    ) -> TransitPlanResponse:
         now = datetime.now(UTC)
         destination = _transit_destination(text, lang)
         name = destination.name
@@ -280,8 +287,14 @@ class GoogleTransitClient:
         self._transport = transport
         self._places = places or GoogleMapsClient(api_key, timeout_s, transport)
 
-    def plan(self, text: str, origin: LatLng, lang: Lang) -> TransitPlanResponse:
-        destination = self._places.find_place(text, origin, lang)
+    def plan(
+        self,
+        text: str,
+        origin: LatLng,
+        lang: Lang,
+        destination: Destination | None = None,
+    ) -> TransitPlanResponse:
+        destination = destination or self._places.find_place(text, origin, lang)
         now = datetime.now(UTC)
         body = {
             "origin": {"location": {"latLng": {"latitude": origin.lat, "longitude": origin.lng}}},
@@ -430,18 +443,38 @@ class GoogleTransitClient:
 
 
 class TransitPlanner(Protocol):
-    def plan(self, text: str, origin: LatLng, lang: Lang) -> TransitPlanResponse: ...
+    def plan(
+        self,
+        text: str,
+        origin: LatLng,
+        lang: Lang,
+        destination: Destination | None = None,
+    ) -> TransitPlanResponse: ...
 
 
 def get_transit_client(settings: Settings) -> TransitPlanner:
-    if settings.resolved_mode == "google":
+    provider = settings.resolved_transit_provider
+    if provider == "google":
         if not settings.google_maps_api_key:
             raise MapsError("Google Maps is not configured.")
         return GoogleTransitClient(
             settings.google_maps_api_key,
             settings.request_timeout_s,
         )
+    if provider == "ammanbus":
+        return AmmanBusClient()
     return MockTransitClient()
+
+
+def _request_destination(request: TransitRequest) -> Destination | None:
+    if request.dest_lat is None or request.dest_lng is None:
+        return None
+    return Destination(
+        name=request.dest_name or request.text,
+        address="Amman, Jordan",
+        lat=request.dest_lat,
+        lng=request.dest_lng,
+    )
 
 
 def plan_transit(request: TransitRequest) -> TransitPlanResponse:
@@ -451,4 +484,5 @@ def plan_transit(request: TransitRequest) -> TransitPlanResponse:
         request.text,
         LatLng(lat=request.lat, lng=request.lng),
         request.lang,
+        _request_destination(request),
     )

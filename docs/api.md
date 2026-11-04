@@ -60,18 +60,30 @@ Response:
 
 ## `POST /api/transit/plan`
 
-Bus itinerary planner for Amman. Same shape in mock and Google mode; mock itineraries carry `demo: true` and simulated occupancy.
+Bus itinerary planner for Amman. `TRANSIT_PROVIDER` selects the data source:
+
+| Value | Behavior |
+|---|---|
+| `ammanbus` | Bundled official Amman Bus/BRT timetable snapshot; results are scheduled, not live |
+| `google` | Google Routes transit; requires `GOOGLE_MAPS_API_KEY` |
+| `mock` | Demo data |
+| `auto` | Google when a key exists, otherwise mock |
+
+Send the destination coordinates when available so the API does not need a geocoding key:
 
 ```json
 {
-  "text": "City Mall",
-  "lat": 32.0134,
-  "lng": 35.8734,
+  "text": "Sweileh",
+  "lat": 31.9539,
+  "lng": 35.9106,
+  "dest_lat": 32.0197,
+  "dest_lng": 35.8347,
+  "dest_name": "Sweileh",
   "lang": "en"
 }
 ```
 
-See [Bus planner](bus.md) for the full response and the occupancy limitation.
+A real provider returns `provider` (`ammanbus` or `google`), `demo: false`, and `realtime: false`. `itineraries` may be empty when no direct trip is available; show the returned `note` instead of inventing a route. See [Bus planner](bus.md) for the full response and the occupancy limitation.
 
 ## `GET /api/demo?lang=en`
 
@@ -104,6 +116,7 @@ Arabic voices: `ar-JO-SanaNeural`, `ar-JO-TaimNeural`, `ar-EG-SalmaNeural`, `ar-
   "model": null,
   "llm": false,
   "google_key": false,
+  "transit": "ammanbus",
   "tts": "edge",
   "azure_tts": false
 }

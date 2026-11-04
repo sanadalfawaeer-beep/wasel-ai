@@ -478,6 +478,11 @@ html[dir='rtl'] .brand-copy strong {
   box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.12);
 }
 
+.live-status.scheduled .live-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
+}
+
 .live-status.live .live-dot {
   background: var(--ok);
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
@@ -1202,6 +1207,11 @@ html[lang='ar'] .hero h1 {
   margin-block: -6px 12px;
 }
 
+.google-attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .planner-output {
   margin-block-start: 22px;
 }
@@ -1337,6 +1347,12 @@ html[lang='ar'] .hero h1 {
   color: var(--warn);
   background: #fdf4e8;
   border-color: #f2dcc0;
+}
+
+.micro-badge.scheduled {
+  color: var(--ok);
+  background: #ecfdf8;
+  border-color: #bdece4;
 }
 
 .micro-badge.demo {

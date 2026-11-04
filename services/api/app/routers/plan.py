@@ -21,6 +21,7 @@ async def health() -> dict:
         "model": settings.deepseek_model if settings.llm_enabled else None,
         "llm": settings.llm_enabled,
         "google_key": bool(settings.google_maps_api_key),
+        "transit": settings.resolved_transit_provider,
         "tts": settings.resolved_tts_provider,
         "azure_tts": bool(
             settings.azure_speech_key and settings.azure_speech_region

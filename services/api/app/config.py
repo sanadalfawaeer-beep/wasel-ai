@@ -23,6 +23,8 @@ class Settings(BaseSettings):
 
     google_maps_api_key: str = ""
     planner_mode: Literal["auto", "mock", "google"] = "auto"
+    transit_provider: Literal["auto", "mock", "google", "ammanbus"] = "auto"
+    ammanbus_data_path: str = ""
     use_llm: bool = True
 
     allowed_origins: str = "*"
@@ -48,6 +50,12 @@ class Settings(BaseSettings):
     def origins(self) -> list[str]:
         values = [item.strip() for item in self.allowed_origins.split(",") if item.strip()]
         return values or ["*"]
+
+    @property
+    def resolved_transit_provider(self) -> Literal["mock", "google", "ammanbus"]:
+        if self.transit_provider == "auto":
+            return "google" if self.google_maps_api_key else "mock"
+        return self.transit_provider
 
     @property
     def llm_enabled(self) -> bool:

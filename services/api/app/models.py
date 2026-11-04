@@ -111,6 +111,9 @@ class TransitRequest(BaseModel):
     text: str = Field(min_length=1, max_length=500)
     lat: float = 32.0134
     lng: float = 35.8734
+    dest_lat: float | None = None
+    dest_lng: float | None = None
+    dest_name: str | None = Field(default=None, max_length=300)
     lang: Lang = "en"
 
 

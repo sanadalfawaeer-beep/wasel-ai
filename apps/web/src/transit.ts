@@ -5,6 +5,12 @@ export type GeoPoint = {
   lng: number;
 };
 
+export type TransitDestination = {
+  lat: number;
+  lng: number;
+  name: string;
+};
+
 type ApiTransitLeg = {
   mode: 'WALK' | 'BUS' | 'RAIL';
   duration_s: number;
@@ -65,6 +71,7 @@ export async function planTransit(
   text: string,
   origin: GeoPoint,
   lang: Lang,
+  destination?: TransitDestination | null,
 ): Promise<ApiTransitPlan> {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 20_000);
@@ -78,6 +85,13 @@ export async function planTransit(
         lat: origin.lat,
         lng: origin.lng,
         lang,
+        ...(destination
+          ? {
+              dest_lat: destination.lat,
+              dest_lng: destination.lng,
+              dest_name: destination.name,
+            }
+          : {}),
       }),
       signal: controller.signal,
     });
