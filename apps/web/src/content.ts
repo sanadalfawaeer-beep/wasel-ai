@@ -53,6 +53,8 @@ export const ui = {
   motionOn: l('تشغيل الحركة', 'Enable motion'),
   motionOff: l('تقليل الحركة', 'Reduce motion'),
   minutesShort: l('د', 'min'),
+  splashTagline: l('باص عمّان، بصوتك', 'Amman bus, by voice'),
+  splashLoading: l('جارٍ التحميل…', 'Loading…'),
   welcomeTitle: l('كيف تريد أن نساعدك؟', 'How should we help you?'),
   welcomeSubtitle: l('اختر طريقة الإرشاد المناسبة لك.', 'Choose the guidance mode that works for you.'),
   welcomeVisualDesc: l('إرشاد صوتي خلال الرحلة', 'Voice guidance through the trip'),

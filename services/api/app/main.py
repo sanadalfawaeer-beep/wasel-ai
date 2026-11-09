@@ -1,4 +1,5 @@
 import logging
+import mimetypes
 import os
 from pathlib import Path
 
@@ -18,6 +19,8 @@ logging.basicConfig(
 )
 
 settings = get_settings()
+
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 _web_dist_env = os.environ.get("WEB_DIST")
 WEB_DIST = (

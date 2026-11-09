@@ -146,6 +146,60 @@ function PageHead({ title }: { title: string }) {
   );
 }
 
+function LogoMark({
+  size = 42,
+  tone = 'red',
+  className = '',
+}: {
+  size?: number;
+  tone?: 'red' | 'light' | 'cream';
+  className?: string;
+}) {
+  const stroke = tone === 'light' ? '#B0002A' : '#FFF6F7';
+
+  return (
+    <svg
+      className={`logo-mark ${className}`}
+      width={size}
+      height={size}
+      viewBox="0 0 96 96"
+      aria-hidden="true"
+    >
+      {tone === 'red' ? <rect width="96" height="96" rx="8" fill="#B0002A" /> : null}
+      {tone === 'light' ? (
+        <rect
+          x="0.5"
+          y="0.5"
+          width="95"
+          height="95"
+          rx="8"
+          fill="#FFF9F7"
+          stroke="#E7DAD5"
+        />
+      ) : null}
+      <path
+        className="logo-route"
+        d="M18 70 C32 44 44 62 56 40 S72 22 80 22"
+        fill="none"
+        stroke={stroke}
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <circle className="logo-node logo-node-a" cx="18" cy="70" r="5" fill={stroke} />
+      <circle className="logo-node logo-node-b" cx="56" cy="40" r="5" fill={stroke} />
+      <circle
+        className="logo-node logo-node-c"
+        cx="80"
+        cy="22"
+        r="7"
+        fill="none"
+        stroke={stroke}
+        strokeWidth="3"
+      />
+    </svg>
+  );
+}
+
 type SpeechAlternative = {
   transcript?: string;
   confidence?: number;
@@ -276,6 +330,48 @@ function pickBrowserVoice(voices: SpeechSynthesisVoice[], lang: Lang): SpeechSyn
     })[0];
 }
 
+function SplashScreen({
+  lang,
+  reduceMotion,
+  leaving,
+  onSkip,
+}: {
+  lang: Lang;
+  reduceMotion: boolean;
+  leaving: boolean;
+  onSkip: () => void;
+}) {
+  const tr = (value: Localized) => L(value, lang);
+
+  return (
+    <div
+      className={`splash-screen ${reduceMotion ? 'is-static' : ''} ${
+        leaving ? 'is-leaving' : ''
+      }`}
+      role="status"
+      aria-live="polite"
+      tabIndex={0}
+      onClick={onSkip}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onSkip();
+      }}
+    >
+      <div className="splash-aura" aria-hidden="true" />
+      <div className="splash-inner">
+        <LogoMark className="splash-mark" size={112} tone="light" />
+        <div className="splash-wordmark">
+          <strong dir="ltr">WASEL A.I.</strong>
+          <span>{tr(ui.splashTagline)}</span>
+        </div>
+        <div className="splash-track" aria-hidden="true">
+          <span />
+        </div>
+        <p className="splash-loading">{tr(ui.splashLoading)}</p>
+      </div>
+    </div>
+  );
+}
+
 function WelcomePage({
   lang,
   setLang,
@@ -307,9 +403,7 @@ function WelcomePage({
     <div className="welcome-page">
       <div className="container welcome-top">
         <span className="welcome-brand">
-          <span className="brand-mark">
-            <Bus size={21} aria-hidden="true" />
-          </span>
+          <LogoMark className="brand-mark" size={42} tone="red" />
           <strong dir="ltr">WASEL A.I.</strong>
         </span>
         <div className="lang-switch" role="group" aria-label={tr(ui.language)}>
@@ -1491,6 +1585,8 @@ function SettingsPage({
 function App() {
   const [settings, setSettings] = useState<SettingsState>(loadSettings);
   const [onboarded, setOnboarded] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashLeaving, setSplashLeaving] = useState(false);
   const [autoVoiceSelected, setAutoVoiceSelected] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [destination, setDestination] = useState('');
@@ -1555,6 +1651,17 @@ function App() {
           : 'en-US-AvaNeural';
 
   useEffect(() => {
+    const hold = reduceMotion ? 500 : 1250;
+    const fade = reduceMotion ? 0 : 280;
+    const leaveTimer = window.setTimeout(() => setSplashLeaving(true), hold);
+    const endTimer = window.setTimeout(() => setShowSplash(false), hold + fade);
+    return () => {
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(endTimer);
+    };
+  }, [reduceMotion]);
+
+  useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }, [lang]);
@@ -1564,10 +1671,14 @@ function App() {
   }, [reduceMotion]);
 
   useEffect(() => {
-    if (!onboarded) {
-      document.title = `${L(ui.welcomeTitle, lang)} — Wasel A.I.`;
+    if (showSplash) {
+      document.title = 'Wasel A.I.';
+      return;
     }
-  }, [onboarded, lang]);
+    if (!onboarded) {
+      document.title = `${L(ui.welcomeTitle, lang)} - Wasel A.I.`;
+    }
+  }, [onboarded, lang, showSplash]);
 
   useEffect(() => {
     if (!('speechSynthesis' in window)) return;
@@ -2593,6 +2704,17 @@ function App() {
   const selectedTrip = trips.find((trip) => trip.id === selectedTripId) ?? null;
   const selectedTripSeats = selectedTrip ? seatsForTrip(selectedTrip) : [];
 
+  if (showSplash) {
+    return (
+      <SplashScreen
+        lang={lang}
+        reduceMotion={reduceMotion}
+        leaving={splashLeaving}
+        onSkip={() => setShowSplash(false)}
+      />
+    );
+  }
+
   if (!onboarded) {
     return (
       <>
@@ -2621,9 +2743,7 @@ function App() {
       <header className="site-header">
         <div className="container header-inner">
           <NavLink className="brand" to="/" end aria-label="Wasel A.I.">
-            <span className="brand-mark">
-              <Bus size={21} aria-hidden="true" />
-            </span>
+            <LogoMark className="brand-mark" size={42} tone="red" />
             <span className="brand-copy">
               <strong dir="ltr">WASEL A.I.</strong>
               <small>{tr(ui.brandTag)}</small>
@@ -2781,7 +2901,7 @@ function App() {
       <footer className="footer">
         <div className="container footer-min">
           <NavLink className="brand footer-brand" to="/" end>
-            <span className="brand-mark"><Bus size={20} aria-hidden="true" /></span>
+            <LogoMark className="brand-mark" size={42} tone="red" />
             <span className="brand-copy"><strong dir="ltr">WASEL A.I.</strong><small>{tr(ui.brandTag)}</small></span>
           </NavLink>
           <p>{tr(ui.footerDisclaimer)}</p>

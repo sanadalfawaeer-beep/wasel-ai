@@ -170,12 +170,137 @@ svg {
 .brand-mark {
   width: 42px;
   height: 42px;
-  border-radius: 6px;
-  background: var(--accent);
-  color: #fff;
+  display: block;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 8px 18px rgba(176, 0, 42, 0.22));
+}
+
+.logo-mark {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.footer-brand .brand-mark {
+  width: 34px;
+  height: 34px;
+}
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: grid;
   place-items: center;
-  box-shadow: 0 8px 18px rgba(176, 0, 42, 0.22);
+  overflow: hidden;
+  background: var(--dark);
+  color: var(--on-dark);
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.28s ease;
+}
+
+.splash-screen.is-leaving {
+  opacity: 0;
+}
+
+.splash-screen::before {
+  content: '';
+  position: absolute;
+  width: 720px;
+  height: 720px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(210, 4, 45, 0.22), transparent 68%);
+  pointer-events: none;
+}
+
+.splash-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: splash-in 0.6s ease both;
+}
+
+.splash-mark {
+  width: 112px;
+  height: 112px;
+  filter: drop-shadow(0 18px 38px rgba(0, 0, 0, 0.28));
+}
+
+.splash-wordmark {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.splash-wordmark strong {
+  font-family: var(--font-display);
+  font-size: 29px;
+  letter-spacing: 0.12em;
+  line-height: 1.1;
+}
+
+.splash-wordmark span {
+  color: var(--on-dark-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.splash-track {
+  width: 128px;
+  height: 3px;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.splash-track span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: var(--accent);
+  animation: splash-progress 1.15s ease-in-out infinite;
+}
+
+.splash-loading {
+  color: var(--on-dark-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.splash-screen .logo-route {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: splash-draw 1.05s ease-out 0.08s forwards;
+}
+
+.splash-screen .logo-node {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: splash-node 0.3s ease-out forwards;
+}
+
+.splash-screen .logo-node-a { animation-delay: 0.25s; }
+.splash-screen .logo-node-b { animation-delay: 0.52s; }
+.splash-screen .logo-node-c { animation-delay: 0.78s; }
+
+.splash-screen.is-static .splash-inner,
+.splash-screen.is-static .splash-track span {
+  animation: none;
+}
+
+.splash-screen.is-static .logo-route {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+
+.splash-screen.is-static .logo-node {
+  animation: none;
+  opacity: 1;
 }
 
 .brand-copy {
@@ -2693,6 +2818,45 @@ html[dir='rtl'] .phone-body blockquote {
   }
 }
 
+@keyframes splash-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes splash-node {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+    transform-origin: center;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: center;
+  }
+}
+
+@keyframes splash-progress {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(340%);
+  }
+}
+
 @media (max-width: 1080px) {
   .nav {
     gap: 13px;
@@ -2788,6 +2952,19 @@ html[dir='rtl'] .phone-body blockquote {
 }
 
 @media (max-width: 760px) {
+  .splash-mark {
+    width: 92px;
+    height: 92px;
+  }
+
+  .splash-wordmark strong {
+    font-size: 24px;
+  }
+
+  .splash-wordmark span {
+    font-size: 12px;
+  }
+
   .welcome-options {
     grid-template-columns: 1fr;
   }

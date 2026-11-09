@@ -25,3 +25,7 @@ Use **01 Route W** as the primary mark, paired with the bilingual wordmark. It i
 Use **05 Voice loop** as a secondary illustration for voice-help moments, not as the primary brand mark.
 
 The recommended light and dark lockups are shown at the bottom of the concept sheet.
+
+## Selected
+
+**04 Path & stops** is the chosen mark. It is now used in the site header, footer, welcome screen, favicon, app icons, and loading splash. The three nodes read as origin, transfer, and destination.
