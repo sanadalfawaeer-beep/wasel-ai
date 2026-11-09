@@ -14,8 +14,8 @@
   --on-dark-muted: #e2bfc7;
   --ok: #0f766e;
   --warn: #b45309;
-  --radius: 24px;
-  --radius-sm: 14px;
+  --radius: 8px;
+  --radius-sm: 6px;
   --shadow: 0 18px 50px rgba(40, 16, 24, 0.1);
   --font-body: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
   --font-display: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
@@ -135,7 +135,7 @@ svg {
   background: var(--dark);
   color: var(--on-dark);
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 4px;
   transform: translateY(-160%);
   transition: transform 0.2s ease;
 }
@@ -170,7 +170,7 @@ svg {
 .brand-mark {
   width: 42px;
   height: 42px;
-  border-radius: 13px;
+  border-radius: 6px;
   background: var(--accent);
   color: #fff;
   display: grid;
@@ -251,14 +251,14 @@ html[dir='rtl'] .brand-copy strong {
   padding: 3px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
 }
 
 .lang-switch button {
   border: 0;
   background: transparent;
   color: var(--muted);
-  border-radius: 999px;
+  border-radius: 6px;
   min-height: 31px;
   padding: 4px 10px;
   font-size: 12px;
@@ -280,7 +280,7 @@ html[dir='rtl'] .brand-copy strong {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--muted);
-  border-radius: 999px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -299,7 +299,7 @@ html[dir='rtl'] .brand-copy strong {
   gap: 8px;
   min-height: 50px;
   padding: 11px 20px;
-  border-radius: 999px;
+  border-radius: 6px;
   border: 1px solid transparent;
   font-size: 14px;
   font-weight: 700;
@@ -382,7 +382,7 @@ html[dir='rtl'] .brand-copy strong {
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
   padding: 5px 11px;
-  border-radius: 999px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
@@ -445,7 +445,7 @@ html[dir='rtl'] .brand-copy strong {
   flex: 0 0 auto;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 11px 15px;
   box-shadow: var(--shadow);
 }
@@ -621,7 +621,7 @@ html[dir='rtl'] .brand-copy strong {
   min-height: 116px;
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 22px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.045);
   color: var(--on-dark);
   text-align: start;
@@ -638,7 +638,7 @@ html[dir='rtl'] .brand-copy strong {
 .welcome-option-icon {
   width: 56px;
   height: 56px;
-  border-radius: 17px;
+  border-radius: 8px;
   background: rgba(255, 107, 129, 0.14);
   color: #ff8fa1;
   display: grid;
@@ -677,7 +677,7 @@ html[dir='rtl'] .brand-copy strong {
   width: min(320px, 100%);
   height: 3px;
   margin-block-start: 8px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
 }
@@ -806,7 +806,7 @@ html[lang='ar'] .hero h1 {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.015));
-  border-radius: 34px;
+  border-radius: 6px;
   padding: 24px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
 }
@@ -827,7 +827,7 @@ html[lang='ar'] .hero h1 {
   background: #fff;
   color: var(--ink);
   border: 1px solid #f3d6dc;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 12px 15px;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.22);
 }
@@ -869,7 +869,7 @@ html[lang='ar'] .hero h1 {
   margin-bottom: 12px;
   padding: 12px 15px;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--accent-soft);
 }
 
@@ -909,7 +909,7 @@ html[lang='ar'] .hero h1 {
   gap: 16px;
   padding: 18px 20px;
   border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 22px;
+  border-radius: 8px;
   background: linear-gradient(135deg, var(--surface), var(--accent-soft));
   color: var(--ink);
   text-align: start;
@@ -982,7 +982,7 @@ html[lang='ar'] .hero h1 {
   margin-block-start: 8px;
   padding: 8px 12px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--ink);
   font-size: 12px;
@@ -994,7 +994,7 @@ html[lang='ar'] .hero h1 {
   margin-block-start: 10px;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface);
 }
 
@@ -1023,7 +1023,7 @@ html[lang='ar'] .hero h1 {
   width: 100%;
   padding: 9px 11px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--ink);
   text-align: start;
@@ -1074,7 +1074,7 @@ html[lang='ar'] .hero h1 {
   margin-block-start: 8px;
   padding: 9px 12px;
   border: 1px solid #e7c98f;
-  border-radius: 12px;
+  border-radius: 6px;
   background: #fdf4e8;
   color: #6b4308;
   font-size: 11px;
@@ -1150,7 +1150,7 @@ html[lang='ar'] .hero h1 {
   border: 1px solid var(--line);
   background: var(--surface-2);
   color: var(--ink);
-  border-radius: 999px;
+  border-radius: 6px;
   min-height: 36px;
   padding: 5px 12px;
   font-size: 12px;
@@ -1261,7 +1261,7 @@ html[lang='ar'] .hero h1 {
   width: 100%;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 8px;
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -1296,7 +1296,7 @@ html[lang='ar'] .hero h1 {
   align-items: center;
   gap: 5px;
   border: 1px solid;
-  border-radius: 9px;
+  border-radius: 4px;
   padding: 5px 8px;
   font-family: var(--font-display);
   font-size: 12px;
@@ -1324,7 +1324,7 @@ html[lang='ar'] .hero h1 {
   color: var(--muted);
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   padding: 3px 8px;
   font-size: 10px;
   font-weight: 600;
@@ -1416,7 +1416,7 @@ html[lang='ar'] .hero h1 {
   padding: 20px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 26px;
+  border-radius: 8px;
   scroll-margin-top: 100px;
 }
 
@@ -1466,7 +1466,7 @@ html[lang='ar'] .hero h1 {
   align-content: start;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 8px;
   padding: 16px;
 }
 
@@ -1482,7 +1482,7 @@ html[lang='ar'] .hero h1 {
   margin-block-start: 22px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -1557,7 +1557,7 @@ html[lang='ar'] .hero h1 {
 .icon-tile {
   width: 45px;
   height: 45px;
-  border-radius: 13px;
+  border-radius: 6px;
   background: var(--accent-soft);
   color: var(--accent);
   display: grid;
@@ -1568,7 +1568,7 @@ html[lang='ar'] .hero h1 {
 .icon-tile.large {
   width: 56px;
   height: 56px;
-  border-radius: 17px;
+  border-radius: 8px;
 }
 
 .feature-legend {
@@ -1662,7 +1662,7 @@ html[lang='ar'] .hero h1 {
   padding: 3px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
+  border-radius: 6px;
 }
 
 .mode-switch button {
@@ -1672,7 +1672,7 @@ html[lang='ar'] .hero h1 {
   min-height: 34px;
   padding: 5px 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 6px;
   background: transparent;
   color: var(--on-dark-muted);
   font-size: 12px;
@@ -1710,7 +1710,7 @@ html[lang='ar'] .hero h1 {
   border: 1px solid rgba(255, 255, 255, 0.11);
   background: rgba(255, 255, 255, 0.035);
   color: var(--on-dark-muted);
-  border-radius: 13px;
+  border-radius: 6px;
   padding: 11px 13px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
@@ -1749,7 +1749,7 @@ html[lang='ar'] .hero h1 {
   background: #120b0d;
   color: var(--on-dark);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 32px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
 }
@@ -1779,7 +1779,7 @@ html[lang='ar'] .hero h1 {
   color: #ffd9df;
   background: rgba(255, 107, 129, 0.12);
   border: 1px solid rgba(255, 107, 129, 0.22);
-  border-radius: 999px;
+  border-radius: 6px;
   padding: 3px 8px;
   font-size: 10px;
   font-weight: 700;
@@ -1792,7 +1792,7 @@ html[lang='ar'] .hero h1 {
 .phone-icon {
   width: 58px;
   height: 58px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: rgba(255, 107, 129, 0.14);
   color: #ff8fa1;
   display: grid;
@@ -1826,7 +1826,7 @@ html[lang='ar'] .hero h1 {
   border: 1px solid rgba(255, 107, 129, 0.3);
   background: rgba(255, 107, 129, 0.1);
   color: #ffb3c0;
-  border-radius: 999px;
+  border-radius: 6px;
   padding: 4px 8px;
   font-size: 10px;
   font-weight: 600;
@@ -1844,14 +1844,14 @@ html[lang='ar'] .hero h1 {
   border-inline-start: 2px solid #ff6b81;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 4px 4px 0;
   color: #fff;
   font-size: 14px;
   line-height: 1.8;
 }
 
 html[dir='rtl'] .phone-body blockquote {
-  border-radius: 10px 0 0 10px;
+  border-radius: 4px 0 0 4px;
 }
 
 .phone-actions {
@@ -1964,7 +1964,7 @@ html[dir='rtl'] .phone-body blockquote {
 .bus-shell {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 28px;
+  border-radius: 8px;
   padding: 22px;
 }
 
@@ -2022,7 +2022,7 @@ html[dir='rtl'] .phone-body blockquote {
 .section-count {
   color: var(--accent);
   background: var(--accent-soft);
-  border-radius: 999px;
+  border-radius: 6px;
   padding: 2px 8px;
   font-size: 10px;
   white-space: nowrap;
@@ -2036,7 +2036,7 @@ html[dir='rtl'] .phone-body blockquote {
 
 .seat {
   min-height: 61px;
-  border-radius: 13px;
+  border-radius: 6px;
   border: 1px solid var(--line);
   background: var(--surface-2);
   color: var(--muted);
@@ -2081,7 +2081,7 @@ html[dir='rtl'] .phone-body blockquote {
 .seat-count {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 17px;
+  border-radius: 8px;
   padding: 14px 17px;
   display: flex;
   align-items: baseline;
@@ -2136,7 +2136,7 @@ html[dir='rtl'] .phone-body blockquote {
 .seat-selected {
   background: var(--accent-soft);
   border: 1px solid #e8bcc7;
-  border-radius: 13px;
+  border-radius: 6px;
   padding: 10px 12px;
   font-size: 12px;
   color: var(--ink);
@@ -2145,7 +2145,7 @@ html[dir='rtl'] .phone-body blockquote {
 .pipeline {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 17px;
+  border-radius: 8px;
   padding: 14px 16px;
 }
 
@@ -2239,7 +2239,7 @@ html[dir='rtl'] .phone-body blockquote {
 .bubble {
   max-width: 87%;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 9px 12px;
   font-size: 13px;
 }
@@ -2335,7 +2335,7 @@ html[dir='rtl'] .phone-body blockquote {
   min-width: 0;
   min-height: 44px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   padding-inline: 13px;
   font-size: 13px;
@@ -2408,7 +2408,7 @@ html[dir='rtl'] .phone-body blockquote {
   margin-block-start: 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.045);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 14px;
 }
 
@@ -2483,7 +2483,7 @@ html[dir='rtl'] .phone-body blockquote {
   padding: 3px;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   justify-self: start;
 }
 
@@ -2494,7 +2494,7 @@ html[dir='rtl'] .phone-body blockquote {
   min-height: 36px;
   padding: 5px 14px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 6px;
   background: transparent;
   color: var(--muted);
   font-size: 12px;
@@ -2518,7 +2518,7 @@ html[dir='rtl'] .phone-body blockquote {
   min-height: 40px;
   padding: 6px 13px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--muted);
   font-size: 12px;
@@ -2541,7 +2541,7 @@ html[dir='rtl'] .phone-body blockquote {
 .settings-select {
   min-height: 40px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--ink);
   padding: 6px 12px;
