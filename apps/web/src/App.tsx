@@ -224,7 +224,7 @@ function normalizeVoiceText(value: string): string {
 }
 
 function isYes(value: string): boolean {
-  return /(^|\s)(نعم|ايوه|ايوا|اجل|صح|تمام|اوكي|اوك|yes|yeah|yep|correct|right|sure|ok|okay)(\s|$)/.test(value);
+  return /(^|\s)(نعم|ايوه|ايوا|اجل|صح|صحيح|بالضبط|هذا هو|تمام|اوكي|اوك|yes|yeah|yep|yup|correct|right|sure|ok|okay|this one|that one|that's right|that is right)(\s|$)/.test(value);
 }
 
 function isNo(value: string): boolean {
@@ -1512,6 +1512,7 @@ function App() {
   const [voiceNotice, setVoiceNotice] = useState('');
   const [voiceInterim, setVoiceInterim] = useState('');
   const [voiceCandidates, setVoiceCandidates] = useState<OsmPlace[]>([]);
+  const voiceCandidatesRef = useRef<OsmPlace[]>([]);
   const [voicePrompt, setVoicePrompt] = useState('');
   const [voiceSearching, setVoiceSearching] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -1934,6 +1935,7 @@ function App() {
     planId.current = requestId;
     voiceSearchId.current += 1;
     setVoiceCandidates([]);
+    voiceCandidatesRef.current = [];
     setVoicePrompt('');
     setVoiceSearching(false);
     setVoiceInterim('');
@@ -2159,6 +2161,7 @@ function App() {
 
   const chooseVoiceCandidate = (place: OsmPlace) => {
     setVoiceCandidates([]);
+    voiceCandidatesRef.current = [];
     setVoicePrompt('');
     setVoiceSearching(false);
     setVoiceInterim('');
@@ -2173,6 +2176,7 @@ function App() {
     voiceSearchId.current += 1;
     planId.current += 1;
     setVoiceCandidates([]);
+    voiceCandidatesRef.current = [];
     setVoicePrompt('');
     setVoiceSearching(false);
     setVoiceInterim('');
@@ -2268,6 +2272,7 @@ function App() {
 
     setDestination(clean);
     setVoiceCandidates([]);
+    voiceCandidatesRef.current = [];
     setVoicePrompt('');
     setVoiceSearching(true);
     setVoiceNotice(tr(ui.voiceSearching));
@@ -2300,6 +2305,7 @@ function App() {
               .join('. ')}. ${tr(ui.voiceConfirmListening)}`;
 
       setVoiceCandidates(top);
+      voiceCandidatesRef.current = top;
       setVoicePrompt(prompt);
       setVoiceNotice('');
       speak(prompt, {
@@ -2316,23 +2322,28 @@ function App() {
     stage: 'destination' | 'confirm' | 'choice',
   ) => {
     const value = normalizeVoiceText(transcript);
+    const candidates = voiceCandidatesRef.current.length
+      ? voiceCandidatesRef.current
+      : voiceCandidates;
+    const resolvedStage =
+      stage === 'destination' && candidates.length > 0 ? 'confirm' : stage;
 
     if (isStop(value)) {
       stopVoice();
       return;
     }
 
-    if (stage === 'confirm') {
+    if (resolvedStage === 'confirm') {
       if (isRepeat(value)) {
         repeatVoice();
         return;
       }
       if (isYes(value)) {
-        const first = voiceCandidates[0];
+        const first = candidates[0];
         if (first) chooseVoiceCandidate(first);
         return;
       }
-      const topCandidate = voiceCandidates[0];
+      const topCandidate = candidates[0];
       if (topCandidate) {
         const label = normalizeVoiceText(topCandidate.label);
         if (label.includes(value) || value.includes(label)) {
@@ -2345,15 +2356,15 @@ function App() {
         return;
       }
       const index = parseSpokenIndex(value);
-      if (index !== null && voiceCandidates[index]) {
-        chooseVoiceCandidate(voiceCandidates[index]);
+      if (index !== null && candidates[index]) {
+        chooseVoiceCandidate(candidates[index]);
         return;
       }
       searchVoiceDestination(transcript, confidence);
       return;
     }
 
-    if (stage === 'choice') {
+    if (resolvedStage === 'choice') {
       if (isRepeat(value)) {
         repeatVoice();
         return;
@@ -2384,7 +2395,8 @@ function App() {
       return;
     }
 
-    const stage: 'destination' | 'confirm' | 'choice' = voiceCandidates.length
+    const stage: 'destination' | 'confirm' | 'choice' = voiceCandidatesRef
+      .current.length
       ? 'confirm'
       : trips.length > 0
         ? 'choice'
@@ -2413,17 +2425,37 @@ function App() {
           return;
         }
 
-        if (stage === 'destination' && isEchoOf(transcript, lastSpokenRef.current)) {
+        const value = normalizeVoiceText(transcript);
+        const confirmationActive = voiceCandidatesRef.current.length > 0;
+        const effectiveStage =
+          stage === 'destination' && confirmationActive ? 'confirm' : stage;
+        const confirmationReply =
+          isYes(value) ||
+          isNo(value) ||
+          isRepeat(value) ||
+          isStop(value) ||
+          parseSpokenIndex(value) !== null;
+
+        if (
+          effectiveStage === 'destination' &&
+          isEchoOf(transcript, lastSpokenRef.current)
+        ) {
           return;
         }
 
         voiceHeardRef.current = true;
         setVoiceInterim(transcript);
-        if (stage === 'destination') setDestination(transcript);
+        if (effectiveStage === 'destination' && !confirmationReply) {
+          setDestination(transcript);
+        }
         if (result?.isFinal === false) return;
 
         setVoiceInterim('');
-        handleVoiceTranscript(transcript, alternative?.confidence, stage);
+        handleVoiceTranscript(
+          transcript,
+          alternative?.confidence,
+          effectiveStage,
+        );
       };
       recognition.onend = () => {
         if (recognitionRef.current !== recognition) return;
@@ -2449,6 +2481,7 @@ function App() {
   };
 
   useEffect(() => {
+    voiceCandidatesRef.current = voiceCandidates;
     handleVoiceTranscriptRef.current = handleVoiceTranscript;
     startVoiceRef.current = startVoice;
   });
