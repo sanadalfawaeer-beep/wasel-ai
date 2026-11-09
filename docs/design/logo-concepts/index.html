@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wasel A.I. — Logo Concepts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f6f1ec;
+        --surface: #fffdfb;
+        --ink: #1b1417;
+        --muted: #6d5f64;
+        --line: #e7dad5;
+        --accent: #b0002a;
+        --accent-dark: #8e0022;
+        --accent-soft: #fbe6ec;
+        --dark: #1b1013;
+        --cream: #fff6f7;
+        --coral: #ff6b81;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .sheet {
+        width: 1500px;
+        margin: 0 auto;
+        padding: 56px 56px 48px;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 32px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: '';
+        width: 26px;
+        height: 2px;
+        background: var(--accent);
+      }
+
+      h1 {
+        margin: 12px 0 0;
+        font-size: 46px;
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+      }
+
+      h1 span { color: var(--accent); }
+
+      .intro {
+        max-width: 430px;
+        margin: 0 0 4px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+        text-align: right;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 28px;
+      }
+
+      .concept {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 24px;
+        min-height: 310px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 30px rgba(40, 16, 24, 0.05);
+      }
+
+      .concept-top {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-height: 96px;
+      }
+
+      .mark {
+        width: 96px;
+        height: 96px;
+        flex: 0 0 auto;
+      }
+
+      .mark svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .wordmark {
+        display: grid;
+        gap: 3px;
+        min-width: 0;
+      }
+
+      .wordmark .en {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        line-height: 1;
+      }
+
+      .wordmark .en span { color: var(--accent); }
+
+      .wordmark .ar {
+        font-family: 'IBM Plex Sans Arabic', sans-serif;
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--muted);
+        line-height: 1.4;
+        direction: rtl;
+        text-align: left;
+      }
+
+      .wordmark.arabic-first .ar {
+        color: var(--ink);
+        font-size: 25px;
+        font-weight: 700;
+        line-height: 1.15;
+      }
+
+      .wordmark.arabic-first .en {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+      }
+
+      .concept-top.wordmark-only {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+      }
+
+      .wordmark-only .wm-ar {
+        font-family: 'IBM Plex Sans Arabic', sans-serif;
+        color: var(--accent);
+        font-size: 44px;
+        font-weight: 700;
+        direction: rtl;
+        line-height: 1;
+      }
+
+      .wordmark-only .wm-en {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+      }
+
+      .wordmark-only .wm-en span { color: var(--accent); }
+
+      .concept-meta {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+      }
+
+      .concept-meta .number {
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 19px;
+        letter-spacing: -0.015em;
+      }
+
+      .concept p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .scale-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: auto;
+        padding-top: 18px;
+      }
+
+      .scale-row span {
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .scale-row .tiny {
+        width: 28px;
+        height: 28px;
+        overflow: hidden;
+      }
+
+      .scale-row .small {
+        width: 40px;
+        height: 40px;
+        overflow: hidden;
+      }
+
+      .scale-row svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .recommended {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .recommended-card {
+        border-radius: 8px;
+        min-height: 250px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .recommended-card.light {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--ink);
+      }
+
+      .recommended-card.dark {
+        background: var(--dark);
+        color: var(--cream);
+      }
+
+      .recommended-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.55;
+      }
+
+      .lockup {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+
+      .lockup .mark {
+        width: 92px;
+        height: 92px;
+      }
+
+      .lockup .type {
+        display: grid;
+        gap: 2px;
+      }
+
+      .lockup .type .en {
+        font-size: 38px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        line-height: 1;
+      }
+
+      .lockup .type .en span { color: var(--accent); }
+
+      .recommended-card.dark .lockup .type .en span { color: var(--coral); }
+
+      .lockup .type .ar {
+        font-family: 'IBM Plex Sans Arabic', sans-serif;
+        font-size: 25px;
+        font-weight: 600;
+        direction: rtl;
+        text-align: left;
+        opacity: 0.6;
+        line-height: 1.2;
+      }
+
+      .recommended-card.dark .lockup .type .ar { opacity: 0.75; }
+
+      .recommended-note {
+        margin: 22px 0 0;
+        max-width: 420px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .recommended-card.dark .recommended-note { color: #e2bfc7; }
+
+      .route-divider {
+        position: absolute;
+        inset-inline-end: -40px;
+        bottom: -70px;
+        width: 520px;
+        height: 320px;
+        opacity: 0.12;
+        transform: rotate(-8deg);
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        margin-top: 28px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .footer strong { color: var(--ink); font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <header>
+        <div>
+          <div class="eyebrow">Brand exploration · 2026</div>
+          <h1>Wasel A.I. <span>/ wayfinding marks</span></h1>
+        </div>
+        <p class="intro">
+          Six directions for a sharper, more ownable identity. Each mark is built
+          around the same idea: a route, a stop, and a voice that gets you there.
+        </p>
+      </header>
+
+      <section class="grid">
+        <article class="concept">
+          <div class="concept-top">
+            <div class="mark">
+              <svg viewBox="0 0 96 96" role="img" aria-label="Route W mark">
+                <rect width="96" height="96" rx="8" fill="#B0002A" />
+                <path d="M20 30 L34 66 L48 42 L62 66 L76 30" fill="none" stroke="#FFF6F7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="20" cy="30" r="4" fill="#FFF6F7" />
+                <circle cx="76" cy="30" r="7" fill="none" stroke="#FFF6F7" stroke-width="3" />
+                <circle cx="76" cy="30" r="2.5" fill="#FFF6F7" />
+              </svg>
+            </div>
+            <div class="wordmark">
+              <div class="en">WASEL <span>A.I.</span></div>
+              <div class="ar">واصل</div>
+            </div>
+          </div>
+          <div class="concept-meta"><span class="number">01</span><h2>Route W</h2></div>
+          <p>A continuous route becomes a W, with an origin dot and a destination ring. Reads as both a map and the brand initial.</p>
+          <div class="scale-row">
+            <div class="tiny">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#B0002A"/><path d="M20 30 L34 66 L48 42 L62 66 L76 30" fill="none" stroke="#FFF6F7" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="small">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#B0002A"/><path d="M20 30 L34 66 L48 42 L62 66 L76 30" fill="none" stroke="#FFF6F7" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="30" r="6" fill="none" stroke="#FFF6F7" stroke-width="3"/></svg>
+            </div>
+            <span>Scaled to app icon</span>
+          </div>
+        </article>
+
+        <article class="concept">
+          <div class="concept-top">
+            <div class="mark">
+              <svg viewBox="0 0 96 96" role="img" aria-label="Arabic Wa mark">
+                <rect width="96" height="96" rx="8" fill="#B0002A" />
+                <text x="48" y="68" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="58" font-weight="700" fill="#FFF6F7" direction="rtl">و</text>
+                <circle cx="76" cy="22" r="4.5" fill="#FFF6F7" />
+              </svg>
+            </div>
+            <div class="wordmark arabic-first">
+              <div class="ar">واصل</div>
+              <div class="en">WASEL A.I.</div>
+            </div>
+          </div>
+          <div class="concept-meta"><span class="number">02</span><h2>Wa</h2></div>
+          <p>The Arabic letter takes the lead. A single destination dot turns the letter into a stop on the network. Locally rooted, not translated.</p>
+          <div class="scale-row">
+            <div class="tiny">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#B0002A"/><text x="48" y="68" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="58" font-weight="700" fill="#FFF6F7" direction="rtl">و</text><circle cx="76" cy="22" r="4.5" fill="#FFF6F7"/></svg>
+            </div>
+            <div class="small">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#B0002A"/><text x="48" y="68" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="58" font-weight="700" fill="#FFF6F7" direction="rtl">و</text><circle cx="76" cy="22" r="4.5" fill="#FFF6F7"/></svg>
+            </div>
+            <span>Arabic-first</span>
+          </div>
+        </article>
+
+        <article class="concept">
+          <div class="concept-top">
+            <div class="mark">
+              <svg viewBox="0 0 96 96" role="img" aria-label="Arrival arrow mark">
+                <rect width="96" height="96" rx="8" fill="#1B1013" />
+                <path d="M20 74 C28 48 42 26 66 26" fill="none" stroke="#FFF6F7" stroke-width="6" stroke-linecap="round" />
+                <path d="M52 15 L68 26 L52 37" fill="none" stroke="#FF6B81" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="20" cy="74" r="5" fill="#FFF6F7" />
+              </svg>
+            </div>
+            <div class="wordmark">
+              <div class="en">WASEL <span>A.I.</span></div>
+              <div class="ar">واصل</div>
+            </div>
+          </div>
+          <div class="concept-meta"><span class="number">03</span><h2>Arrival</h2></div>
+          <p>A route rises toward a sharp coral arrow. It is the moment the app answers: this is where you are going. Strong at small sizes.</p>
+          <div class="scale-row">
+            <div class="tiny">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#1B1013"/><path d="M20 74 C28 48 42 26 66 26" fill="none" stroke="#FFF6F7" stroke-width="7" stroke-linecap="round"/><path d="M52 15 L68 26 L52 37" fill="none" stroke="#FF6B81" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="small">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#1B1013"/><path d="M20 74 C28 48 42 26 66 26" fill="none" stroke="#FFF6F7" stroke-width="6" stroke-linecap="round"/><path d="M52 15 L68 26 L52 37" fill="none" stroke="#FF6B81" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="74" r="5" fill="#FFF6F7"/></svg>
+            </div>
+            <span>High contrast</span>
+          </div>
+        </article>
+
+        <article class="concept">
+          <div class="concept-top">
+            <div class="mark">
+              <svg viewBox="0 0 96 96" role="img" aria-label="Path and stops mark">
+                <rect width="96" height="96" rx="8" fill="#FFF9F7" stroke="#E7DAD5" />
+                <path d="M18 70 C32 44 44 62 56 40 S72 22 80 22" fill="none" stroke="#B0002A" stroke-width="6" stroke-linecap="round" />
+                <circle cx="18" cy="70" r="5" fill="#B0002A" />
+                <circle cx="56" cy="40" r="5" fill="#B0002A" />
+                <circle cx="80" cy="22" r="7" fill="none" stroke="#B0002A" stroke-width="3" />
+              </svg>
+            </div>
+            <div class="wordmark">
+              <div class="en">WASEL <span>A.I.</span></div>
+              <div class="ar">واصل</div>
+            </div>
+          </div>
+          <div class="concept-meta"><span class="number">04</span><h2>Path &amp; stops</h2></div>
+          <p>A softer route with three nodes: start, transfer, destination. It maps the actual product journey rather than a vehicle.</p>
+          <div class="scale-row">
+            <div class="tiny">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#FFF9F7" stroke="#E7DAD5"/><path d="M18 70 C32 44 44 62 56 40 S72 22 80 22" fill="none" stroke="#B0002A" stroke-width="7" stroke-linecap="round"/><circle cx="18" cy="70" r="6" fill="#B0002A"/><circle cx="80" cy="22" r="7" fill="none" stroke="#B0002A" stroke-width="4"/></svg>
+            </div>
+            <div class="small">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#FFF9F7" stroke="#E7DAD5"/><path d="M18 70 C32 44 44 62 56 40 S72 22 80 22" fill="none" stroke="#B0002A" stroke-width="6" stroke-linecap="round"/><circle cx="18" cy="70" r="5" fill="#B0002A"/><circle cx="56" cy="40" r="5" fill="#B0002A"/><circle cx="80" cy="22" r="7" fill="none" stroke="#B0002A" stroke-width="3"/></svg>
+            </div>
+            <span>Light surface</span>
+          </div>
+        </article>
+
+        <article class="concept">
+          <div class="concept-top">
+            <div class="mark">
+              <svg viewBox="0 0 96 96" role="img" aria-label="Voice loop mark">
+                <rect width="96" height="96" rx="8" fill="#B0002A" />
+                <path d="M24 20 H72 A8 8 0 0 1 80 28 V56 A8 8 0 0 1 72 64 H46 L30 80 V64 H24 A8 8 0 0 1 16 56 V28 A8 8 0 0 1 24 20 Z" fill="none" stroke="#FFF6F7" stroke-width="5" stroke-linejoin="round" />
+                <path d="M34 47 V41 M42 47 V33 M50 47 V25 M58 47 V33 M66 47 V41" fill="none" stroke="#FFF6F7" stroke-width="4" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="wordmark">
+              <div class="en">WASEL <span>A.I.</span></div>
+              <div class="ar">واصل</div>
+            </div>
+          </div>
+          <div class="concept-meta"><span class="number">05</span><h2>Voice loop</h2></div>
+          <p>A destination spoken into a route. The speech bubble and the five waveform bars put the voice-first interaction at the center.</p>
+          <div class="scale-row">
+            <div class="tiny">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#B0002A"/><path d="M24 20 H72 A8 8 0 0 1 80 28 V56 A8 8 0 0 1 72 64 H46 L30 80 V64 H24 A8 8 0 0 1 16 56 V28 A8 8 0 0 1 24 20 Z" fill="none" stroke="#FFF6F7" stroke-width="6" stroke-linejoin="round"/><path d="M34 47 V41 M42 47 V33 M50 47 V25 M58 47 V33 M66 47 V41" fill="none" stroke="#FFF6F7" stroke-width="5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="small">
+              <svg viewBox="0 0 96 96"><rect width="96" height="96" rx="8" fill="#B0002A"/><path d="M24 20 H72 A8 8 0 0 1 80 28 V56 A8 8 0 0 1 72 64 H46 L30 80 V64 H24 A8 8 0 0 1 16 56 V28 A8 8 0 0 1 24 20 Z" fill="none" stroke="#FFF6F7" stroke-width="5" stroke-linejoin="round"/><path d="M34 47 V41 M42 47 V33 M50 47 V25 M58 47 V33 M66 47 V41" fill="none" stroke="#FFF6F7" stroke-width="4" stroke-linecap="round"/></svg>
+            </div>
+            <span>Voice-first</span>
+          </div>
+        </article>
+
+        <article class="concept">
+          <div class="concept-top wordmark-only">
+            <div class="wm-ar">واصل</div>
+            <div class="wm-en">WASEL <span>A.I.</span></div>
+          </div>
+          <div class="concept-meta"><span class="number">06</span><h2>Bilingual wordmark</h2></div>
+          <p>A type-led lockup that lets Arabic lead and English support. Best paired with one of the route marks above for the full identity.</p>
+          <div class="scale-row">
+            <div class="tiny">
+              <div style="width:28px;height:28px;background:#FFF9F7;border:1px solid #E7DAD5;border-radius:6px;display:grid;place-items:center;font-family:'IBM Plex Sans Arabic',sans-serif;font-size:15px;font-weight:700;color:#B0002A;">و</div>
+            </div>
+            <span>Type-led</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="recommended">
+        <div class="recommended-card light">
+          <div class="recommended-label">Recommended lockup · light</div>
+          <div class="lockup">
+            <div class="mark">
+              <svg viewBox="0 0 96 96">
+                <rect width="96" height="96" rx="8" fill="#B0002A"/>
+                <path d="M20 30 L34 66 L48 42 L62 66 L76 30" fill="none" stroke="#FFF6F7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="20" cy="30" r="4" fill="#FFF6F7"/>
+                <circle cx="76" cy="30" r="7" fill="none" stroke="#FFF6F7" stroke-width="3"/>
+                <circle cx="76" cy="30" r="2.5" fill="#FFF6F7"/>
+              </svg>
+            </div>
+            <div class="type">
+              <div class="en">WASEL <span>A.I.</span></div>
+              <div class="ar">واصل</div>
+            </div>
+          </div>
+          <p class="recommended-note">Route W is the most flexible: it reads as a route, a W, and a bus stop at the same time. It stays legible at 24 px and works in one color.</p>
+        </div>
+        <div class="recommended-card dark">
+          <svg class="route-divider" viewBox="0 0 520 320" fill="none" aria-hidden="true">
+            <path d="M0 260 C110 120 240 260 340 100 S470 40 520 60" stroke="#FFF6F7" stroke-width="26" stroke-linecap="round"/>
+            <circle cx="0" cy="260" r="14" fill="#FFF6F7"/>
+            <circle cx="520" cy="60" r="18" fill="none" stroke="#FFF6F7" stroke-width="10"/>
+          </svg>
+          <div class="recommended-label">Recommended lockup · dark</div>
+          <div class="lockup">
+            <div class="mark">
+              <svg viewBox="0 0 96 96">
+                <rect width="96" height="96" rx="8" fill="#FFF6F7"/>
+                <path d="M20 30 L34 66 L48 42 L62 66 L76 30" fill="none" stroke="#B0002A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="20" cy="30" r="4" fill="#B0002A"/>
+                <circle cx="76" cy="30" r="7" fill="none" stroke="#B0002A" stroke-width="3"/>
+                <circle cx="76" cy="30" r="2.5" fill="#B0002A"/>
+              </svg>
+            </div>
+            <div class="type">
+              <div class="en">WASEL <span>A.I.</span></div>
+              <div class="ar">واصل</div>
+            </div>
+          </div>
+          <p class="recommended-note">The inverse version keeps the mark crisp on the night surface. The destination ring remains visible without a second color.</p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span><strong>Wasel A.I.</strong> · bus-only wayfinding · Amman</span>
+        <span>Concepts 01–06 · sharp geometry · Arabic-first</span>
+      </footer>
+    </main>
+  </body>
+</html>
